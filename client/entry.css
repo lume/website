@@ -5,6 +5,8 @@ body,
 	height: 100%;
 	padding: 0;
 	margin: 0;
+
+	background: radial-gradient(circle, rgb(23, 132, 252) 0%, rgb(0, 0, 198) 43.67%, rgb(13, 9, 98) 100%);
 }
 
 /* prettier-ignore */
@@ -49,6 +51,11 @@ body {
 	padding: 0px;
 }
 
+@font-face {
+	font-family: 'Gotham Bold';
+	src: url(/fonts/Gotham-Bold.otf);
+}
+
 body {
 	position: absolute;
 	-webkit-transform-style: preserve-3d;
@@ -58,34 +65,11 @@ body {
 	-webkit-perspective: 0;
 	perspective: none;
 	overflow: hidden;
-	font-family: 'Work Sans', 'Helvetica', sans-serif;
-	font-size: 16px;
-
-	color: rgba(242, 238, 236, 1);
-	background: linear-gradient(135deg, #49022f 0%, #070004 100%);
-}
-
-.gradient-background {
-	background: linear-gradient(135deg, #49022f 0%, #070004 100%);
+	font-family: 'Gotham Bold', 'Helvetica', sans-serif;
+	font-size: 14px;
 }
 
 .centerText {
 	text-align: center;
 	vertical-align: middle;
-}
-
-.background-iframe {
-	border: none;
-	width: 100%;
-	height: 100%;
-}
-
-#titleNode h1 {
-	font-size: 32px;
-	padding: 0;
-	margin: 0;
-}
-
-#footerNode {
-	background: rgb(2, 2, 2);
 }
