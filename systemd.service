@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User=infamous
 Group=infamous
-WorkingDirectory=/home/infamous/infamous/website/
+WorkingDirectory=/home/infamous/lume+umbrella/apps/website/
 ExecStart=/usr/local/bin/meteor -p 8765
 Restart=always
 StandardOutput=syslog
