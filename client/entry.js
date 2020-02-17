@@ -87,18 +87,27 @@ class App extends React.Component {
 			// TODO use offsetX/Y so we get events relative to `currentTarget`,
 			// and make an abstraction so that the offsets can be calculated
 			// from event.target instead of event.currentTarget, otherwise the
-			// behavior is strange...
+			// behavior is strange. ...
 			// const rotationAmountX = (event.offsetY / size.y) * rotationRange - rotationRange / 2
 			// const rotationAmountY = (event.offsetX / size.x) * rotationRange - rotationRange / 2
 
-			// ... but for now just use clientX/Y
+			// ... For now just use clientX/Y. ...
 			const rotationAmountX = (event.clientY / size.y) * rotationRange - rotationRange / 2
 			const rotationAmountY = (event.clientX / size.x) * rotationRange - rotationRange / 2
+
+			// ... See https://discourse.wicg.io/t/4236 for discussion
 
 			rotator.rotation = {
 				x: rotationAmountX,
 				y: rotationAmountY,
 			}
+
+			rotator.position = {
+				x: rotationAmountY * 5,
+				y: rotationAmountX * 5,
+			}
+
+			console.log('rotate')
 		})
 	}
 
