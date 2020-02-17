@@ -72,11 +72,35 @@ class App extends React.Component {
 		const tween = new TWEEN.Tween({r: 0})
 
 		Motor.addRenderTask(t => {
-			cubeNode.rotation.y++
+			cubeNode.rotation.y += 0.25
 		})
 	}
 
-	componentDidMount() {}
+	componentDidMount() {
+		const scene = this.refs.scene
+		const rotator = this.refs.rotator
+
+		scene.addEventListener('pointermove', event => {
+			const size = scene.calculatedSize
+			const rotationRange = 30
+
+			// TODO use offsetX/Y so we get events relative to `currentTarget`,
+			// and make an abstraction so that the offsets can be calculated
+			// from event.target instead of event.currentTarget, otherwise the
+			// behavior is strange...
+			// const rotationAmountX = (event.offsetY / size.y) * rotationRange - rotationRange / 2
+			// const rotationAmountY = (event.offsetX / size.x) * rotationRange - rotationRange / 2
+
+			// ... but for now just use clientX/Y
+			const rotationAmountX = (event.clientY / size.y) * rotationRange - rotationRange / 2
+			const rotationAmountY = (event.clientX / size.x) * rotationRange - rotationRange / 2
+
+			rotator.rotation = {
+				x: rotationAmountX,
+				y: rotationAmountY,
+			}
+		})
+	}
 
 	render = () => (
 		<i-scene ref="scene">
@@ -116,30 +140,38 @@ class App extends React.Component {
 				</i-node>
 
 				<i-node
-					wordmark
-					size-mode="proportional proportional"
-					size="0.50 0 0"
-					mount-point="0.5 0.5"
+					ref="rotator"
 					align="0.5 0.5"
+					mount-point="0.5 0.5"
+					size-mode="proportional proportional"
+					size="1 1"
 				>
-					<img
-						src="/images/logo-wordmark.svg"
-						style={{
-							transform: 'translateY(-50%)',
-							width: '100%',
-							height: 'auto',
-							objectFit: 'fill',
-						}}
+					<i-node
+						wordmark
+						size-mode="proportional proportional"
+						size="0.50 0 0"
+						mount-point="0.5 0.5"
+						align="0.5 0.5"
+					>
+						<img
+							src="/images/logo-wordmark.svg"
+							style={{
+								transform: 'translateY(-50%)',
+								width: '100%',
+								height: 'auto',
+								objectFit: 'fill',
+							}}
+						/>
+					</i-node>
+
+					<Cube
+						containerRef={this.containerRef}
+						size="200"
+						align="0.5 0.5"
+						position="0 0 -200"
+						rotation="45 45 45"
 					/>
 				</i-node>
-
-				<Cube
-					containerRef={this.containerRef}
-					size="200"
-					align="0.5 0.5"
-					position="0 0 -200"
-					rotation="45 45 45"
-				/>
 			</i-node>
 		</i-scene>
 	)
