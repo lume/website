@@ -1,8 +1,8 @@
 {
 	"name": "website",
 	"scripts": {
-		"build": "",
-		"dev": "cd website && meteor",
+		"build": "echo 'nothing to build for website'",
+		"dev": "meteor",
 		"setup-website-service": "cd website && ./setup-service.sh"
 	},
 	"dependencies": {
