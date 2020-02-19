@@ -98,16 +98,14 @@ class App extends React.Component {
 			// ... See https://discourse.wicg.io/t/4236 for discussion
 
 			rotator.rotation = {
-				x: rotationAmountX,
-				y: rotationAmountY,
+				x: rotationAmountX * 0.5,
+				y: rotationAmountY * 0.5,
 			}
 
 			rotator.position = {
-				x: rotationAmountY * 5,
-				y: rotationAmountX * 5,
+				x: rotationAmountY,
+				y: rotationAmountX,
 			}
-
-			console.log('rotate')
 		})
 	}
 
