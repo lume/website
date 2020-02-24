@@ -8,6 +8,3 @@ public/docs
 .vscode/
 
 *.log
-
-# Rush.js is used for managing Lume repos, and generates caches inside here.
-**/.rush/
