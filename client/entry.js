@@ -134,11 +134,14 @@ class App extends React.Component {
 							}}
 						/>
 
-						<a style={s.menuLink} href="https://infamous.io/docs/index.html">
+						<a style={s.menuLink} href="/docs">
 							Documentation
 						</a>
-						<a style={s.menuLink} href="https://infamous.io/docs/examples.html">
+						<a style={s.menuLink} href="/docs">
 							Examples
+						</a>
+						<a style={s.menuLink} href={location.protocol + 'discuss.' + location.origin}>
+							Discuss
 						</a>
 						<a style={s.menuLink} href="https://github.com/infamous/infamous">
 							GitHub
