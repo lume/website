@@ -1,5 +1,6 @@
 {
 	"name": "website",
+	"type": "module",
 	"scripts": {
 		"build": "echo 'nothing to build for website'",
 		"dev": "meteor",
@@ -19,5 +20,8 @@
 		"react": "^15.6.1",
 		"react-dom": "^15.6.1",
 		"@tweenjs/tween.js": "^18.5.0"
+	},
+	"devDependencies": {
+		"@jsenv/node-module-import-map": "^11.0.1"
 	}
 }
