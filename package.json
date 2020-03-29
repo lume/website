@@ -1,5 +1,6 @@
 {
 	"name": "website",
+	"private": true,
 	"scripts": {
 		"build": "echo 'nothing to build for website'",
 		"dev": "meteor",
