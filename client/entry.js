@@ -140,10 +140,10 @@ class App extends React.Component {
 						<a style={s.menuLink} href="/docs">
 							Examples
 						</a>
-						<a style={s.menuLink} href={location.protocol + 'discuss.' + location.origin}>
+						<a style={s.menuLink} href="//lume.community">
 							Discuss
 						</a>
-						<a style={s.menuLink} href="https://github.com/infamous/infamous">
+						<a style={s.menuLink} href="//github.com/infamous/infamous">
 							GitHub
 						</a>
 					</div>
