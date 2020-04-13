@@ -137,7 +137,7 @@ class App extends React.Component {
 						<a style={s.menuLink} href="/docs">
 							Documentation
 						</a>
-						<a style={s.menuLink} href="/docs">
+						<a style={s.menuLink} href="/docs/#/examples/hello3d">
 							Examples
 						</a>
 						<a style={s.menuLink} href="//lume.community">
