@@ -1,10 +1,10 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import '../imports/routes'
-import {Motor, useDefaultNames} from 'infamous'
+import {Motor, useDefaultNames} from 'lume'
 import TWEEN from '@tweenjs/tween.js'
 
-// tell infamous to define the default set of custom elements (all of them)
+// tell LUME to define the default set of custom elements (all of them)
 useDefaultNames()
 
 Tracker.autorun(() => {
@@ -143,7 +143,7 @@ class App extends React.Component {
 						<a style={s.menuLink} href="//lume.community">
 							Discuss
 						</a>
-						<a style={s.menuLink} href="//github.com/infamous/infamous">
+						<a style={s.menuLink} href="//github.com/lume/lume">
 							GitHub
 						</a>
 					</div>
