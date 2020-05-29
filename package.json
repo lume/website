@@ -18,6 +18,7 @@
 		"jss-vendor-prefixer": "^1.0.0",
 		"lume": "0.0.0-rc.0",
 		"meteor-node-stubs": "^1.0.0",
+		"prettier": "^2.0.5",
 		"react": "^15.6.1",
 		"react-dom": "^15.6.1"
 	}
