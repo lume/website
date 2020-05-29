@@ -1,3 +1,2 @@
-
-let appName = "Infamous"
+let appName = 'LUME'
 Session.set('appTitle', appName)
