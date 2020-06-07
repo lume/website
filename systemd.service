@@ -1,5 +1,5 @@
 [Unit]
-Description=infamous.io
+Description=lume.io
 After=network.target
 
 [Service]
@@ -9,7 +9,7 @@ WorkingDirectory=/home/infamous/lume+umbrella/apps/website/
 ExecStart=/usr/local/bin/meteor -p 8765
 Restart=always
 StandardOutput=syslog
-SyslogIdentifier=infamous-website
+SyslogIdentifier=lume-website
 Environment=BLAH=blah
 
 [Install]
