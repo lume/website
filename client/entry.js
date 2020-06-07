@@ -1,8 +1,8 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import '../imports/routes'
-import {Motor, useDefaultNames} from 'lume'
-import TWEEN from '@tweenjs/tween.js'
+import {useDefaultNames} from 'lume'
+import {App} from './App'
 
 // tell LUME to define the default set of custom elements (all of them)
 useDefaultNames()
@@ -11,11 +11,8 @@ Tracker.autorun(() => {
 	document.title = Session.get('appTitle')
 })
 
-// TODO find a place for these demos
+// TODO move some demos to LUME examples.
 const demos = _.shuffle([
-	//'//dl.dropboxusercontent.com/u/2790629/famin/demo2/index.html?50', // FIXME in Safari 9, or remake
-	//'http://devmagnet.net/boxer/demo/examples/rotate-180-nodes/', // no HTTPS, or remake
-	//'//dl.dropboxusercontent.com/u/2790629/famin/demo1/index.html?50', // FIXME in Safari 9, or remake
 	//'//trusktr.io/clobe', // JSS broken, FIXME
 	//'//jsfiddle.net/trusktr/ymonmo70/15/embedded/result,js,html,css', // DOM car, FIXME in firefox
 	//'//trusktr.io/pyramids', // WIP
@@ -29,191 +26,6 @@ const demos = _.shuffle([
 	'//trusktr.io/randomBits',
 	'//trusktr.io/rainbowTriangles',
 ])
-
-// TODO fix bug where setting Z rotation back to zero doesn't work (while X and Y are zero).
-
-class Cube extends React.Component {
-	render = () => {
-		const props = {...this.props}
-		const size = props.size
-		delete props.size
-
-		// prettier-ignore
-		return (
-            <i-node ref="cubeContainer" {...props}>
-                <i-node style={{...s.cubeSide, ...s.front}}  position={[0, 0, size/2]}  rotation="0 0 0"   size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></i-node>
-                <i-node style={{...s.cubeSide, ...s.back}}   position={[0, 0, -size/2]} rotation="0 180 0" size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></i-node>
-                <i-node style={{...s.cubeSide, ...s.left}}   position={[-size/2, 0, 0]} rotation="0 -90 0" size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></i-node>
-                <i-node style={{...s.cubeSide, ...s.right}}  position={[size/2, 0, 0]}  rotation="0 90 0"  size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></i-node>
-                <i-node style={{...s.cubeSide, ...s.top}}    position={[0, -size/2, 0]} rotation="-90 0 0" size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></i-node>
-                <i-node style={{...s.cubeSide, ...s.bottom}} position={[0, size/2, 0]}  rotation="90 0 0"  size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></i-node>
-            </i-node>
-        )
-	}
-
-	componentDidMount() {
-		this.props.containerRef && this.props.containerRef(this.refs.cubeContainer)
-	}
-}
-
-class App extends React.Component {
-	state = {
-		cubeRotation: 0,
-	}
-
-	componentDidMount() {
-		Motor.addRenderTask(() => {
-			const logo = this.refs.logo
-			if (logo) logo.rotation.y++
-		})
-	}
-
-	containerRef = cubeNode => {
-		const tween = new TWEEN.Tween({r: 0})
-
-		Motor.addRenderTask(t => {
-			cubeNode.rotation.y += 0.25
-		})
-	}
-
-	componentDidMount() {
-		const scene = this.refs.scene
-		const rotator = this.refs.rotator
-
-		scene.addEventListener('pointermove', event => {
-			const size = scene.calculatedSize
-			const rotationRange = 30
-
-			// TODO use offsetX/Y so we get events relative to `currentTarget`,
-			// and make an abstraction so that the offsets can be calculated
-			// from event.target instead of event.currentTarget, otherwise the
-			// behavior is strange. ...
-			// const rotationAmountX = (event.offsetY / size.y) * rotationRange - rotationRange / 2
-			// const rotationAmountY = (event.offsetX / size.x) * rotationRange - rotationRange / 2
-
-			// ... For now just use clientX/Y. ...
-			const rotationAmountX = (event.clientY / size.y) * rotationRange - rotationRange / 2
-			const rotationAmountY = (event.clientX / size.x) * rotationRange - rotationRange / 2
-
-			// ... See https://discourse.wicg.io/t/4236 for discussion
-
-			rotator.rotation = {
-				x: rotationAmountX * 0.5,
-				y: rotationAmountY * 0.5,
-			}
-
-			rotator.position = {
-				x: rotationAmountY,
-				y: rotationAmountX,
-			}
-		})
-	}
-
-	render = () => (
-		<i-scene ref="scene">
-			<i-node size-mode="proportional proportional" size="1 1 0">
-				<i-node headerBar size-mode="proportional literal" size="1 148 0">
-					<div
-						style={{
-							display: 'flex',
-							height: '100%',
-							alignItems: 'center',
-							paddingLeft: 112,
-							paddingRight: 132,
-						}}
-					>
-						<img
-							src="/images/logo.svg"
-							style={{
-								width: 40,
-								height: 40,
-								objectFit: 'fill',
-
-								// push everything else to the right side of the header
-								marginRight: 'auto',
-							}}
-						/>
-
-						<a style={s.menuLink} href="/docs">
-							Documentation
-						</a>
-						<a style={s.menuLink} href="/docs/#/examples/hello3d">
-							Examples
-						</a>
-						<a style={s.menuLink} href="//lume.community">
-							Discuss
-						</a>
-						<a style={s.menuLink} href="//github.com/lume/lume">
-							GitHub
-						</a>
-					</div>
-				</i-node>
-
-				<i-node
-					ref="rotator"
-					align="0.5 0.5"
-					mount-point="0.5 0.5"
-					size-mode="proportional proportional"
-					size="1 1"
-				>
-					<i-node
-						wordmark
-						size-mode="proportional proportional"
-						size="0.50 0 0"
-						mount-point="0.5 0.5"
-						align="0.5 0.5"
-					>
-						<img
-							src="/images/logo-wordmark.svg"
-							style={{
-								transform: 'translateY(-50%)',
-								width: '100%',
-								height: 'auto',
-								objectFit: 'fill',
-							}}
-						/>
-					</i-node>
-
-					<Cube
-						containerRef={this.containerRef}
-						size="200"
-						align="0.5 0.5"
-						position="0 0 -200"
-						rotation="45 45 45"
-					/>
-				</i-node>
-			</i-node>
-		</i-scene>
-	)
-}
-
-/** @type {{[k: string]: React.CSSProperties}} */
-const styles = {
-	menuLink: {
-		textTransform: 'uppercase',
-		marginLeft: 91,
-		letterSpacing: '0.165em',
-		color: 'white',
-		transform: 'translateY(15px)',
-	},
-
-	cubeSide: {
-		// background: 'deeppink',
-	},
-
-	// prettier-ignore
-	...{
-        front: { background: 'url(/images/cube/front.svg)' },
-        back: { background: 'url(/images/cube/back.svg)' },
-        left: { background: 'url(/images/cube/left.svg)' },
-        right: { background: 'url(/images/cube/right.svg)' },
-        top: { background: 'url(/images/cube/top.svg)' },
-        bottom: { background: 'url(/images/cube/bottom.svg)' },
-    }
-}
-
-// alias for styles
-const s = styles
 
 main()
 function main() {
