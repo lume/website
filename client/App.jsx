@@ -242,10 +242,13 @@ class MenuLinks extends React.Component {
 				Examples
 			</a>
 			<a style={s.menuLink} href="//lume.community">
-				Discuss
+				Forum
+			</a>
+			<a style={s.menuLink} href="//discord.gg/PgeyevP">
+				Chat
 			</a>
 			<a style={s.menuLink} href="//github.com/lume/lume">
-				GitHub
+				Source
 			</a>
 		</div>
 	)
