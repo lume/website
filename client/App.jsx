@@ -65,7 +65,8 @@ export class App extends React.Component {
 
 	toggleMenu = () => (this.menuOpen ? this.closeMenu() : this.openMenu())
 
-	tweenTask = false
+	tweenTask = null
+
 	tweenLoop() {
 		if (this.tweenTask) return
 
@@ -81,7 +82,8 @@ export class App extends React.Component {
 		const rotator = this.refs.rotator
 
 		const resize = _.debounce(_e => {
-			document.body.style.setProperty('--mobile', this.width <= 1200 ? 1 : 0)
+			console.log('is mobile: ', this.viewWidth <= 1200 ? 1 : 0)
+			document.body.style.setProperty('--mobile', '' + (this.viewWidth <= 1200 ? 1 : 0))
 			this.forceUpdate()
 		}, 100)
 
@@ -114,20 +116,25 @@ export class App extends React.Component {
 				x: rotationAmountY,
 				y: rotationAmountX,
 			}
+
+			const circle = this.refs.circle
+			if (!circle) return
+			circle.position.x = event.clientX
+			circle.position.y = event.clientY
 		})
 	}
 
-	get mobile() {
-		return window.innerWidth <= 1200
-	}
 	get viewWidth() {
 		return window.innerWidth
 	}
 	get viewHeight() {
 		return window.innerHeight
 	}
+	get mobile() {
+		return this.viewWidth <= 1200
+	}
 	get cubeSize() {
-		return 0.65 * (this.viewIsTall ? this.viewWidth : this.viewHeight)
+		return this.viewIsTall ? 0.65 * this.viewWidth : 0.5 * this.viewHeight
 	}
 	get viewIsTall() {
 		return this.viewHeight >= this.viewWidth
@@ -144,7 +151,7 @@ export class App extends React.Component {
 								...{pointerEvents: this.mobile ? 'none' : 'auto'},
 							}}
 							size-mode="proportional literal"
-							size={[1, this.mobile ? 100 : 148, 0]}
+							size={[1, this.mobile ? 100 : 100, 0]}
 						>
 							<div style={s.headerBarInner}>
 								<img src="/images/logo.svg" style={s.logo} />
@@ -167,7 +174,7 @@ export class App extends React.Component {
 								align="0.5 0.5"
 							>
 								<img
-									src={`/images/logo-wordmark${this.viewIsTall ? '-vertical' : ''}.svg`}
+									src={'/images/logo-wordmark' + (this.viewIsTall ? '-vertical' : '') + '.svg'}
 									style={{
 										transform: this.viewIsTall ? 'translateX(-50%)' : 'translateY(-50%)',
 										...(this.viewIsTall
@@ -194,6 +201,9 @@ export class App extends React.Component {
 						</i-node>
 					</i-node>
 				</i-scene>
+
+				{/* {this.mobile ? null : <i-node ref="circle" style={s.circle} mount-point="0.5 0.5" size="200 200" />} */}
+
 				{this.mobile ? (
 					<i-node size-mode="proportional proportional" size="1 1 0" style={{pointerEvents: 'none'}}>
 						<i-node
@@ -209,7 +219,7 @@ export class App extends React.Component {
 
 						<i-node
 							style={s.menuButton}
-							size="120 80"
+							size="140 100"
 							align="1 0"
 							position="0 0"
 							mount-point="1 0"
@@ -220,7 +230,7 @@ export class App extends React.Component {
 								height={19}
 								align="0.5 0.5"
 								mount-point="0.5 0.5"
-								position="0 10"
+								position="0 0"
 								lineThickness={2.5}
 								lineLength={0.7}
 							/>
@@ -234,7 +244,12 @@ export class App extends React.Component {
 
 class MenuLinks extends React.Component {
 	render = () => (
-		<div style={this.props.isMobile ? s.mobileMenuInner : {}}>
+		<div
+			style={{
+				...s.menuLinks,
+				...(this.props.isMobile && s.menuLinksMobile),
+			}}
+		>
 			<a style={s.menuLink} href="/docs">
 				Documentation
 			</a>
@@ -299,15 +314,12 @@ const styles = {
 		height: '100%',
 		alignItems: 'center',
 		// paddingLeft: 112,
-		paddingLeft: `calc(
-            112px * var(--mobile) + 
-            40px * (1 - var(--mobile))
-        )`,
-		paddingRight: 132,
+		paddingLeft: 60,
+		paddingRight: 60,
 	},
 	logo: {
-		width: 40,
-		height: 40,
+		width: 50,
+		height: 50,
 		objectFit: 'fill',
 
 		// push everything else to the right side of the header
@@ -315,6 +327,30 @@ const styles = {
 	},
 	rotator: {
 		pointerEvents: 'none',
+	},
+	menuButton: {
+		pointerEvents: 'auto',
+	},
+	menuButtonLine: {
+		background: 'white',
+	},
+	mobileMenu: {
+		background: 'rgba(0, 25, 93, 0.3)',
+		backdropFilter: 'blur(14px) brightness(130%)',
+		pointerEvents: 'auto',
+	},
+	menuLinks: {
+		fontSize: `calc(
+            30px * var(--mobile) + 
+            14px * (1 - var(--mobile))
+        )`,
+		paddingTop: 15,
+	},
+	menuLinksMobile: {
+		display: 'flex',
+		flexDirection: 'column',
+		width: '100%',
+		height: '100%',
 	},
 	menuLink: {
 		textTransform: 'uppercase',
@@ -326,31 +362,15 @@ const styles = {
             0px * var(--mobile) + 
             80px * (1 - var(--mobile))
         )`,
-		letterSpacing: '0.165em',
+		letterSpacing: '0.105em',
 		color: 'white',
 		transform: 'translateY(15px)',
-		fontSize: `calc(
-            40px * var(--mobile) + 
-            20px * (1 - var(--mobile))
-        )`,
 	},
-	menuButton: {
-		pointerEvents: 'auto',
-	},
-	menuButtonLine: {
-		background: 'white',
-	},
-	mobileMenu: {
+	circle: {
 		background: 'rgba(0, 25, 93, 0.3)',
 		backdropFilter: 'blur(14px) brightness(130%)',
-		fontSize: 30,
-		pointerEvents: 'auto',
-	},
-	mobileMenuInner: {
-		display: 'flex',
-		flexDirection: 'column',
-		width: '100%',
-		height: '100%',
+
+		borderRadius: '100%',
 	},
 }
 
