@@ -10,14 +10,14 @@ export class Cube extends React.Component {
 
 		// prettier-ignore
 		return (
-            <i-node id="cube-node" ref="cubeContainer" {...props}>
-                <i-node id="cube-face1" style={{...s.cubeSide, ...s.front}}  position={[0, 0, size/2]}  rotation="0 0 0"   size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></i-node>
-                <i-node id="cube-face2" style={{...s.cubeSide, ...s.back}}   position={[0, 0, -size/2]} rotation="0 180 0" size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></i-node>
-                <i-node id="cube-face3" style={{...s.cubeSide, ...s.left}}   position={[-size/2, 0, 0]} rotation="0 -90 0" size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></i-node>
-                <i-node id="cube-face4" style={{...s.cubeSide, ...s.right}}  position={[size/2, 0, 0]}  rotation="0 90 0"  size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></i-node>
-                <i-node id="cube-face5" style={{...s.cubeSide, ...s.top}}    position={[0, -size/2, 0]} rotation="-90 0 0" size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></i-node>
-                <i-node id="cube-face6" style={{...s.cubeSide, ...s.bottom}} position={[0, size/2, 0]}  rotation="90 0 0"  size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></i-node>
-            </i-node>
+            <lume-node id="cube-node" ref="cubeContainer" {...props}>
+                <lume-node id="cube-face1" style={{...s.cubeSide, ...s.front}}  position={[0, 0, size/2]}  rotation="0 0 0"   size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></lume-node>
+                <lume-node id="cube-face2" style={{...s.cubeSide, ...s.back}}   position={[0, 0, -size/2]} rotation="0 180 0" size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></lume-node>
+                <lume-node id="cube-face3" style={{...s.cubeSide, ...s.left}}   position={[-size/2, 0, 0]} rotation="0 -90 0" size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></lume-node>
+                <lume-node id="cube-face4" style={{...s.cubeSide, ...s.right}}  position={[size/2, 0, 0]}  rotation="0 90 0"  size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></lume-node>
+                <lume-node id="cube-face5" style={{...s.cubeSide, ...s.top}}    position={[0, -size/2, 0]} rotation="-90 0 0" size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></lume-node>
+                <lume-node id="cube-face6" style={{...s.cubeSide, ...s.bottom}} position={[0, size/2, 0]}  rotation="90 0 0"  size={[size, size, 0]} mount-point="0.5 0.5" align="0.5 0.5"></lume-node>
+            </lume-node>
         )
 	}
 

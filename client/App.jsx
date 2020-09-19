@@ -141,11 +141,11 @@ export class App extends React.Component {
 	}
 
 	render = () => (
-		<i-scene ref="scene" style={s.scene}>
-			<i-node size-mode="proportional proportional" size="1 1 0">
-				<i-scene style={s.style}>
-					<i-node size-mode="proportional proportional" size="1 1 0">
-						<i-node
+		<lume-scene ref="scene" style={s.scene}>
+			<lume-node size-mode="proportional proportional" size="1 1 0">
+				<lume-scene style={s.style}>
+					<lume-node size-mode="proportional proportional" size="1 1 0">
+						<lume-node
 							style={{
 								...s.headerBar,
 								...{pointerEvents: this.mobile ? 'none' : 'auto'},
@@ -157,9 +157,9 @@ export class App extends React.Component {
 								<img src="/images/logo.svg" style={s.logo} />
 								{this.mobile ? null : <MenuLinks />}
 							</div>
-						</i-node>
+						</lume-node>
 
-						<i-node
+						<lume-node
 							ref="rotator"
 							style={s.rotator}
 							align="0.5 0.5"
@@ -167,7 +167,7 @@ export class App extends React.Component {
 							size-mode="proportional proportional"
 							size="1 1"
 						>
-							<i-node
+							<lume-node
 								size-mode="proportional proportional"
 								size={this.viewIsTall ? '0 0.7 0' : '0.5 0 0'}
 								mount-point="0.5 0.5"
@@ -189,7 +189,7 @@ export class App extends React.Component {
 										objectFit: 'fill',
 									}}
 								/>
-							</i-node>
+							</lume-node>
 
 							<Cube
 								containerRef={this.containerRef}
@@ -198,15 +198,15 @@ export class App extends React.Component {
 								position={[0, 0, -this.cubeSize]}
 								rotation="45 45 45"
 							/>
-						</i-node>
-					</i-node>
-				</i-scene>
+						</lume-node>
+					</lume-node>
+				</lume-scene>
 
-				{/* {this.mobile ? null : <i-node ref="circle" style={s.circle} mount-point="0.5 0.5" size="200 200" />} */}
+				{/* {this.mobile ? null : <lume-node ref="circle" style={s.circle} mount-point="0.5 0.5" size="200 200" />} */}
 
 				{this.mobile ? (
-					<i-node size-mode="proportional proportional" size="1 1 0" style={{pointerEvents: 'none'}}>
-						<i-node
+					<lume-node size-mode="proportional proportional" size="1 1 0" style={{pointerEvents: 'none'}}>
+						<lume-node
 							ref="menu"
 							style={s.mobileMenu}
 							size-mode="proportional proportional"
@@ -215,9 +215,9 @@ export class App extends React.Component {
 							opacity="0.97"
 						>
 							<MenuLinks isMobile={true} />
-						</i-node>
+						</lume-node>
 
-						<i-node
+						<lume-node
 							style={s.menuButton}
 							size="140 100"
 							align="1 0"
@@ -234,11 +234,11 @@ export class App extends React.Component {
 								lineThickness={2.5}
 								lineLength={0.7}
 							/>
-						</i-node>
-					</i-node>
+						</lume-node>
+					</lume-node>
 				) : null}
-			</i-node>
-		</i-scene>
+			</lume-node>
+		</lume-scene>
 	)
 }
 
@@ -276,29 +276,29 @@ class MenuButton extends React.Component {
 	}
 
 	render = () => (
-		<i-node size={[this.props.width, this.props.height]} {...this.props}>
-			<i-node
+		<lume-node size={[this.props.width, this.props.height]} {...this.props}>
+			<lume-node
 				style={s.menuButtonLine}
 				size-mode="proportional literal"
 				size={[this.props.lineLength, this.props.lineThickness]}
 				align="1 0"
 				mount-point="1 0"
-			></i-node>
-			<i-node
+			></lume-node>
+			<lume-node
 				style={s.menuButtonLine}
 				size-mode="proportional literal"
 				size={[this.props.lineLength, this.props.lineThickness]}
 				align="0 0.5"
 				mount-point="0 0.5"
-			></i-node>
-			<i-node
+			></lume-node>
+			<lume-node
 				style={s.menuButtonLine}
 				size-mode="proportional literal"
 				size={[this.props.lineLength, this.props.lineThickness]}
 				align="1 1"
 				mount-point="1 1"
-			></i-node>
-		</i-node>
+			></lume-node>
+		</lume-node>
 	)
 }
 
