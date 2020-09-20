@@ -97,25 +97,25 @@ export class App extends React.Component {
 			// TODO use offsetX/Y so we get events relative to `currentTarget`,
 			// and make an abstraction so that the offsets can be calculated
 			// from event.target instead of event.currentTarget, otherwise the
-			// behavior is strange. ...
+			// behavior is strange when trying to use mouse values relative to
+			// an element instead of relative to the viewport. ...
 			// const rotationAmountX = (event.offsetY / size.y) * rotationRange - rotationRange / 2
 			// const rotationAmountY = (event.offsetX / size.x) * rotationRange - rotationRange / 2
 
 			// ... For now just use clientX/Y. ...
-			const rotationAmountX = (event.clientY / size.y) * rotationRange - rotationRange / 2
+			const rotationAmountX = -((event.clientY / size.y) * rotationRange - rotationRange / 2)
 			const rotationAmountY = (event.clientX / size.x) * rotationRange - rotationRange / 2
 
 			// ... See https://discourse.wicg.io/t/4236 for discussion
 
+			// Shorthands: set xyz values with an object,...
 			rotator.rotation = {
 				x: rotationAmountX * 0.5,
 				y: rotationAmountY * 0.5,
 			}
 
-			rotator.position = {
-				x: rotationAmountY,
-				y: rotationAmountX,
-			}
+			// ...or with an array.
+			rotator.position = [rotationAmountY, rotationAmountX]
 
 			const circle = this.refs.circle
 			if (!circle) return
