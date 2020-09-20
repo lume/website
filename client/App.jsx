@@ -141,7 +141,7 @@ export class App extends React.Component {
 	}
 
 	render = () => (
-		<lume-scene ref="scene" style={s.scene}>
+		<lume-scene ref="scene" style={s.scene} touch-action="none">
 			<lume-node size-mode="proportional proportional" size="1 1 0">
 				<lume-scene style={s.style}>
 					<lume-node size-mode="proportional proportional" size="1 1 0">
