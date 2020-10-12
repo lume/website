@@ -1,5 +1,3 @@
-import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import '../imports/routes'
 import {useDefaultNames} from 'lume'
 import {App} from './App'
@@ -33,5 +31,6 @@ function main() {
 	root.id = 'root' // needed for styling
 	document.body.append(root)
 
-	ReactDOM.render(<App />, root)
+	root.append(new App())
+	// ReactDOM.render(<App />, root)
 }
