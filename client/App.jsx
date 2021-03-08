@@ -1,94 +1,148 @@
-import * as React from 'react'
-import {Motor} from 'lume'
-import TWEEN from '@tweenjs/tween.js'
-import {Cube} from './Cube'
+import {
+	Motor,
+	Element,
+	reactive,
+	element,
+	Show,
+	Node,
+	numberAttribute,
+	booleanAttribute,
+	rotation,
+	position,
+	autorun,
+} from 'lume'
+import {Tween, Easing} from '@tweenjs/tween.js'
 
 const MENU_WIDTH = 0.8 // percent of viewport
+const HEADER_HEIGHT = 100
 
-export class App extends React.Component {
-	state = {
-		cubeRotation: 0,
-		menuPosition: 0,
-	}
+@element('app-root')
+export class App extends Element {
+	root = this
 
-	containerRef = cubeNode => {
-		Motor.addRenderTask(t => {
-			cubeNode.rotation.y += 0.25
-		})
-	}
+	/** @type {import('./Cube').LandingCube=} */
+	cubeNode
+
+	/** @type {Node=} */
+	menu
+
+	/** @type {import('lume').Scene=} */
+	scene
+
+	/** @type {Node=} */
+	rotator
+
+	/** @type {Node=} */
+	circle
+
+	/** @type {Node=} */
+	@reactive menuButtonWrapper
 
 	// TODO make option for Tween to remember last value instead of starting
 	// from the beginning. It would simplify the Tween code a lot. See
 	// https://github.com/tweenjs/tween.js/issues/522
 
 	makeOpenTween() {
-		this.openTween = new TWEEN.Tween({menuPosition: (this.refs.menu && this.refs.menu.align.x) || 1})
-			.onComplete(() => this.openTween.stop())
-			.onUpdate(obj => (this.refs.menu.align.x = obj.menuPosition))
-			.easing(TWEEN.Easing.Exponential.Out)
+		this.openTween = new Tween({menuPosition: this.menu?.align.x || 1})
+			.onComplete(() => this.openTween?.stop())
+			.onUpdate(obj => this.menu && (this.menu.align.x = obj.menuPosition))
+			.easing(Easing.Exponential.Out)
 	}
 
 	makeCloseTween() {
-		this.closeTween = new TWEEN.Tween({
-			menuPosition: (this.refs.menu && this.refs.menu.align.x) || 1 - MENU_WIDTH,
+		this.closeTween = new Tween({
+			menuPosition: this.menu?.align.x || 1 - MENU_WIDTH,
 		})
-			.onComplete(() => this.closeTween.stop())
-			.onUpdate(obj => (this.refs.menu.align.x = obj.menuPosition))
-			.easing(TWEEN.Easing.Exponential.Out)
+			.onComplete(() => this.closeTween?.stop())
+			.onUpdate(obj => this.menu && (this.menu.align.x = obj.menuPosition))
+			.easing(Easing.Exponential.Out)
 	}
 
+	/** @type {Tween<{menuPosition: number}> | null} */
 	openTween = null
-	closeTween = null
-	menuOpen = false
 
-	openMenu = () => {
+	/** @type {Tween<{menuPosition: number}> | null} */
+	closeTween = null
+
+	@reactive menuOpen = false
+
+	openMenu() {
 		if (this.menuOpen) return
 		this.menuOpen = true
 
-		if (this.closeTween && this.closeTween.isPlaying()) this.closeTween.stop()
+		if (this.closeTween?.isPlaying()) this.closeTween.stop()
 
 		this.makeOpenTween()
-		this.openTween.to({menuPosition: 1 - MENU_WIDTH}, 800).start()
-		this.tweenLoop()
+		// TODO Tween.start() time arg should be optional.
+		// XXX this.openTween exists here! Optional chaining operator is needed to satisfy type system
+		this.openTween?.to({menuPosition: 1 - MENU_WIDTH}, 800).start(performance.now())
+		this.possiblyStartTweenLoop()
 	}
 
-	closeMenu = () => {
+	closeMenu() {
 		if (!this.menuOpen) return
 		this.menuOpen = false
 
-		if (this.openTween && this.openTween.isPlaying()) this.openTween.stop()
+		if (this.openTween?.isPlaying()) this.openTween.stop()
 
 		this.makeCloseTween()
-		this.closeTween.to({menuPosition: 1}, 800).start()
-		this.tweenLoop()
+		// XXX this.closeTween exists here! Optional chaining operator is needed to satisfy type system
+		this.closeTween?.to({menuPosition: 1}, 800).start(performance.now())
+		this.possiblyStartTweenLoop()
 	}
 
 	toggleMenu = () => (this.menuOpen ? this.closeMenu() : this.openMenu())
 
-	tweenTask = null
+	/** @type {import('lume').RenderTask | false} */
+	tweenTask = false
 
-	tweenLoop() {
+	possiblyStartTweenLoop() {
 		if (this.tweenTask) return
 
 		this.tweenTask = Motor.addRenderTask(t => {
-			if (this.openTween && this.openTween.isPlaying()) this.openTween.update(t)
-			else if (this.closeTween && this.closeTween.isPlaying()) this.closeTween.update(t)
+			if (this.openTween?.isPlaying()) this.openTween.update(t)
+			else if (this.closeTween?.isPlaying()) this.closeTween.update(t)
 			else return (this.tweenTask = false)
+			return
 		})
 	}
 
-	componentDidMount() {
-		const scene = this.refs.scene
-		const rotator = this.refs.rotator
+	@reactive viewWidth = 0
+	@reactive viewHeight = 0
 
-		const resize = _.debounce(_e => {
-			console.log('is mobile: ', this.viewWidth <= 1200 ? 1 : 0)
-			document.body.style.setProperty('--mobile', '' + (this.viewWidth <= 1200 ? 1 : 0))
-			this.forceUpdate()
-		}, 100)
+	get isMobile() {
+		return this.viewWidth <= 1200
+	}
+	get cubeSize() {
+		return this.viewIsTall ? 0.65 * this.viewWidth : 0.5 * this.viewHeight
+	}
+	get viewIsTall() {
+		return this.viewHeight >= this.viewWidth
+	}
 
-		window.addEventListener('resize', resize)
-		resize()
+	connectedCallback() {
+		super.connectedCallback()
+
+		const {scene, rotator, cubeNode} = this
+
+		autorun(() => {
+			// TODO assigning to onclick works here, but it doesn't work in the
+			// onclick JSX prop in the template. Does it work with new Solid.js?
+			// @ts-ignore
+			this.menuButtonWrapper.onclick = () => {
+				console.log('CLICK 2!')
+				this.toggleMenu()
+			}
+		})
+
+		if (!scene || !rotator || !cubeNode) throw 'They must exist.'
+
+		Motor.addRenderTask(_t => {
+			cubeNode.rotation.y += 0.25
+		})
+
+		window.addEventListener('resize', this.resize)
+		this.resize()
 
 		scene.addEventListener('pointermove', event => {
 			const size = scene.calculatedSize
@@ -109,59 +163,66 @@ export class App extends React.Component {
 			// ... See https://discourse.wicg.io/t/4236 for discussion
 
 			// Shorthands: set xyz values with an object,...
-			rotator.rotation = {
+			rotator.rotation = rotation({
 				x: rotationAmountX * 0.5,
 				y: rotationAmountY * 0.5,
-			}
+			})
 
 			// ...or with an array.
-			rotator.position = [rotationAmountY, rotationAmountX]
+			rotator.position = position([rotationAmountY, rotationAmountX])
 
-			const circle = this.refs.circle
+			const circle = this.circle
 			if (!circle) return
 			circle.position.x = event.clientX
 			circle.position.y = event.clientY
 		})
 	}
 
-	get viewWidth() {
-		return window.innerWidth
-	}
-	get viewHeight() {
-		return window.innerHeight
-	}
-	get mobile() {
-		return this.viewWidth <= 1200
-	}
-	get cubeSize() {
-		return this.viewIsTall ? 0.65 * this.viewWidth : 0.5 * this.viewHeight
-	}
-	get viewIsTall() {
-		return this.viewHeight >= this.viewWidth
+	resize = (/** @type {UIEvent} */ _e) => {
+		this.viewWidth = window.innerWidth
+		this.viewHeight = window.innerHeight
 	}
 
-	render = () => (
-		<lume-scene ref="scene" style={s.scene} touch-action="none">
+	template = () => (
+		<lume-scene ref={this.scene} class="scene" touch-action="none">
 			<lume-node size-mode="proportional proportional" size="1 1 0">
-				<lume-scene style={s.style}>
+				<lume-scene perspective="800" id="innerScene" webgl={false}>
+					<lume-ambient-light color="white" intensity="0.8"></lume-ambient-light>
 					<lume-node size-mode="proportional proportional" size="1 1 0">
 						<lume-node
-							style={{
-								...s.headerBar,
-								...{pointerEvents: this.mobile ? 'none' : 'auto'},
-							}}
+							class="headerBar"
+							//
+
+							// TODO
+							// This causes the header to lose LUME styling (it
+							// clashes somehow with LUME's manual setting of the
+							// style attribute):
+							//
+							//style={'pointerEvents: ' + this.isMobile ? 'none' : 'auto'}
+							//
+							// But this allows the header's LUME styling to work properly:
+							//
+							style={{pointerEvents: this.isMobile ? 'none' : 'auto'}}
+							//
+							// In either case, the pointer-events style is still not applied.
+							//
+							// Do we still have the same issue with latest Solid.js?
+
+							//
 							size-mode="proportional literal"
-							size={[1, this.mobile ? 100 : 100, 0]}
+							size={[1, HEADER_HEIGHT, 0]}
 						>
-							<div style={s.headerBarInner}>
-								<img src="/images/logo.svg" style={s.logo} />
-								{this.mobile ? null : <MenuLinks />}
+							<div class="headerBarInner">
+								<img src="/images/logo.svg" class="logo" />
+								<Show when={!this.isMobile}>
+									<menu-links />
+								</Show>
 							</div>
 						</lume-node>
 
 						<lume-node
-							ref="rotator"
-							style={s.rotator}
+							ref={this.rotator}
+							class="rotator"
 							align="0.5 0.5"
 							mount-point="0.5 0.5"
 							size-mode="proportional proportional"
@@ -174,27 +235,32 @@ export class App extends React.Component {
 								align="0.5 0.5"
 							>
 								<img
-									src={'/images/logo-wordmark' + (this.viewIsTall ? '-vertical' : '') + '.svg'}
-									style={{
-										transform: this.viewIsTall ? 'translateX(-50%)' : 'translateY(-50%)',
-										...(this.viewIsTall
-											? {
-													width: 'auto',
-													height: '100%',
-											  }
-											: {
-													width: '100%',
-													height: 'auto',
-											  }),
-										objectFit: 'fill',
-									}}
+									src={'/images/logo-wordmark.svg'}
+									style={`
+                                        display: ${this.viewIsTall ? 'none' : 'initial'};
+										transform: translateY(-50%);
+										object-fit: fill;
+                                        width: 100%;
+                                        height: auto;
+									`}
+								/>
+								<img
+									src={'/images/logo-wordmark-vertical.svg'}
+									style={`
+                                        display: ${this.viewIsTall ? 'initial' : 'none'};
+										transform: translateX(-50%);
+										object-fit: fill;
+                                        width: auto;
+                                        height: 100%;
+									`}
 								/>
 							</lume-node>
 
-							<Cube
-								containerRef={this.containerRef}
+							<landing-cube
+								ref={this.cubeNode}
 								size={this.cubeSize}
-								align="0.5 0.5"
+								align="0.5 0.5 0.5"
+								mount-point="0.5 0.5 0.5"
 								position={[0, 0, -this.cubeSize]}
 								rotation="45 45 45"
 							/>
@@ -202,177 +268,240 @@ export class App extends React.Component {
 					</lume-node>
 				</lume-scene>
 
-				{/* {this.mobile ? null : <lume-node ref="circle" style={s.circle} mount-point="0.5 0.5" size="200 200" />} */}
+				{/* <Show when={!this.isMobile}>
+					<lume-node ref={this.circle} class="circle" mount-point="0.5 0.5" size="200 200" />
+				</Show> */}
 
-				{this.mobile ? (
-					<lume-node size-mode="proportional proportional" size="1 1 0" style={{pointerEvents: 'none'}}>
+				<Show when={this.isMobile}>
+					<lume-node class="mobileNav" size-mode="proportional proportional" size="1 1 0">
 						<lume-node
-							ref="menu"
-							style={s.mobileMenu}
+							ref={this.menu}
+							class="mobileMenu"
 							size-mode="proportional proportional"
 							size={[MENU_WIDTH, 1]}
 							align="1 0" // start closed position
 							opacity="0.97"
 						>
-							<MenuLinks isMobile={true} />
+							<menu-links is-mobile={true} />
 						</lume-node>
 
 						<lume-node
-							style={s.menuButton}
+							class="menuButtonWrapper"
+							ref={this.menuButtonWrapper}
 							size="140 100"
 							align="1 0"
 							position="0 0"
 							mount-point="1 0"
-							onClick={this.toggleMenu}
+							onclick={() => {
+								console.log('CLICK 1!')
+								this.toggleMenu()
+							}}
 						>
-							<MenuButton
-								width={40}
-								height={19}
+							<hamburger-button
+								size="40 19"
 								align="0.5 0.5"
 								mount-point="0.5 0.5"
 								position="0 0"
-								lineThickness={2.5}
-								lineLength={0.7}
+								line-thickness={2.5}
+								line-length={0.7}
+								activated={this.menuOpen}
 							/>
 						</lume-node>
 					</lume-node>
-				) : null}
+				</Show>
 			</lume-node>
 		</lume-scene>
 	)
+
+	css = /*css*/ `
+        :host {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .scene {
+            touch-action: none;
+        }
+
+        .headerBar {
+            pointer-events: none;
+        }
+
+        .headerBarInner {
+            display: flex;
+            height: 100%;
+            align-items: center;
+            padding-left: 60px;
+            padding-right: 60px;
+        }
+
+        .mobileNav {
+            pointer-events: none
+        }
+
+        menu-links {
+            pointer-events: auto;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            object-fit: fill;
+
+            /* push everything else to the right side of the header */
+            margin-right: auto;
+        }
+
+        .rotator {
+            pointer-events: none;
+        }
+
+        .circle {
+            background: rgba(0, 25, 93, 0.3);
+            backdrop-filter: blur(14px) brightness(130%);
+            border-radius: 100%;
+        }
+
+        .mobileMenu {
+            background: rgba(0, 25, 93, 0.3);
+            backdrop-filter: blur(14px) brightness(130%);
+            pointer-events: auto;
+        }
+
+		.menuButtonWrapper {
+			pointer-events: auto;
+		}
+    `
 }
 
-class MenuLinks extends React.Component {
-	render = () => (
-		<div
-			style={{
-				...s.menuLinks,
-				...(this.props.isMobile && s.menuLinksMobile),
-			}}
-		>
-			<a style={s.menuLink} href="/docs">
+@element('menu-links')
+export class MenuLinks extends Element {
+	@reactive @booleanAttribute(false) isMobile = false
+
+	/** @type {HTMLDivElement =} */
+	menuLinks
+
+	template = () => (
+		<div class={`menuLinks${this.isMobile ? ' menuLinksMobile' : ''}`} ref={this.menuLinks}>
+			<a class="menuLink" href="/docs">
 				Documentation
 			</a>
-			<a style={s.menuLink} href="/docs/#/examples/hello3d">
+			<a class="menuLink" href="/docs/#/examples/hello3d">
 				Examples
 			</a>
-			<a style={s.menuLink} href="//lume.community">
+			<a class="menuLink" href="//lume.community">
 				Forum
 			</a>
-			<a style={s.menuLink} href="//discord.gg/PgeyevP">
+			<a class="menuLink" href="//discord.gg/PgeyevP">
 				Chat
 			</a>
-			<a style={s.menuLink} href="//github.com/lume/lume">
+			<a class="menuLink" href="//github.com/lume/lume">
 				Source
 			</a>
 		</div>
 	)
+
+	css = /*css*/ `
+        :host {
+            display: contents;
+        }
+        
+        .menuLinks {
+            font-size: calc(
+                4vw * var(--isMobile) + 
+                14px * (1 - var(--isMobile))
+            );
+            padding-top: ${HEADER_HEIGHT}px;
+        }
+
+        .menuLinksMobile {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        .menuLink {
+            text-decoration: none;
+            text-transform: uppercase;
+            margin-left: calc(
+                0% * var(--isMobile) + 
+                40px * (1 - var(--isMobile))
+            );
+            margin-top: calc(
+                0px * var(--isMobile) + 
+                80px * (1 - var(--isMobile))
+            );
+            letter-spacing: 0.105em;
+            color: white;
+            padding-left: calc(
+                10% * var(--isMobile) + 
+                0px * (1 - var(--isMobile))
+            );
+            padding-top: calc(
+                4% * var(--isMobile) + 
+                0px * (1 - var(--isMobile))
+            );
+            padding-bottom: calc(
+                4% * var(--isMobile) + 
+                0px * (1 - var(--isMobile))
+            );
+        }
+    `
+
+	connectedCallback() {
+		super.connectedCallback()
+
+		autorun(() => {
+			this.menuLinks?.style.setProperty('--isMobile', '' + (this.isMobile ? 1 : 0))
+		})
+	}
 }
 
-class MenuButton extends React.Component {
-	static defaultProps = {
-		lineThickness: 2,
-		lineLength: 0.8,
-	}
+@element('hamburger-button')
+export class HamburgerButton extends Node {
+	@reactive @numberAttribute(2) lineThickness = 2
+	@reactive @numberAttribute(0.8) lineLength = 0.8
+	@reactive @booleanAttribute(false) activated = false
 
-	render = () => (
-		<lume-node size={[this.props.width, this.props.height]} {...this.props}>
+	root = this
+
+	template = () => (
+		<>
 			<lume-node
-				style={s.menuButtonLine}
+				class="menuButtonLine"
 				size-mode="proportional literal"
-				size={[this.props.lineLength, this.props.lineThickness]}
-				align="1 0"
-				mount-point="1 0"
+				size={[this.lineLength, this.lineThickness]}
+				align={this.activated ? '0.5 0.5' : '1 0'}
+				mount-point={this.activated ? '0.5 0.5' : '1 0'}
+				rotation={[0, 0, this.activated ? -45 : 0]}
 			></lume-node>
 			<lume-node
-				style={s.menuButtonLine}
+				classList={{menuButtonLine: true, hide: this.activated}}
 				size-mode="proportional literal"
-				size={[this.props.lineLength, this.props.lineThickness]}
+				size={[this.lineLength, this.lineThickness]}
 				align="0 0.5"
 				mount-point="0 0.5"
 			></lume-node>
 			<lume-node
-				style={s.menuButtonLine}
+				class="menuButtonLine"
 				size-mode="proportional literal"
-				size={[this.props.lineLength, this.props.lineThickness]}
-				align="1 1"
-				mount-point="1 1"
+				size={[this.lineLength, this.lineThickness]}
+				align={this.activated ? '0.5 0.5' : '1 1'}
+				mount-point={this.activated ? '0.5 0.5' : '1 1'}
+				rotation={[0, 0, this.activated ? 45 : 0]}
 			></lume-node>
-		</lume-node>
+		</>
 	)
+
+	css = /*css*/ `
+        .menuButtonLine {
+            background: white;
+        }
+
+        .hide {
+            display: none!important;
+        }
+    `
 }
-
-/** @type {{[k: string]: React.CSSProperties}} */
-const styles = {
-	scene: {
-		touchAction: 'none',
-		// position: 'absolute !important',
-	},
-	headerBar: {},
-	headerBarInner: {
-		display: 'flex',
-		height: '100%',
-		alignItems: 'center',
-		// paddingLeft: 112,
-		paddingLeft: 60,
-		paddingRight: 60,
-	},
-	logo: {
-		width: 50,
-		height: 50,
-		objectFit: 'fill',
-
-		// push everything else to the right side of the header
-		marginRight: 'auto',
-	},
-	rotator: {
-		pointerEvents: 'none',
-	},
-	menuButton: {
-		pointerEvents: 'auto',
-	},
-	menuButtonLine: {
-		background: 'white',
-	},
-	mobileMenu: {
-		background: 'rgba(0, 25, 93, 0.3)',
-		backdropFilter: 'blur(14px) brightness(130%)',
-		pointerEvents: 'auto',
-	},
-	menuLinks: {
-		fontSize: `calc(
-            30px * var(--mobile) + 
-            14px * (1 - var(--mobile))
-        )`,
-		paddingTop: 15,
-	},
-	menuLinksMobile: {
-		display: 'flex',
-		flexDirection: 'column',
-		width: '100%',
-		height: '100%',
-	},
-	menuLink: {
-		textTransform: 'uppercase',
-		marginLeft: `calc(
-            91px * var(--mobile) + 
-            40px * (1 - var(--mobile))
-        )`,
-		marginTop: `calc(
-            0px * var(--mobile) + 
-            80px * (1 - var(--mobile))
-        )`,
-		letterSpacing: '0.105em',
-		color: 'white',
-		transform: 'translateY(15px)',
-	},
-	circle: {
-		background: 'rgba(0, 25, 93, 0.3)',
-		backdropFilter: 'blur(14px) brightness(130%)',
-
-		borderRadius: '100%',
-	},
-}
-
-// alias for styles
-const s = styles
