@@ -419,7 +419,6 @@ export class MenuLinks extends Element {
                 4vw * var(--isMobile) + 
                 14px * (1 - var(--isMobile))
             );
-            padding-top: ${HEADER_HEIGHT}px;
         }
 
         .menuLinksMobile {
