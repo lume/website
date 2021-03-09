@@ -1,16 +1,6 @@
 /* @jsxImportSource @lume/element */
 
-import {
-	Motor,
-	Element,
-	reactive,
-	element,
-	Show,
-	Node,
-	numberAttribute,
-	booleanAttribute,
-	autorun,
-} from 'lume'
+import {Motor, Element, reactive, element, Show, Node, numberAttribute, booleanAttribute, autorun} from 'lume'
 import {Tween, Easing} from '@tweenjs/tween.js'
 
 const MENU_WIDTH = 0.8 // percent of viewport
@@ -18,12 +8,14 @@ const HEADER_HEIGHT = 100
 
 @element('app-root')
 export class App extends Element {
-	get root() { return this }
-    set root(_v) {}
-    
-    // Used in App.types.d.ts to denote no attributes. See TODO there.
-    /** @type {undefined=} */
-    _____
+	get root() {
+		return this
+	}
+	set root(_v) {}
+
+	// Used in App.types.d.ts to denote no attributes. See TODO there.
+	/** @type {undefined=} */
+	_____
 
 	/** @type {import('./Cube').LandingCube=} */
 	cubeNode
@@ -131,15 +123,14 @@ export class App extends Element {
 
 		const {scene, rotator, cubeNode} = this
 
-		// autorun(() => {
-		// 	// TODO assigning to onclick works here, but it doesn't work in the
-		// 	// onclick JSX prop in the template. Does it work with new Solid.js?
-		// 	// @ts-ignore
-		// 	this.menuButtonWrapper.onclick = () => {
-		// 		console.log('CLICK 2!')
-		// 		this.toggleMenu()
-		// 	}
-		// })
+		// TODO assigning to onclick works here, but it doesn't work in the
+		// onclick JSX prop in the template. Does it work with new Solid.js?
+		if (this.menuButtonWrapper) {
+			this.menuButtonWrapper.onclick = () => {
+				console.log('CLICK 2!')
+				this.toggleMenu()
+			}
+		}
 
 		if (!scene || !rotator || !cubeNode) throw 'They must exist.'
 
@@ -391,6 +382,8 @@ export class MenuLinks extends Element {
 
 	template = () => (
 		<div class={`menuLinks${this.isMobile ? ' menuLinksMobile' : ''}`} ref={this.menuLinks}>
+			<div data-comment="empty space"></div>
+			<div data-comment="empty space"></div>
 			<a class="menuLink" href="/docs">
 				Documentation
 			</a>
@@ -406,6 +399,8 @@ export class MenuLinks extends Element {
 			<a class="menuLink" href="//github.com/lume/lume">
 				Source
 			</a>
+			<div data-comment="empty space"></div>
+			<div data-comment="empty space"></div>
 		</div>
 	)
 
@@ -426,6 +421,7 @@ export class MenuLinks extends Element {
             flex-direction: column;
             width: 100%;
             height: 100%;
+            justify-content: space-around;
         }
 
         .menuLink {
@@ -471,8 +467,10 @@ export class HamburgerButton extends Node {
 	@numberAttribute(0.8) lineLength = 0.8
 	@booleanAttribute(false) activated = false
 
-	get root() { return this }
-    set root(_v) {}
+	get root() {
+		return this
+	}
+	set root(_v) {}
 
 	template = () => (
 		<>
