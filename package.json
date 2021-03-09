@@ -2,6 +2,7 @@
 	"name": "website",
 	"private": true,
 	"scripts": {
+		"start": "meteor",
 		"build": "echo 'nothing to build for website'",
 		"dev": "meteor",
 		"setup-website-service": "cd website && ./setup-service.sh",
