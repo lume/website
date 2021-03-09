@@ -6,6 +6,4 @@
 		["@babel/plugin-proposal-class-properties", {"loose": false}]
 	],
 	"presets": ["@lume/element/babel-preset.cjs"]
-	// "presets": [["solid", {"moduleName": "@lume/element"}]]
-	// "presets": [["solid", {"moduleName": "lume"}]]
 }

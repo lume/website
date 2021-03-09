@@ -1,23 +1,21 @@
-import type {LandingCube} from './Cube'
-import type {NodeAttributes} from './App.types'
+import type {LandingCube} from './Cube.js'
+import type {ElementAttributes} from '@lume/element'
+import type {BoxAttributes} from 'lume'
 
 //////////////////////////////////////////////////////////////////////////
-// @ts-ignore
-export interface CubeAttributes<El = Node> extends NodeAttributes<El> {
-	/** @override */
-	size?: number[] | {x?: number; y?: number; z?: number} | string | number
+
+type LandingCubeAttributes = BoxAttributes
+
+declare module '@lume/element' {
+	namespace JSX {
+		interface IntrinsicElements {
+			'landing-cube': ElementAttributes<LandingCube, LandingCubeAttributes>
+		}
+	}
 }
 
 declare global {
 	interface HTMLElementTagNameMap {
 		'landing-cube': LandingCube
-	}
-}
-
-declare global {
-	namespace JSX {
-		interface IntrinsicElements {
-			'landing-cube': CubeAttributes
-		}
 	}
 }

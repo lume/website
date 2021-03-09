@@ -1,3 +1,5 @@
+/* @jsxImportSource @lume/element */
+
 import {
 	Motor,
 	Element,
@@ -7,8 +9,6 @@ import {
 	Node,
 	numberAttribute,
 	booleanAttribute,
-	rotation,
-	position,
 	autorun,
 } from 'lume'
 import {Tween, Easing} from '@tweenjs/tween.js'
@@ -18,7 +18,12 @@ const HEADER_HEIGHT = 100
 
 @element('app-root')
 export class App extends Element {
-	root = this
+	get root() { return this }
+    set root(_v) {}
+    
+    // Used in App.types.d.ts to denote no attributes. See TODO there.
+    /** @type {undefined=} */
+    _____
 
 	/** @type {import('./Cube').LandingCube=} */
 	cubeNode
@@ -36,25 +41,26 @@ export class App extends Element {
 	circle
 
 	/** @type {Node=} */
-	@reactive menuButtonWrapper
+	// @reactive menuButtonWrapper
+	menuButtonWrapper
 
 	// TODO make option for Tween to remember last value instead of starting
 	// from the beginning. It would simplify the Tween code a lot. See
 	// https://github.com/tweenjs/tween.js/issues/522
 
 	makeOpenTween() {
-		this.openTween = new Tween({menuPosition: this.menu?.align.x || 1})
+		this.openTween = new Tween({menuPosition: this.menu?.getAlignPoint().x || 1})
 			.onComplete(() => this.openTween?.stop())
-			.onUpdate(obj => this.menu && (this.menu.align.x = obj.menuPosition))
+			.onUpdate(obj => this.menu && (this.menu.getAlignPoint().x = obj.menuPosition))
 			.easing(Easing.Exponential.Out)
 	}
 
 	makeCloseTween() {
 		this.closeTween = new Tween({
-			menuPosition: this.menu?.align.x || 1 - MENU_WIDTH,
+			menuPosition: this.menu?.getAlignPoint().x || 1 - MENU_WIDTH,
 		})
 			.onComplete(() => this.closeTween?.stop())
-			.onUpdate(obj => this.menu && (this.menu.align.x = obj.menuPosition))
+			.onUpdate(obj => this.menu && (this.menu.getAlignPoint().x = obj.menuPosition))
 			.easing(Easing.Exponential.Out)
 	}
 
@@ -125,20 +131,20 @@ export class App extends Element {
 
 		const {scene, rotator, cubeNode} = this
 
-		autorun(() => {
-			// TODO assigning to onclick works here, but it doesn't work in the
-			// onclick JSX prop in the template. Does it work with new Solid.js?
-			// @ts-ignore
-			this.menuButtonWrapper.onclick = () => {
-				console.log('CLICK 2!')
-				this.toggleMenu()
-			}
-		})
+		// autorun(() => {
+		// 	// TODO assigning to onclick works here, but it doesn't work in the
+		// 	// onclick JSX prop in the template. Does it work with new Solid.js?
+		// 	// @ts-ignore
+		// 	this.menuButtonWrapper.onclick = () => {
+		// 		console.log('CLICK 2!')
+		// 		this.toggleMenu()
+		// 	}
+		// })
 
 		if (!scene || !rotator || !cubeNode) throw 'They must exist.'
 
 		Motor.addRenderTask(_t => {
-			cubeNode.rotation.y += 0.25
+			cubeNode.getRotation().y += 0.25
 		})
 
 		window.addEventListener('resize', this.resize)
@@ -163,18 +169,18 @@ export class App extends Element {
 			// ... See https://discourse.wicg.io/t/4236 for discussion
 
 			// Shorthands: set xyz values with an object,...
-			rotator.rotation = rotation({
+			rotator.rotation = {
 				x: rotationAmountX * 0.5,
 				y: rotationAmountY * 0.5,
-			})
+			}
 
 			// ...or with an array.
-			rotator.position = position([rotationAmountY, rotationAmountX])
+			rotator.position = [rotationAmountY, rotationAmountX]
 
 			const circle = this.circle
 			if (!circle) return
-			circle.position.x = event.clientX
-			circle.position.y = event.clientY
+			circle.getPosition().x = event.clientX
+			circle.getPosition().y = event.clientY
 		})
 	}
 
@@ -223,7 +229,7 @@ export class App extends Element {
 						<lume-node
 							ref={this.rotator}
 							class="rotator"
-							align="0.5 0.5"
+							align-point="0.5 0.5"
 							mount-point="0.5 0.5"
 							size-mode="proportional proportional"
 							size="1 1"
@@ -232,7 +238,7 @@ export class App extends Element {
 								size-mode="proportional proportional"
 								size={this.viewIsTall ? '0 0.7 0' : '0.5 0 0'}
 								mount-point="0.5 0.5"
-								align="0.5 0.5"
+								align-point="0.5 0.5"
 							>
 								<img
 									src={'/images/logo-wordmark.svg'}
@@ -258,8 +264,9 @@ export class App extends Element {
 
 							<landing-cube
 								ref={this.cubeNode}
-								size={this.cubeSize}
-								align="0.5 0.5 0.5"
+								// size={this.cubeSize} // TODO how to make a single-number value type check
+								size={[this.cubeSize]}
+								align-point="0.5 0.5 0.5"
 								mount-point="0.5 0.5 0.5"
 								position={[0, 0, -this.cubeSize]}
 								rotation="45 45 45"
@@ -279,7 +286,7 @@ export class App extends Element {
 							class="mobileMenu"
 							size-mode="proportional proportional"
 							size={[MENU_WIDTH, 1]}
-							align="1 0" // start closed position
+							align-point="1 0" // start closed position
 							opacity="0.97"
 						>
 							<menu-links is-mobile={true} />
@@ -289,17 +296,17 @@ export class App extends Element {
 							class="menuButtonWrapper"
 							ref={this.menuButtonWrapper}
 							size="140 100"
-							align="1 0"
+							align-point="1 0"
 							position="0 0"
 							mount-point="1 0"
-							onclick={() => {
+							onClick={() => {
 								console.log('CLICK 1!')
 								this.toggleMenu()
 							}}
 						>
 							<hamburger-button
 								size="40 19"
-								align="0.5 0.5"
+								align-point="0.5 0.5"
 								mount-point="0.5 0.5"
 								position="0 0"
 								line-thickness={2.5}
@@ -377,7 +384,7 @@ export class App extends Element {
 
 @element('menu-links')
 export class MenuLinks extends Element {
-	@reactive @booleanAttribute(false) isMobile = false
+	@booleanAttribute(false) isMobile = false
 
 	/** @type {HTMLDivElement =} */
 	menuLinks
@@ -461,11 +468,12 @@ export class MenuLinks extends Element {
 
 @element('hamburger-button')
 export class HamburgerButton extends Node {
-	@reactive @numberAttribute(2) lineThickness = 2
-	@reactive @numberAttribute(0.8) lineLength = 0.8
-	@reactive @booleanAttribute(false) activated = false
+	@numberAttribute(2) lineThickness = 2
+	@numberAttribute(0.8) lineLength = 0.8
+	@booleanAttribute(false) activated = false
 
-	root = this
+	get root() { return this }
+    set root(_v) {}
 
 	template = () => (
 		<>
@@ -473,7 +481,7 @@ export class HamburgerButton extends Node {
 				class="menuButtonLine"
 				size-mode="proportional literal"
 				size={[this.lineLength, this.lineThickness]}
-				align={this.activated ? '0.5 0.5' : '1 0'}
+				align-point={this.activated ? '0.5 0.5' : '1 0'}
 				mount-point={this.activated ? '0.5 0.5' : '1 0'}
 				rotation={[0, 0, this.activated ? -45 : 0]}
 			></lume-node>
@@ -481,14 +489,14 @@ export class HamburgerButton extends Node {
 				classList={{menuButtonLine: true, hide: this.activated}}
 				size-mode="proportional literal"
 				size={[this.lineLength, this.lineThickness]}
-				align="0 0.5"
+				align-point="0 0.5"
 				mount-point="0 0.5"
 			></lume-node>
 			<lume-node
 				class="menuButtonLine"
 				size-mode="proportional literal"
 				size={[this.lineLength, this.lineThickness]}
-				align={this.activated ? '0.5 0.5' : '1 1'}
+				align-point={this.activated ? '0.5 0.5' : '1 1'}
 				mount-point={this.activated ? '0.5 0.5' : '1 1'}
 				rotation={[0, 0, this.activated ? 45 : 0]}
 			></lume-node>

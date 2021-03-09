@@ -10,6 +10,7 @@ Tracker.autorun(() => {
 })
 
 // TODO move some demos to LUME examples.
+// NOTE, we were previously displaying these demos on the old Infamous landing page.
 const demos = _.shuffle([
 	//'//trusktr.io/clobe', // JSS broken, FIXME
 	//'//jsfiddle.net/trusktr/ymonmo70/15/embedded/result,js,html,css', // DOM car, FIXME in firefox
