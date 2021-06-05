@@ -387,7 +387,7 @@ export class MenuLinks extends Element {
 			<a class="menuLink" href="/docs">
 				Documentation
 			</a>
-			<a class="menuLink" href="/docs/#/examples/hello3d">
+			<a class="menuLink" href="/docs/#/examples/hello-world/">
 				Examples
 			</a>
 			<a class="menuLink" href="//lume.community">
@@ -408,10 +408,10 @@ export class MenuLinks extends Element {
         :host {
             display: contents;
         }
-        
+
         .menuLinks {
             font-size: calc(
-                4vw * var(--isMobile) + 
+                4vw * var(--isMobile) +
                 14px * (1 - var(--isMobile))
             );
         }
@@ -428,25 +428,25 @@ export class MenuLinks extends Element {
             text-decoration: none;
             text-transform: uppercase;
             margin-left: calc(
-                0% * var(--isMobile) + 
+                0% * var(--isMobile) +
                 40px * (1 - var(--isMobile))
             );
             margin-top: calc(
-                0px * var(--isMobile) + 
+                0px * var(--isMobile) +
                 80px * (1 - var(--isMobile))
             );
             letter-spacing: 0.105em;
             color: white;
             padding-left: calc(
-                10% * var(--isMobile) + 
+                10% * var(--isMobile) +
                 0px * (1 - var(--isMobile))
             );
             padding-top: calc(
-                4% * var(--isMobile) + 
+                4% * var(--isMobile) +
                 0px * (1 - var(--isMobile))
             );
             padding-bottom: calc(
-                4% * var(--isMobile) + 
+                4% * var(--isMobile) +
                 0px * (1 - var(--isMobile))
             );
         }
