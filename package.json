@@ -2,7 +2,7 @@
 	"name": "website",
 	"private": true,
 	"scripts": {
-		"start": "npm run _meteor",
+		"start": "npm run _meteor -- -p 8765",
 		"build": "echo 'nothing to build for website'",
 		"dev": "npm run _meteor",
 		"_meteor": "meteor --exclude-archs web.browser.legacy",
