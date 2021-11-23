@@ -1,3 +1,5 @@
+# Systemd service for the main site on the Arch Linux server.
+
 [Unit]
 Description=lume.io
 After=network.target
