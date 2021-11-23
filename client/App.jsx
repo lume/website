@@ -1,6 +1,6 @@
 /* @jsxImportSource @lume/element */
 
-import {Motor, Element, reactive, element, Show, Node, numberAttribute, booleanAttribute, autorun} from 'lume'
+import {Motor, Element, reactive, element, Show, Node, numberAttribute, booleanAttribute, autorun, THREE} from 'lume'
 import {Tween, Easing} from '@tweenjs/tween.js'
 
 const MENU_WIDTH = 0.8 // percent of viewport
@@ -28,6 +28,9 @@ export class App extends Element {
 
 	/** @type {Node=} */
 	rotator
+
+	/** @type {Node=} */
+	wordmarkContainer
 
 	/** @type {Node=} */
 	circle
@@ -134,45 +137,64 @@ export class App extends Element {
 
 		if (!scene || !rotator || !cubeNode) throw 'They must exist.'
 
-		Motor.addRenderTask(_t => {
-			cubeNode.getRotation().y += 0.25
-		})
+		Motor.addRenderTask((_t, dt) => (cubeNode.rotation.y += dt / 50))
 
 		window.addEventListener('resize', this.resize)
 		this.resize()
 
-		scene.addEventListener('pointermove', event => {
+		///// ROTATION ON POINTER MOVE ///////////////////////////////////////////////
+
+		const rotationRange = 10
+		const targetRotation = {
+			x: 0,
+			y: 0,
+		}
+
+		const setTargetRotation = event => {
 			const size = scene.calculatedSize
-			const rotationRange = 30
 
 			// TODO use offsetX/Y so we get events relative to `currentTarget`,
 			// and make an abstraction so that the offsets can be calculated
 			// from event.target instead of event.currentTarget, otherwise the
 			// behavior is strange when trying to use mouse values relative to
 			// an element instead of relative to the viewport. ...
-			// const rotationAmountX = (event.offsetY / size.y) * rotationRange - rotationRange / 2
-			// const rotationAmountY = (event.offsetX / size.x) * rotationRange - rotationRange / 2
+			// targetRotation.y = (event.offsetX / size.x) * (rotationRange * 2) - rotationRange
+			// targetRotation.x = -((event.offsetY / size.y) * (rotationRange * 2) - rotationRange)
 
 			// ... For now just use clientX/Y. ...
-			const rotationAmountX = -((event.clientY / size.y) * rotationRange - rotationRange / 2)
-			const rotationAmountY = (event.clientX / size.x) * rotationRange - rotationRange / 2
+			targetRotation.y = (event.clientX / size.x) * (rotationRange * 2) - rotationRange
+			targetRotation.x = -((event.clientY / size.y) * (rotationRange * 2) - rotationRange)
 
 			// ... See https://discourse.wicg.io/t/4236 for discussion
-
-			// Shorthands: set xyz values with an object,...
-			rotator.rotation = {
-				x: rotationAmountX * 0.5,
-				y: rotationAmountY * 0.5,
-			}
-
-			// ...or with an array.
-			rotator.position = [rotationAmountY, rotationAmountX]
 
 			const circle = this.circle
 			if (!circle) return
 			circle.getPosition().x = event.clientX
 			circle.getPosition().y = event.clientY
+		}
+
+		// Rotate the image a little bit based on pointer position.
+		scene.addEventListener('pointermove', setTargetRotation)
+		scene.addEventListener('pointerdown', setTargetRotation)
+
+		// Rotate the container towards the targetRotation over time to make it smooth.
+		Motor.addRenderTask(() => {
+			rotator.rotation.x += (targetRotation.x - rotator.rotation.x) * 0.02
+			rotator.rotation.y += (targetRotation.y - rotator.rotation.y) * 0.02
+
+			rotator.position.x = rotator.rotation.y * -3
+			rotator.position.y = rotator.rotation.x * 2
 		})
+
+		scene.addEventListener('pointermove', event => {
+			const circle = this.circle
+			if (!circle) return
+			circle.getPosition().x = event.clientX
+			circle.getPosition().y = event.clientY
+		})
+
+		svgTexture(otherPlane, otherImg, otherCanvas, 960, 146)
+		svgTexture(numbersPlane, numbersImg, numbersCanvas, 118, 686)
 	}
 
 	resize = (/** @type {UIEvent} */ _e) => {
@@ -180,11 +202,30 @@ export class App extends Element {
 		this.viewHeight = window.innerHeight
 	}
 
+	get wordmarkAspectRatio() {
+		return this.viewIsTall ? 118 / 686 : 960 / 146
+	}
+
 	template = () => (
 		<lume-scene ref={this.scene} class="scene" touch-action="none">
 			<lume-node size-mode="proportional proportional" size="1 1 0">
-				<lume-scene perspective="800" id="innerScene" webgl={false}>
-					<lume-ambient-light color="white" intensity="0.8"></lume-ambient-light>
+				<lume-scene
+					fog-mode="linear"
+					fog-near="800"
+					fog-far="1400"
+					fog-color="#224dd9"
+					perspective="800"
+					id="innerScene"
+					webgl="true"
+					enable-css="true"
+				>
+					<lume-ambient-light color="white" intensity="0.5"></lume-ambient-light>
+					<lume-point-light
+						color="white"
+						intensity="1.5"
+						position="500 0 500"
+						shadow-bias="-0.1"
+					></lume-point-light>
 					<lume-node size-mode="proportional proportional" size="1 1 0">
 						<lume-node
 							class="headerBar"
@@ -212,6 +253,7 @@ export class App extends Element {
 							<div class="headerBarInner">
 								<img src="/images/logo.svg" class="logo" />
 								<Show when={!this.isMobile}>
+									<div class="header-space"></div>
 									<menu-links />
 								</Show>
 							</div>
@@ -226,31 +268,53 @@ export class App extends Element {
 							size="1 1"
 						>
 							<lume-node
+								ref={this.wordmarkContainer}
 								size-mode="proportional proportional"
 								size={this.viewIsTall ? '0 0.7 0' : '0.5 0 0'}
 								mount-point="0.5 0.5"
 								align-point="0.5 0.5"
 							>
-								<img
-									src={'/images/logo-wordmark.svg'}
-									style={`
-                                        display: ${this.viewIsTall ? 'none' : 'initial'};
-										transform: translateY(-50%);
-										object-fit: fill;
-                                        width: 100%;
-                                        height: auto;
-									`}
-								/>
-								<img
-									src={'/images/logo-wordmark-vertical.svg'}
-									style={`
-                                        display: ${this.viewIsTall ? 'initial' : 'none'};
-										transform: translateX(-50%);
-										object-fit: fill;
-                                        width: auto;
-                                        height: 100%;
-									`}
-								/>
+								<lume-plane
+									id="otherPlane"
+									visible={!this.viewIsTall}
+									// TODO relative size based on parent size, but not necessarily the same axis (f.e. map child Y size to proportion of parent X size)
+									size={[
+										this.wordmarkContainer?.calculatedSize?.x ?? 1,
+										(this.wordmarkContainer?.calculatedSize?.x ?? 1) / this.wordmarkAspectRatio,
+									]}
+									mount-point="0 0.5"
+									opacity="0.99"
+									Xtexture="/images/logo-wordmark.svg"
+									color="white"
+								>
+									<div>
+										<canvas id="otherCanvas"></canvas>
+										<img id="otherImg" src="/images/logo-wordmark.svg" width="960" height="146" />
+									</div>
+								</lume-plane>
+
+								<lume-plane
+									id="numbersPlane"
+									visible={this.viewIsTall}
+									size={[
+										(this.wordmarkContainer?.calculatedSize?.y ?? 1) * this.wordmarkAspectRatio,
+										this.wordmarkContainer?.calculatedSize?.y ?? 1,
+									]}
+									mount-point="0.5 0"
+									opacity="0.99"
+									Xtexture="/images/logo-wordmark-vertical.svg"
+									color="white"
+								>
+									<div>
+										<canvas id="numbersCanvas"></canvas>
+										<img
+											id="numbersImg"
+											src="/images/logo-wordmark-vertical.svg"
+											width="118"
+											height="686"
+										/>
+									</div>
+								</lume-plane>
 							</lume-node>
 
 							<landing-cube
@@ -348,8 +412,12 @@ export class App extends Element {
             object-fit: fill;
 
             /* push everything else to the right side of the header */
-            margin-right: auto;
+            /*margin-right: auto;*/
         }
+
+		.header-space {
+			flex-grow: 1;
+		}
 
         .rotator {
             pointer-events: none;
@@ -428,7 +496,7 @@ export class MenuLinks extends Element {
             text-decoration: none;
             text-transform: uppercase;
             margin-left: calc(
-                0% * var(--isMobile) +
+                0px * var(--isMobile) +
                 40px * (1 - var(--isMobile))
             );
             margin-top: calc(
@@ -509,4 +577,43 @@ export class HamburgerButton extends Node {
             display: none!important;
         }
     `
+}
+
+async function svgTexture(plane, img, canvas, width, height) {
+	const ctx = canvas.getContext('2d')
+
+	await Promise.all([imgLoaded(img), glLoaded(plane)])
+
+	console.log('IMAGE LOADED')
+	canvas.width = width
+	canvas.height = height
+	ctx.drawImage(img, 0, 0, width, height)
+
+	const tex = new THREE.CanvasTexture(canvas)
+	plane.three.material.map = tex
+	plane.three.material.needsUpdate = true
+	plane.needsUpdate()
+	setTimeout(() => {
+		plane.three.material.needsUpdate = true
+		plane.needsUpdate()
+	}, 2000)
+
+	// If we remove the canvas before the above creation of CanvasTexture, the texture will not render. hmmmm.
+	canvas.remove()
+
+	img.remove()
+}
+
+function imgLoaded(img) {
+	return new Promise(res => {
+		if (img.complete) res()
+		else img.onload = res
+	})
+}
+
+function glLoaded(node) {
+	return new Promise(res => {
+		if (node._glLoaded) res()
+		else node.on('GL_LOAD', res)
+	})
 }
