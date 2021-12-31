@@ -1,5 +1,3 @@
-/* @jsxImportSource @lume/element */
-
 import {Motor, Element, reactive, element, Show, Node, numberAttribute, booleanAttribute, autorun, THREE} from 'lume'
 import {Tween, Easing} from '@tweenjs/tween.js'
 

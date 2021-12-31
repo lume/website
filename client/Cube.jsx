@@ -1,5 +1,3 @@
-/* @jsxImportSource @lume/element */
-
 import {element, Box} from 'lume'
 
 // TODO fix bug where setting Z rotation back to zero doesn't work (while X and Y are zero).
