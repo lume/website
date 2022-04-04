@@ -1,9 +1,9 @@
 import '../imports/routes'
-import {useDefaultNames} from 'lume'
+import {defineElements} from 'lume'
 import {App} from './App'
 
 // tell LUME to define the default set of custom elements (all of them)
-useDefaultNames()
+defineElements()
 
 Tracker.autorun(() => {
 	document.title = Session.get('appTitle')

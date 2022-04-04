@@ -14,22 +14,21 @@ export class LandingCube extends Box {
 	}
 	set root(_v) {}
 
-	/** @param {any[]} args */
-	constructor(...args) {
-		super(...args)
+	constructor() {
+		super()
 
-		this.getMountPoint().set(0.5, 0.5, 0.5)
+		this.mountPoint.set(0.5, 0.5, 0.5)
 	}
 
 	// prettier-ignore
 	template = () => (
 		<>
-			<lume-plane id="cube-face1" class="front"  texture="/images/cube/front.svg"  color="white" sidedness="double" position={[0, 0, this.getSize().x/2]}  rotation="0 0 0"   size={[this.getSize().x, this.getSize().x, 0]} mount-point="0.5 0.5" align-point="0.5 0.5 0.5"></lume-plane>
-			<lume-plane id="cube-face2" class="back"   texture="/images/cube/back.svg"   color="white" sidedness="double" position={[0, 0, -this.getSize().x/2]} rotation="0 180 0" size={[this.getSize().x, this.getSize().x, 0]} mount-point="0.5 0.5" align-point="0.5 0.5 0.5"></lume-plane>
-			<lume-plane id="cube-face3" class="left"   texture="/images/cube/left.svg"   color="white" sidedness="double" position={[-this.getSize().x/2, 0, 0]} rotation="0 -90 0" size={[this.getSize().x, this.getSize().x, 0]} mount-point="0.5 0.5" align-point="0.5 0.5 0.5"></lume-plane>
-			<lume-plane id="cube-face4" class="right"  texture="/images/cube/right.svg"  color="white" sidedness="double" position={[this.getSize().x/2, 0, 0]}  rotation="0 90 0"  size={[this.getSize().x, this.getSize().x, 0]} mount-point="0.5 0.5" align-point="0.5 0.5 0.5"></lume-plane>
-			<lume-plane id="cube-face5" class="top"    texture="/images/cube/top.svg"    color="white" sidedness="double" position={[0, -this.getSize().x/2, 0]} rotation="-90 0 0" size={[this.getSize().x, this.getSize().x, 0]} mount-point="0.5 0.5" align-point="0.5 0.5 0.5"></lume-plane>
-			<lume-plane id="cube-face6" class="bottom" texture="/images/cube/bottom.svg" color="white" sidedness="double" position={[0, this.getSize().x/2, 0]}  rotation="90 0 0"  size={[this.getSize().x, this.getSize().x, 0]} mount-point="0.5 0.5" align-point="0.5 0.5 0.5"></lume-plane>
+			<lume-plane id="cube-face1" class="front"  texture="/images/cube/front.svg"  color="white" sidedness="double" position={[0, 0, this.size.x/2]}  rotation="0 0 0"   size={[this.size.x, this.size.x, 0]} mount-point="0.5 0.5" align-point="0.5 0.5 0.5"></lume-plane>
+			<lume-plane id="cube-face2" class="back"   texture="/images/cube/back.svg"   color="white" sidedness="double" position={[0, 0, -this.size.x/2]} rotation="0 180 0" size={[this.size.x, this.size.x, 0]} mount-point="0.5 0.5" align-point="0.5 0.5 0.5"></lume-plane>
+			<lume-plane id="cube-face3" class="left"   texture="/images/cube/left.svg"   color="white" sidedness="double" position={[-this.size.x/2, 0, 0]} rotation="0 -90 0" size={[this.size.x, this.size.x, 0]} mount-point="0.5 0.5" align-point="0.5 0.5 0.5"></lume-plane>
+			<lume-plane id="cube-face4" class="right"  texture="/images/cube/right.svg"  color="white" sidedness="double" position={[this.size.x/2, 0, 0]}  rotation="0 90 0"  size={[this.size.x, this.size.x, 0]} mount-point="0.5 0.5" align-point="0.5 0.5 0.5"></lume-plane>
+			<lume-plane id="cube-face5" class="top"    texture="/images/cube/top.svg"    color="white" sidedness="double" position={[0, -this.size.x/2, 0]} rotation="-90 0 0" size={[this.size.x, this.size.x, 0]} mount-point="0.5 0.5" align-point="0.5 0.5 0.5"></lume-plane>
+			<lume-plane id="cube-face6" class="bottom" texture="/images/cube/bottom.svg" color="white" sidedness="double" position={[0, this.size.x/2, 0]}  rotation="90 0 0"  size={[this.size.x, this.size.x, 0]} mount-point="0.5 0.5" align-point="0.5 0.5 0.5"></lume-plane>
 		</>
 	)
 }

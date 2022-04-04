@@ -42,18 +42,18 @@ export class App extends Element {
 	// https://github.com/tweenjs/tween.js/issues/522
 
 	makeOpenTween() {
-		this.openTween = new Tween({menuPosition: this.menu?.getAlignPoint().x || 1})
+		this.openTween = new Tween({menuPosition: this.menu?.alignPoint.x || 1})
 			.onComplete(() => this.openTween?.stop())
-			.onUpdate(obj => this.menu && (this.menu.getAlignPoint().x = obj.menuPosition))
+			.onUpdate(obj => this.menu && (this.menu.alignPoint.x = obj.menuPosition))
 			.easing(Easing.Exponential.Out)
 	}
 
 	makeCloseTween() {
 		this.closeTween = new Tween({
-			menuPosition: this.menu?.getAlignPoint().x || 1 - MENU_WIDTH,
+			menuPosition: this.menu?.alignPoint.x || 1 - MENU_WIDTH,
 		})
 			.onComplete(() => this.closeTween?.stop())
-			.onUpdate(obj => this.menu && (this.menu.getAlignPoint().x = obj.menuPosition))
+			.onUpdate(obj => this.menu && (this.menu.alignPoint.x = obj.menuPosition))
 			.easing(Easing.Exponential.Out)
 	}
 
@@ -167,8 +167,8 @@ export class App extends Element {
 
 			const circle = this.circle
 			if (!circle) return
-			circle.getPosition().x = event.clientX
-			circle.getPosition().y = event.clientY
+			circle.position.x = event.clientX
+			circle.position.y = event.clientY
 		}
 
 		// Rotate the image a little bit based on pointer position.
@@ -187,12 +187,17 @@ export class App extends Element {
 		scene.addEventListener('pointermove', event => {
 			const circle = this.circle
 			if (!circle) return
-			circle.getPosition().x = event.clientX
-			circle.getPosition().y = event.clientY
+			circle.position.x = event.clientX
+			circle.position.y = event.clientY
 		})
 
-		svgTexture(otherPlane, otherImg, otherCanvas, 960, 146)
-		svgTexture(numbersPlane, numbersImg, numbersCanvas, 118, 686)
+		// TODO, this custom svgTexture handling broke with the latest LUME
+		// update. The CSS version works and looks the same, for now. To switch,
+		// re-enable svgTexture calls, and uncomment the <canvas> elements, and
+		// remove scene's swap-layers (it places CSS in front).
+		//
+		// svgTexture(otherPlane, otherImg, otherCanvas, 960, 146)
+		// svgTexture(numbersPlane, numbersImg, numbersCanvas, 118, 686)
 	}
 
 	resize = (/** @type {UIEvent} */ _e) => {
@@ -216,6 +221,7 @@ export class App extends Element {
 					id="innerScene"
 					webgl="true"
 					enable-css="true"
+					swap-layers
 				>
 					<lume-ambient-light color="white" intensity="0.5"></lume-ambient-light>
 					<lume-point-light
@@ -285,9 +291,15 @@ export class App extends Element {
 									Xtexture="/images/logo-wordmark.svg"
 									color="white"
 								>
-									<div>
-										<canvas id="otherCanvas"></canvas>
-										<img id="otherImg" src="/images/logo-wordmark.svg" width="960" height="146" />
+									<div style="width: 100%; height: 100%">
+										{/* <canvas id="otherCanvas"></canvas> */}
+										<img
+											id="otherImg"
+											src="/images/logo-wordmark.svg"
+											width="960"
+											height="146"
+											style="width: 100%; height: 100%;"
+										/>
 									</div>
 								</lume-plane>
 
@@ -303,13 +315,14 @@ export class App extends Element {
 									Xtexture="/images/logo-wordmark-vertical.svg"
 									color="white"
 								>
-									<div>
-										<canvas id="numbersCanvas"></canvas>
+									<div style="width: 100%; height: 100%">
+										{/* <canvas id="numbersCanvas"></canvas> */}
 										<img
 											id="numbersImg"
 											src="/images/logo-wordmark-vertical.svg"
 											width="118"
 											height="686"
+											style="width: 100%; height: 100%"
 										/>
 									</div>
 								</lume-plane>
