@@ -278,7 +278,9 @@ export class App extends Element {
 								mount-point="0.5 0.5"
 								align-point="0.5 0.5"
 							>
-								<lume-plane
+								{/* TODO restore the SVG texture with lume-plane+canvas instead of lume-node */}
+								{/* <lume-plane */}
+								<lume-node
 									id="otherPlane"
 									visible={!this.viewIsTall}
 									// TODO relative size based on parent size, but not necessarily the same axis (f.e. map child Y size to proportion of parent X size)
@@ -301,9 +303,12 @@ export class App extends Element {
 											style="width: 100%; height: 100%;"
 										/>
 									</div>
-								</lume-plane>
+								</lume-node>
+								{/* </lume-plane> */}
 
-								<lume-plane
+								{/* TODO restore the SVG texture with lume-plane+canvas instead of lume-node */}
+								{/* <lume-plane */}
+								<lume-node
 									id="numbersPlane"
 									visible={this.viewIsTall}
 									size={[
@@ -325,7 +330,8 @@ export class App extends Element {
 											style="width: 100%; height: 100%"
 										/>
 									</div>
-								</lume-plane>
+								</lume-node>
+								{/* </lume-plane> */}
 							</lume-node>
 
 							<landing-cube
