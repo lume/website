@@ -25,7 +25,6 @@
 		"@babel/plugin-proposal-nullish-coalescing-operator": "^7.10.4",
 		"@babel/plugin-proposal-optional-chaining": "^7.11.0",
 		"@lume/cli": "^0.9.0",
-		"babel-plugin-jsx-dom-expressions": "0.33.0",
 		"prettier": "^2.0.5"
 	}
 }
