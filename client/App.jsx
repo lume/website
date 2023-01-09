@@ -469,10 +469,10 @@ export class MenuLinks extends Element {
 		<div class={`menuLinks${this.isMobile ? ' menuLinksMobile' : ''}`} ref={this.menuLinks}>
 			<div data-comment="empty space"></div>
 			<div data-comment="empty space"></div>
-			<a class="menuLink" href="/docs">
+			<a class="menuLink" href="//docs.lume.io">
 				Documentation
 			</a>
-			<a class="menuLink" href="/docs/#/examples/hello-world/">
+			<a class="menuLink" href="//docs.lume.io/examples/hello-world/">
 				Examples
 			</a>
 			<a class="menuLink" href="//lume.community">
