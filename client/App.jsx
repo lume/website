@@ -210,7 +210,7 @@ export class App extends Element {
 	}
 
 	template = () => (
-		<lume-scene ref={this.scene} class="scene" touch-action="none">
+		<lume-scene ref={this.scene} class="scene">
 			<lume-node size-mode="proportional proportional" size="1 1 0">
 				<lume-scene
 					fog-mode="linear"
