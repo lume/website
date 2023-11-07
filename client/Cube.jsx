@@ -7,8 +7,9 @@ import {element, Box} from 'lume'
  * webgl rendering we'll see a WebGL cube for debugging purposes (to ensure DOM
  * aligns with WebGL).
  */
+export {LandingCube}
 @element('landing-cube')
-export class LandingCube extends Box {
+class LandingCube extends Box {
 	get root() {
 		return this
 	}

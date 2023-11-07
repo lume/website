@@ -13,7 +13,7 @@ declare global {
 // TODO allow to specify no attributes with the ElementAttributes type somehow.
 type AppAttributes = '_____'
 
-declare module '@lume/element' {
+declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
 			'app-root': ElementAttributes<App, AppAttributes>
@@ -31,7 +31,7 @@ declare global {
 
 type MenuLinksAttributes = 'isMobile'
 
-declare module '@lume/element' {
+declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
 			'menu-links': ElementAttributes<MenuLinks, MenuLinksAttributes>
@@ -49,7 +49,7 @@ declare global {
 
 type HamburgerButtonAttributes = NodeAttributes | 'lineThickness' | 'lineLength' | 'activated'
 
-declare module '@lume/element' {
+declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
 			'hamburger-button': ElementAttributes<HamburgerButton, HamburgerButtonAttributes>

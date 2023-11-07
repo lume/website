@@ -4,8 +4,9 @@ import {Tween, Easing} from '@tweenjs/tween.js'
 const MENU_WIDTH = 0.8 // percent of viewport
 const HEADER_HEIGHT = 100
 
+export {App}
 @element('app-root')
-export class App extends Element {
+class App extends Element {
 	get root() {
 		return this
 	}
@@ -211,7 +212,7 @@ export class App extends Element {
 
 	template = () => (
 		<lume-scene ref={this.scene} class="scene" touch-action="none">
-			<lume-node size-mode="proportional proportional" size="1 1 0">
+			<lume-element3d size-mode="proportional proportional" size="1 1 0">
 				<lume-scene
 					fog-mode="linear"
 					fog-near="800"
@@ -230,8 +231,8 @@ export class App extends Element {
 						position="500 0 500"
 						shadow-bias="-0.1"
 					></lume-point-light>
-					<lume-node size-mode="proportional proportional" size="1 1 0">
-						<lume-node
+					<lume-element3d size-mode="proportional proportional" size="1 1 0">
+						<lume-element3d
 							class="headerBar"
 							//
 
@@ -261,9 +262,9 @@ export class App extends Element {
 									<menu-links />
 								</Show>
 							</div>
-						</lume-node>
+						</lume-element3d>
 
-						<lume-node
+						<lume-element3d
 							ref={this.rotator}
 							class="rotator"
 							align-point="0.5 0.5"
@@ -271,16 +272,16 @@ export class App extends Element {
 							size-mode="proportional proportional"
 							size="1 1"
 						>
-							<lume-node
+							<lume-element3d
 								ref={this.wordmarkContainer}
 								size-mode="proportional proportional"
 								size={this.viewIsTall ? '0 0.7 0' : '0.5 0 0'}
 								mount-point="0.5 0.5"
 								align-point="0.5 0.5"
 							>
-								{/* TODO restore the SVG texture with lume-plane+canvas instead of lume-node */}
+								{/* TODO restore the SVG texture with lume-plane+canvas instead of lume-element3d */}
 								{/* <lume-plane */}
-								<lume-node
+								<lume-element3d
 									id="otherPlane"
 									visible={!this.viewIsTall}
 									// TODO relative size based on parent size, but not necessarily the same axis (f.e. map child Y size to proportion of parent X size)
@@ -303,12 +304,12 @@ export class App extends Element {
 											style="width: 100%; height: 100%;"
 										/>
 									</div>
-								</lume-node>
+								</lume-element3d>
 								{/* </lume-plane> */}
 
-								{/* TODO restore the SVG texture with lume-plane+canvas instead of lume-node */}
+								{/* TODO restore the SVG texture with lume-plane+canvas instead of lume-element3d */}
 								{/* <lume-plane */}
-								<lume-node
+								<lume-element3d
 									id="numbersPlane"
 									visible={this.viewIsTall}
 									size={[
@@ -330,9 +331,9 @@ export class App extends Element {
 											style="width: 100%; height: 100%"
 										/>
 									</div>
-								</lume-node>
+								</lume-element3d>
 								{/* </lume-plane> */}
-							</lume-node>
+							</lume-element3d>
 
 							<landing-cube
 								ref={this.cubeNode}
@@ -343,17 +344,17 @@ export class App extends Element {
 								position={[0, 0, -this.cubeSize]}
 								rotation="45 45 45"
 							/>
-						</lume-node>
-					</lume-node>
+						</lume-element3d>
+					</lume-element3d>
 				</lume-scene>
 
 				{/* <Show when={!this.isMobile}>
-					<lume-node ref={this.circle} class="circle" mount-point="0.5 0.5" size="200 200" />
+					<lume-element3d ref={this.circle} class="circle" mount-point="0.5 0.5" size="200 200" />
 				</Show> */}
 
 				<Show when={this.isMobile}>
-					<lume-node class="mobileNav" size-mode="proportional proportional" size="1 1 0">
-						<lume-node
+					<lume-element3d class="mobileNav" size-mode="proportional proportional" size="1 1 0">
+						<lume-element3d
 							ref={this.menu}
 							class="mobileMenu"
 							size-mode="proportional proportional"
@@ -362,9 +363,9 @@ export class App extends Element {
 							opacity="0.97"
 						>
 							<menu-links is-mobile={true} />
-						</lume-node>
+						</lume-element3d>
 
-						<lume-node
+						<lume-element3d
 							class="menuButtonWrapper"
 							ref={this.menuButtonWrapper}
 							size="140 100"
@@ -385,10 +386,10 @@ export class App extends Element {
 								line-length={0.7}
 								activated={this.menuOpen}
 							/>
-						</lume-node>
-					</lume-node>
+						</lume-element3d>
+					</lume-element3d>
 				</Show>
-			</lume-node>
+			</lume-element3d>
 		</lume-scene>
 	)
 
@@ -458,8 +459,9 @@ export class App extends Element {
     `
 }
 
+export {MenuLinks}
 @element('menu-links')
-export class MenuLinks extends Element {
+class MenuLinks extends Element {
 	@booleanAttribute(false) isMobile = false
 
 	/** @type {HTMLDivElement =} */
@@ -546,8 +548,9 @@ export class MenuLinks extends Element {
 	}
 }
 
+export {HamburgerButton}
 @element('hamburger-button')
-export class HamburgerButton extends Node {
+class HamburgerButton extends Node {
 	@numberAttribute(2) lineThickness = 2
 	@numberAttribute(0.8) lineLength = 0.8
 	@booleanAttribute(false) activated = false
@@ -559,29 +562,29 @@ export class HamburgerButton extends Node {
 
 	template = () => (
 		<>
-			<lume-node
+			<lume-element3d
 				class="menuButtonLine"
 				size-mode="proportional literal"
 				size={[this.lineLength, this.lineThickness]}
 				align-point={this.activated ? '0.5 0.5' : '1 0'}
 				mount-point={this.activated ? '0.5 0.5' : '1 0'}
 				rotation={[0, 0, this.activated ? -45 : 0]}
-			></lume-node>
-			<lume-node
+			></lume-element3d>
+			<lume-element3d
 				classList={{menuButtonLine: true, hide: this.activated}}
 				size-mode="proportional literal"
 				size={[this.lineLength, this.lineThickness]}
 				align-point="0 0.5"
 				mount-point="0 0.5"
-			></lume-node>
-			<lume-node
+			></lume-element3d>
+			<lume-element3d
 				class="menuButtonLine"
 				size-mode="proportional literal"
 				size={[this.lineLength, this.lineThickness]}
 				align-point={this.activated ? '0.5 0.5' : '1 1'}
 				mount-point={this.activated ? '0.5 0.5' : '1 1'}
 				rotation={[0, 0, this.activated ? 45 : 0]}
-			></lume-node>
+			></lume-element3d>
 		</>
 	)
 

@@ -6,7 +6,7 @@ import type {BoxAttributes} from 'lume'
 
 type LandingCubeAttributes = BoxAttributes
 
-declare module '@lume/element' {
+declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
 			'landing-cube': ElementAttributes<LandingCube, LandingCubeAttributes>
