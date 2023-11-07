@@ -3,6 +3,7 @@
 	"compilerOptions": {
 		"checkJs": true,
 		"declaration": false,
+		"declarationMap": false,
 		"rootDir": "./",
 		"jsxImportSource": "@lume/element"
 	},
