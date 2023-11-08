@@ -31,5 +31,11 @@
 	<meta name="msapplication-TileImage" content="/images/favicons/mstile-144x144.png?v=1" />
 	<meta name="msapplication-config" content="/images/favicons/browserconfig.xml" />
 
-	<script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+	<script>
+		if (globalThis.location.pathname.startsWith('/docs')) {
+			let path = location.href.split('/docs')[1]
+			path = path.replace('/#/', '/')
+			globalThis.location = 'https://docs.lume.io' + path
+		}
+	</script>
 </head>
