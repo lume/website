@@ -1,5 +1,12 @@
-import {Motor, Element, reactive, element, Show, Node, numberAttribute, booleanAttribute, autorun, THREE} from 'lume'
+import {Motor, Element, element, Show, Element3D, numberAttribute, booleanAttribute, html} from 'lume'
+import * as THREE from 'three'
 import {Tween, Easing} from '@tweenjs/tween.js'
+import {createEffect} from 'solid-js'
+import {signal} from 'classy-solid'
+import './Cube.js'
+import type {ElementAttributes} from '@lume/element'
+import type {NodeAttributes, RenderTask, Scene} from 'lume'
+import {type LandingCube} from './Cube.js'
 
 const MENU_WIDTH = 0.8 // percent of viewport
 const HEADER_HEIGHT = 100
@@ -13,30 +20,17 @@ class App extends Element {
 	set root(_v) {}
 
 	// Used in App.types.d.ts to denote no attributes. See TODO there.
-	/** @type {undefined=} */
-	_____
+	_____?: undefined
 
-	/** @type {import('./Cube').LandingCube=} */
-	cubeNode
+	cubeNode?: LandingCube
+	menu?: Element3D
+	scene?: Scene
+	rotator?: Element3D
+	wordmarkContainer?: Element3D
+	circle?: Element3D
 
-	/** @type {Node=} */
-	menu
-
-	/** @type {import('lume').Scene=} */
-	scene
-
-	/** @type {Node=} */
-	rotator
-
-	/** @type {Node=} */
-	wordmarkContainer
-
-	/** @type {Node=} */
-	circle
-
-	/** @type {Node=} */
-	// @reactive menuButtonWrapper
-	menuButtonWrapper
+	// @signal
+	menuButtonWrapper?: Element3D
 
 	// TODO make option for Tween to remember last value instead of starting
 	// from the beginning. It would simplify the Tween code a lot. See
@@ -58,13 +52,10 @@ class App extends Element {
 			.easing(Easing.Exponential.Out)
 	}
 
-	/** @type {Tween<{menuPosition: number}> | null} */
-	openTween = null
+	openTween: Tween<{menuPosition: number}> | null = null
+	closeTween: Tween<{menuPosition: number}> | null = null
 
-	/** @type {Tween<{menuPosition: number}> | null} */
-	closeTween = null
-
-	@reactive menuOpen = false
+	@signal menuOpen = false
 
 	openMenu() {
 		if (this.menuOpen) return
@@ -93,8 +84,7 @@ class App extends Element {
 
 	toggleMenu = () => (this.menuOpen ? this.closeMenu() : this.openMenu())
 
-	/** @type {import('lume').RenderTask | false} */
-	tweenTask = false
+	tweenTask: RenderTask | false = false
 
 	possiblyStartTweenLoop() {
 		if (this.tweenTask) return
@@ -107,8 +97,8 @@ class App extends Element {
 		})
 	}
 
-	@reactive viewWidth = 0
-	@reactive viewHeight = 0
+	@signal viewWidth = 0
+	@signal viewHeight = 0
 
 	get isMobile() {
 		return this.viewWidth <= 1200
@@ -149,7 +139,7 @@ class App extends Element {
 			y: 0,
 		}
 
-		const setTargetRotation = event => {
+		const setTargetRotation = (event: PointerEvent) => {
 			const size = scene.calculatedSize
 
 			// TODO use offsetX/Y so we get events relative to `currentTarget`,
@@ -201,7 +191,7 @@ class App extends Element {
 		// svgTexture(numbersPlane, numbersImg, numbersCanvas, 118, 686)
 	}
 
-	resize = (/** @type {UIEvent} */ _e) => {
+	resize = (_e?: UIEvent) => {
 		this.viewWidth = window.innerWidth
 		this.viewHeight = window.innerHeight
 	}
@@ -210,8 +200,8 @@ class App extends Element {
 		return this.viewIsTall ? 118 / 686 : 960 / 146
 	}
 
-	template = () => (
-		<lume-scene ref={this.scene} class="scene">
+	template = () => html`
+		<lume-scene ref=${e => (this.scene = e)} class="scene">
 			<lume-element3d size-mode="proportional proportional" size="1 1 0">
 				<lume-scene
 					fog-mode="linear"
@@ -234,30 +224,17 @@ class App extends Element {
 					<lume-element3d size-mode="proportional proportional" size="1 1 0">
 						<lume-element3d
 							class="headerBar"
-							//
 
-							// TODO
-							// This causes the header to lose LUME styling (it
-							// clashes somehow with LUME's manual setting of the
-							// style attribute):
-							//
-							//style={'pointerEvents: ' + this.isMobile ? 'none' : 'auto'}
-							//
-							// But this allows the header's LUME styling to work properly:
-							//
-							style={{pointerEvents: this.isMobile ? 'none' : 'auto'}}
-							//
-							// In either case, the pointer-events style is still not applied.
-							//
-							// Do we still have the same issue with latest Solid.js?
+							comment="setting a string override Lume style (including transforms, etc)."
+							xstyle=${() => 'pointerEvents: ' + (this.isMobile ? 'none' : 'auto')}
+							style=${() => ({pointerEvents: this.isMobile ? 'none' : 'auto'})}
 
-							//
 							size-mode="proportional literal"
-							size={[1, HEADER_HEIGHT, 0]}
+							size=${[1, HEADER_HEIGHT, 0]}
 						>
 							<div class="headerBarInner">
 								<img src="/images/logo.svg" class="logo" />
-								<Show when={!this.isMobile}>
+								<Show when=${() => !this.isMobile}>
 									<div class="header-space"></div>
 									<menu-links />
 								</Show>
@@ -265,7 +242,7 @@ class App extends Element {
 						</lume-element3d>
 
 						<lume-element3d
-							ref={this.rotator}
+							ref=${e => (this.rotator = e)}
 							class="rotator"
 							align-point="0.5 0.5"
 							mount-point="0.5 0.5"
@@ -273,19 +250,19 @@ class App extends Element {
 							size="1 1"
 						>
 							<lume-element3d
-								ref={this.wordmarkContainer}
+								ref=${e => (this.wordmarkContainer = e)}
 								size-mode="proportional proportional"
-								size={this.viewIsTall ? '0 0.7 0' : '0.5 0 0'}
+								size=${() => (this.viewIsTall ? '0 0.7 0' : '0.5 0 0')}
 								mount-point="0.5 0.5"
 								align-point="0.5 0.5"
 							>
-								{/* TODO restore the SVG texture with lume-plane+canvas instead of lume-element3d */}
-								{/* <lume-plane */}
+								<!-- TODO restore the SVG texture with lume-plane+canvas instead of lume-element3d -->
+								<!-- <lume-plane -->
 								<lume-element3d
 									id="otherPlane"
-									visible={!this.viewIsTall}
-									// TODO relative size based on parent size, but not necessarily the same axis (f.e. map child Y size to proportion of parent X size)
-									size={[
+									visible=${() => !this.viewIsTall}
+									TODO="relative size based on parent size, but not necessarily the same axis (f.e. map child Y size to proportion of parent X size)"
+									size=${() => [
 										this.wordmarkContainer?.calculatedSize?.x ?? 1,
 										(this.wordmarkContainer?.calculatedSize?.x ?? 1) / this.wordmarkAspectRatio,
 									]}
@@ -295,7 +272,7 @@ class App extends Element {
 									color="white"
 								>
 									<div style="width: 100%; height: 100%">
-										{/* <canvas id="otherCanvas"></canvas> */}
+										<!-- <canvas id="otherCanvas"></canvas> -->
 										<img
 											id="otherImg"
 											src="/images/logo-wordmark.svg"
@@ -305,14 +282,14 @@ class App extends Element {
 										/>
 									</div>
 								</lume-element3d>
-								{/* </lume-plane> */}
+								<!-- </lume-plane> -->
 
-								{/* TODO restore the SVG texture with lume-plane+canvas instead of lume-element3d */}
-								{/* <lume-plane */}
+								<!-- TODO restore the SVG texture with lume-plane+canvas instead of lume-element3d -->
+								<!-- <lume-plane -->
 								<lume-element3d
 									id="numbersPlane"
-									visible={this.viewIsTall}
-									size={[
+									visible=${() => this.viewIsTall}
+									size=${() => [
 										(this.wordmarkContainer?.calculatedSize?.y ?? 1) * this.wordmarkAspectRatio,
 										this.wordmarkContainer?.calculatedSize?.y ?? 1,
 									]}
@@ -322,7 +299,7 @@ class App extends Element {
 									color="white"
 								>
 									<div style="width: 100%; height: 100%">
-										{/* <canvas id="numbersCanvas"></canvas> */}
+										<!-- <canvas id="numbersCanvas"></canvas> -->
 										<img
 											id="numbersImg"
 											src="/images/logo-wordmark-vertical.svg"
@@ -332,47 +309,46 @@ class App extends Element {
 										/>
 									</div>
 								</lume-element3d>
-								{/* </lume-plane> */}
+								<!-- </lume-plane> -->
 							</lume-element3d>
 
 							<landing-cube
-								ref={this.cubeNode}
-								// size={this.cubeSize} // TODO how to make a single-number value type check
-								size={[this.cubeSize]}
+								ref=${e => (this.cubeNode = e)}
+								size=${() => [this.cubeSize]}
 								align-point="0.5 0.5 0.5"
 								mount-point="0.5 0.5 0.5"
-								position={[0, 0, -this.cubeSize]}
+								position=${() => [0, 0, -this.cubeSize]}
 								rotation="45 45 45"
 							/>
 						</lume-element3d>
 					</lume-element3d>
 				</lume-scene>
 
-				{/* <Show when={!this.isMobile}>
+				<!-- <Show when={!this.isMobile}>
 					<lume-element3d ref={this.circle} class="circle" mount-point="0.5 0.5" size="200 200" />
-				</Show> */}
+				</Show> -->
 
-				<Show when={this.isMobile}>
+				<Show when=${() => this.isMobile}>
 					<lume-element3d class="mobileNav" size-mode="proportional proportional" size="1 1 0">
 						<lume-element3d
-							ref={this.menu}
+							ref=${e => (this.menu = e)}
 							class="mobileMenu"
 							size-mode="proportional proportional"
-							size={[MENU_WIDTH, 1]}
+							size=${[MENU_WIDTH, 1]}
 							align-point="1 0" // start closed position
 							opacity="0.97"
 						>
-							<menu-links is-mobile={true} />
+							<menu-links is-mobile=${true} />
 						</lume-element3d>
 
 						<lume-element3d
 							class="menuButtonWrapper"
-							ref={this.menuButtonWrapper}
+							ref=${e => (this.menuButtonWrapper = e)}
 							size="140 100"
 							align-point="1 0"
 							position="0 0"
 							mount-point="1 0"
-							onClick={() => {
+							onClick=${() => {
 								console.log('CLICK 1!')
 								this.toggleMenu()
 							}}
@@ -382,16 +358,16 @@ class App extends Element {
 								align-point="0.5 0.5"
 								mount-point="0.5 0.5"
 								position="0 0"
-								line-thickness={2.5}
-								line-length={0.7}
-								activated={this.menuOpen}
+								line-thickness=${2.5}
+								line-length=${0.7}
+								activated=${() => this.menuOpen}
 							/>
 						</lume-element3d>
 					</lume-element3d>
 				</Show>
 			</lume-element3d>
 		</lume-scene>
-	)
+	`
 
 	css = /*css*/ `
         :host {
@@ -462,34 +438,23 @@ class App extends Element {
 export {MenuLinks}
 @element('menu-links')
 class MenuLinks extends Element {
-	@booleanAttribute(false) isMobile = false
+	@booleanAttribute isMobile = false
 
-	/** @type {HTMLDivElement =} */
-	menuLinks
+	menuLinks?: HTMLDivElement
 
-	template = () => (
-		<div class={`menuLinks${this.isMobile ? ' menuLinksMobile' : ''}`} ref={this.menuLinks}>
+	template = () => html`
+		<div class=${() => `menuLinks${this.isMobile ? ' menuLinksMobile' : ''}`} ref=${e => (this.menuLinks = e)}>
 			<div data-comment="empty space"></div>
 			<div data-comment="empty space"></div>
-			<a class="menuLink" href="//docs.lume.io">
-				Documentation
-			</a>
-			<a class="menuLink" href="//docs.lume.io/examples/hello-world/">
-				Examples
-			</a>
-			<a class="menuLink" href="//lume.community">
-				Forum
-			</a>
-			<a class="menuLink" href="//discord.gg/PgeyevP">
-				Chat
-			</a>
-			<a class="menuLink" href="//github.com/lume/lume">
-				Source
-			</a>
+			<a class="menuLink" href="//docs.lume.io"> Documentation </a>
+			<a class="menuLink" href="//docs.lume.io/examples/hello-world/"> Examples </a>
+			<a class="menuLink" href="//lume.community"> Forum </a>
+			<a class="menuLink" href="//discord.gg/PgeyevP"> Chat </a>
+			<a class="menuLink" href="//github.com/lume/lume"> Source </a>
 			<div data-comment="empty space"></div>
 			<div data-comment="empty space"></div>
 		</div>
-	)
+	`
 
 	css = /*css*/ `
         :host {
@@ -542,7 +507,7 @@ class MenuLinks extends Element {
 	connectedCallback() {
 		super.connectedCallback()
 
-		autorun(() => {
+		createEffect(() => {
 			this.menuLinks?.style.setProperty('--isMobile', '' + (this.isMobile ? 1 : 0))
 		})
 	}
@@ -550,43 +515,43 @@ class MenuLinks extends Element {
 
 export {HamburgerButton}
 @element('hamburger-button')
-class HamburgerButton extends Node {
-	@numberAttribute(2) lineThickness = 2
-	@numberAttribute(0.8) lineLength = 0.8
-	@booleanAttribute(false) activated = false
+class HamburgerButton extends Element3D {
+	@numberAttribute lineThickness = 2
+	@numberAttribute lineLength = 0.8
+	@booleanAttribute activated = false
 
 	get root() {
 		return this
 	}
 	set root(_v) {}
 
-	template = () => (
+	template = () => html`
 		<>
 			<lume-element3d
 				class="menuButtonLine"
 				size-mode="proportional literal"
-				size={[this.lineLength, this.lineThickness]}
-				align-point={this.activated ? '0.5 0.5' : '1 0'}
-				mount-point={this.activated ? '0.5 0.5' : '1 0'}
-				rotation={[0, 0, this.activated ? -45 : 0]}
+				size=${() => [this.lineLength, this.lineThickness]}
+				align-point=${() => (this.activated ? '0.5 0.5' : '1 0')}
+				mount-point=${() => (this.activated ? '0.5 0.5' : '1 0')}
+				rotation=${() => [0, 0, this.activated ? -45 : 0]}
 			></lume-element3d>
 			<lume-element3d
-				classList={{menuButtonLine: true, hide: this.activated}}
+				classList=${() => ({menuButtonLine: true, hide: this.activated})}
 				size-mode="proportional literal"
-				size={[this.lineLength, this.lineThickness]}
+				size=${() => [this.lineLength, this.lineThickness]}
 				align-point="0 0.5"
 				mount-point="0 0.5"
 			></lume-element3d>
 			<lume-element3d
 				class="menuButtonLine"
 				size-mode="proportional literal"
-				size={[this.lineLength, this.lineThickness]}
-				align-point={this.activated ? '0.5 0.5' : '1 1'}
-				mount-point={this.activated ? '0.5 0.5' : '1 1'}
-				rotation={[0, 0, this.activated ? 45 : 0]}
+				size=${() => [this.lineLength, this.lineThickness]}
+				align-point=${() => (this.activated ? '0.5 0.5' : '1 1')}
+				mount-point=${() => (this.activated ? '0.5 0.5' : '1 1')}
+				rotation=${() => [0, 0, this.activated ? 45 : 0]}
 			></lume-element3d>
 		</>
-	)
+	`
 
 	css = /*css*/ `
         .menuButtonLine {
@@ -625,15 +590,74 @@ async function svgTexture(plane, img, canvas, width, height) {
 }
 
 function imgLoaded(img) {
-	return new Promise(res => {
+	const p = new Promise<void>(res => {
 		if (img.complete) res()
 		else img.onload = res
 	})
+	return p
 }
 
 function glLoaded(node) {
-	return new Promise(res => {
+	const p = new Promise<void>(res => {
 		if (node._glLoaded) res()
+		// TODO GL_LOAD event removed
 		else node.on('GL_LOAD', res)
 	})
+	return p
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+// "_____" used to denote empty (no attributes).
+// TODO allow to specify no attributes with the ElementAttributes type somehow.
+type AppAttributes = '_____'
+
+declare module 'solid-js' {
+	namespace JSX {
+		interface IntrinsicElements {
+			'app-root': ElementAttributes<App, AppAttributes>
+		}
+	}
+}
+
+declare global {
+	interface HTMLElementTagNameMap {
+		'app-root': App
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+type MenuLinksAttributes = 'isMobile'
+
+declare module 'solid-js' {
+	namespace JSX {
+		interface IntrinsicElements {
+			'menu-links': ElementAttributes<MenuLinks, MenuLinksAttributes>
+		}
+	}
+}
+
+declare global {
+	interface HTMLElementTagNameMap {
+		'menu-links': MenuLinks
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+type HamburgerButtonAttributes = NodeAttributes | 'lineThickness' | 'lineLength' | 'activated'
+
+declare module 'solid-js' {
+	namespace JSX {
+		interface IntrinsicElements {
+			'hamburger-button': ElementAttributes<HamburgerButton, HamburgerButtonAttributes>
+		}
+	}
+}
+
+declare global {
+	interface HTMLElementTagNameMap {
+		'hamburger-button': HamburgerButton
+	}
 }

@@ -10,3 +10,7 @@ public/docs
 *.log
 
 package-lock.json
+
+public/**/*.js*
+client/**/*.js*
+server/**/*.js*
