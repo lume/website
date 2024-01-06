@@ -4,10 +4,10 @@
 		"declaration": false,
 		"declarationMap": false,
 		"sourceMap": true,
-		"target": "ESNext",
+		"target": "ES2022",
 		"module": "NodeNext",
 		"moduleResolution": "NodeNext",
-		"lib": ["DOM", "ESNext"],
+		"lib": ["DOM", "ES2022"],
 		"verbatimModuleSyntax": true,
 		"skipLibCheck": true,
 
