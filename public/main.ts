@@ -1,9 +1,7 @@
 import './routes.js'
 import {Session} from 'meteor/session'
-import {defineElements} from 'lume'
+import {Tracker} from 'meteor/tracker'
 import {App} from './App.js'
-
-defineElements()
 
 Tracker.autorun(() => {
 	document.title = Session.get('appTitle')

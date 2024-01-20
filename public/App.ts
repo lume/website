@@ -1,36 +1,42 @@
-import {Motor, Element, element, Show, Element3D, numberAttribute, booleanAttribute, html} from 'lume'
+import {Motor, Element, element, Element3D, numberAttribute, booleanAttribute} from 'lume'
+import {html} from 'pota/src/renderer/html.js'
 import * as THREE from 'three'
 import {Tween, Easing} from '@tweenjs/tween.js'
 import {createEffect} from 'solid-js'
 import {signal} from 'classy-solid'
 import './Cube.js'
 import type {ElementAttributes} from '@lume/element'
-import type {NodeAttributes, RenderTask, Scene} from 'lume'
+import type {Element3DAttributes, RenderTask, Scene} from 'lume'
 import {type LandingCube} from './Cube.js'
 
 const MENU_WIDTH = 0.8 // percent of viewport
 const HEADER_HEIGHT = 100
 
+let count = 0
+
 export {App}
 @element('app-root')
 class App extends Element {
-	get root() {
-		return this
+	constructor() {
+		super()
+		console.log('App constructor')
+		if (count++ > 100) debugger
 	}
-	set root(_v) {}
 
-	// Used in App.types.d.ts to denote no attributes. See TODO there.
+	hasShadow = false
+
+	// Used in AppAttributes to denote no attributes. See TODO there.
 	_____?: undefined
 
-	cubeNode?: LandingCube
+	@signal cubeNode?: LandingCube
 	menu?: Element3D
-	scene?: Scene
-	rotator?: Element3D
+	@signal scene?: Scene
+	@signal rotator?: Element3D
 	wordmarkContainer?: Element3D
 	circle?: Element3D
 
 	// @signal
-	menuButtonWrapper?: Element3D
+	@signal menuButtonWrapper?: Element3D
 
 	// TODO make option for Tween to remember last value instead of starting
 	// from the beginning. It would simplify the Tween code a lot. See
@@ -111,84 +117,80 @@ class App extends Element {
 	}
 
 	connectedCallback() {
+		console.log('App connectedCallback()')
 		super.connectedCallback()
 
-		const {scene, rotator, cubeNode} = this
+		createEffect(() => {
+			const {scene, rotator, cubeNode, menuButtonWrapper} = this
 
-		// TODO assigning to onclick works here, but it doesn't work in the
-		// onclick JSX prop in the template. Does it work with new Solid.js?
-		if (this.menuButtonWrapper) {
-			this.menuButtonWrapper.onclick = () => {
-				console.log('CLICK 2!')
-				this.toggleMenu()
+			if (!scene || !rotator || !cubeNode || !menuButtonWrapper) return
+
+			this.menuButtonWrapper.onclick = () => this.toggleMenu()
+
+			Motor.addRenderTask((_t, dt) => (cubeNode.rotation.y += dt / 50))
+
+			window.addEventListener('resize', this.resize)
+			this.resize()
+
+			///// ROTATION ON POINTER MOVE ///////////////////////////////////////////////
+
+			const rotationRange = 10
+			const targetRotation = {
+				x: 0,
+				y: 0,
 			}
-		}
 
-		if (!scene || !rotator || !cubeNode) throw 'They must exist.'
+			const setTargetRotation = (event: PointerEvent) => {
+				const size = scene.calculatedSize
 
-		Motor.addRenderTask((_t, dt) => (cubeNode.rotation.y += dt / 50))
+				// TODO use offsetX/Y so we get events relative to `currentTarget`,
+				// and make an abstraction so that the offsets can be calculated
+				// from event.target instead of event.currentTarget, otherwise the
+				// behavior is strange when trying to use mouse values relative to
+				// an element instead of relative to the viewport. ...
+				// targetRotation.y = (event.offsetX / size.x) * (rotationRange * 2) - rotationRange
+				// targetRotation.x = -((event.offsetY / size.y) * (rotationRange * 2) - rotationRange)
 
-		window.addEventListener('resize', this.resize)
-		this.resize()
+				// ... For now just use clientX/Y. ...
+				targetRotation.y = (event.clientX / size.x) * (rotationRange * 2) - rotationRange
+				targetRotation.x = -((event.clientY / size.y) * (rotationRange * 2) - rotationRange)
 
-		///// ROTATION ON POINTER MOVE ///////////////////////////////////////////////
+				// ... See https://discourse.wicg.io/t/4236 for discussion
 
-		const rotationRange = 10
-		const targetRotation = {
-			x: 0,
-			y: 0,
-		}
+				const circle = this.circle
+				if (!circle) return
+				circle.position.x = event.clientX
+				circle.position.y = event.clientY
+			}
 
-		const setTargetRotation = (event: PointerEvent) => {
-			const size = scene.calculatedSize
+			// Rotate the image a little bit based on pointer position.
+			scene.addEventListener('pointermove', setTargetRotation)
+			scene.addEventListener('pointerdown', setTargetRotation)
 
-			// TODO use offsetX/Y so we get events relative to `currentTarget`,
-			// and make an abstraction so that the offsets can be calculated
-			// from event.target instead of event.currentTarget, otherwise the
-			// behavior is strange when trying to use mouse values relative to
-			// an element instead of relative to the viewport. ...
-			// targetRotation.y = (event.offsetX / size.x) * (rotationRange * 2) - rotationRange
-			// targetRotation.x = -((event.offsetY / size.y) * (rotationRange * 2) - rotationRange)
+			// Rotate the container towards the targetRotation over time to make it smooth.
+			Motor.addRenderTask(() => {
+				rotator.rotation.x += (targetRotation.x - rotator.rotation.x) * 0.02
+				rotator.rotation.y += (targetRotation.y - rotator.rotation.y) * 0.02
 
-			// ... For now just use clientX/Y. ...
-			targetRotation.y = (event.clientX / size.x) * (rotationRange * 2) - rotationRange
-			targetRotation.x = -((event.clientY / size.y) * (rotationRange * 2) - rotationRange)
+				rotator.position.x = rotator.rotation.y * -3
+				rotator.position.y = rotator.rotation.x * 2
+			})
 
-			// ... See https://discourse.wicg.io/t/4236 for discussion
+			scene.addEventListener('pointermove', event => {
+				const circle = this.circle
+				if (!circle) return
+				circle.position.x = event.clientX
+				circle.position.y = event.clientY
+			})
 
-			const circle = this.circle
-			if (!circle) return
-			circle.position.x = event.clientX
-			circle.position.y = event.clientY
-		}
-
-		// Rotate the image a little bit based on pointer position.
-		scene.addEventListener('pointermove', setTargetRotation)
-		scene.addEventListener('pointerdown', setTargetRotation)
-
-		// Rotate the container towards the targetRotation over time to make it smooth.
-		Motor.addRenderTask(() => {
-			rotator.rotation.x += (targetRotation.x - rotator.rotation.x) * 0.02
-			rotator.rotation.y += (targetRotation.y - rotator.rotation.y) * 0.02
-
-			rotator.position.x = rotator.rotation.y * -3
-			rotator.position.y = rotator.rotation.x * 2
+			// TODO, this custom svgTexture handling broke with the latest LUME
+			// update. The CSS version works and looks the same, for now. To switch,
+			// re-enable svgTexture calls, and uncomment the <canvas> elements, and
+			// remove scene's swap-layers (it places CSS in front).
+			//
+			// svgTexture(otherPlane, otherImg, otherCanvas, 960, 146)
+			// svgTexture(numbersPlane, numbersImg, numbersCanvas, 118, 686)
 		})
-
-		scene.addEventListener('pointermove', event => {
-			const circle = this.circle
-			if (!circle) return
-			circle.position.x = event.clientX
-			circle.position.y = event.clientY
-		})
-
-		// TODO, this custom svgTexture handling broke with the latest LUME
-		// update. The CSS version works and looks the same, for now. To switch,
-		// re-enable svgTexture calls, and uncomment the <canvas> elements, and
-		// remove scene's swap-layers (it places CSS in front).
-		//
-		// svgTexture(otherPlane, otherImg, otherCanvas, 960, 146)
-		// svgTexture(numbersPlane, numbersImg, numbersCanvas, 118, 686)
 	}
 
 	resize = (_e?: UIEvent) => {
@@ -201,7 +203,7 @@ class App extends Element {
 	}
 
 	template = () => html`
-		<lume-scene ref=${e => (this.scene = e)} class="scene">
+		<lume-scene ref="${e => (this.scene = e)}" class="scene">
 			<lume-element3d size-mode="proportional proportional" size="1 1 0">
 				<lume-scene
 					fog-mode="linear"
@@ -224,25 +226,26 @@ class App extends Element {
 					<lume-element3d size-mode="proportional proportional" size="1 1 0">
 						<lume-element3d
 							class="headerBar"
-
 							comment="setting a string override Lume style (including transforms, etc)."
-							xstyle=${() => 'pointerEvents: ' + (this.isMobile ? 'none' : 'auto')}
-							style=${() => ({pointerEvents: this.isMobile ? 'none' : 'auto'})}
-
+							xstyle="${() => 'pointerEvents: ' + (this.isMobile ? 'none' : 'auto')}"
+							style="${() => ({pointerEvents: this.isMobile ? 'none' : 'auto'})}"
 							size-mode="proportional literal"
-							size=${[1, HEADER_HEIGHT, 0]}
+							size="${[1, HEADER_HEIGHT, 0]}"
 						>
 							<div class="headerBarInner">
 								<img src="/images/logo.svg" class="logo" />
-								<Show when=${() => !this.isMobile}>
-									<div class="header-space"></div>
-									<menu-links />
-								</Show>
+								${() =>
+									!this.isMobile
+										? html`
+												<div class="header-space"></div>
+												<menu-links></menu-links>
+										  `
+										: []}
 							</div>
 						</lume-element3d>
 
 						<lume-element3d
-							ref=${e => (this.rotator = e)}
+							ref="${e => (this.rotator = e)}"
 							class="rotator"
 							align-point="0.5 0.5"
 							mount-point="0.5 0.5"
@@ -250,9 +253,9 @@ class App extends Element {
 							size="1 1"
 						>
 							<lume-element3d
-								ref=${e => (this.wordmarkContainer = e)}
+								ref="${e => (this.wordmarkContainer = e)}"
 								size-mode="proportional proportional"
-								size=${() => (this.viewIsTall ? '0 0.7 0' : '0.5 0 0')}
+								size="${() => (this.viewIsTall ? '0 0.7 0' : '0.5 0 0')}"
 								mount-point="0.5 0.5"
 								align-point="0.5 0.5"
 							>
@@ -260,12 +263,12 @@ class App extends Element {
 								<!-- <lume-plane -->
 								<lume-element3d
 									id="otherPlane"
-									visible=${() => !this.viewIsTall}
+									visible="${() => !this.viewIsTall}"
 									TODO="relative size based on parent size, but not necessarily the same axis (f.e. map child Y size to proportion of parent X size)"
-									size=${() => [
+									size="${() => [
 										this.wordmarkContainer?.calculatedSize?.x ?? 1,
 										(this.wordmarkContainer?.calculatedSize?.x ?? 1) / this.wordmarkAspectRatio,
-									]}
+									]}"
 									mount-point="0 0.5"
 									opacity="0.99"
 									Xtexture="/images/logo-wordmark.svg"
@@ -288,11 +291,11 @@ class App extends Element {
 								<!-- <lume-plane -->
 								<lume-element3d
 									id="numbersPlane"
-									visible=${() => this.viewIsTall}
-									size=${() => [
+									visible="${() => this.viewIsTall}"
+									size="${() => [
 										(this.wordmarkContainer?.calculatedSize?.y ?? 1) * this.wordmarkAspectRatio,
 										this.wordmarkContainer?.calculatedSize?.y ?? 1,
-									]}
+									]}"
 									mount-point="0.5 0"
 									opacity="0.99"
 									Xtexture="/images/logo-wordmark-vertical.svg"
@@ -313,58 +316,64 @@ class App extends Element {
 							</lume-element3d>
 
 							<landing-cube
-								ref=${e => (this.cubeNode = e)}
-								size=${() => [this.cubeSize]}
+								ref="${e => (this.cubeNode = e)}"
+								size="${() => [this.cubeSize]}"
 								align-point="0.5 0.5 0.5"
 								mount-point="0.5 0.5 0.5"
-								position=${() => [0, 0, -this.cubeSize]}
+								position="${() => [0, 0, -this.cubeSize]}"
 								rotation="45 45 45"
-							/>
+							></landing-cube>
 						</lume-element3d>
 					</lume-element3d>
 				</lume-scene>
 
-				<!-- <Show when={!this.isMobile}>
-					<lume-element3d ref={this.circle} class="circle" mount-point="0.5 0.5" size="200 200" />
-				</Show> -->
+				${() =>
+					this.isMobile
+						? html`
+								<lume-element3d class="mobileNav" size-mode="proportional proportional" size="1 1 0">
+									<lume-element3d
+										ref="${e => (this.menu = e)}"
+										class="mobileMenu"
+										size-mode="proportional proportional"
+										size="${[MENU_WIDTH, 1]}"
+										align-point="1 0"
+										comment="start closed position"
+										opacity="0.97"
+									>
+										<menu-links is-mobile="${true}"></menu-links>
+									</lume-element3d>
 
-				<Show when=${() => this.isMobile}>
-					<lume-element3d class="mobileNav" size-mode="proportional proportional" size="1 1 0">
-						<lume-element3d
-							ref=${e => (this.menu = e)}
-							class="mobileMenu"
-							size-mode="proportional proportional"
-							size=${[MENU_WIDTH, 1]}
-							align-point="1 0" // start closed position
-							opacity="0.97"
-						>
-							<menu-links is-mobile=${true} />
-						</lume-element3d>
-
-						<lume-element3d
-							class="menuButtonWrapper"
-							ref=${e => (this.menuButtonWrapper = e)}
-							size="140 100"
-							align-point="1 0"
-							position="0 0"
-							mount-point="1 0"
-							onClick=${() => {
-								console.log('CLICK 1!')
-								this.toggleMenu()
-							}}
-						>
-							<hamburger-button
-								size="40 19"
-								align-point="0.5 0.5"
-								mount-point="0.5 0.5"
-								position="0 0"
-								line-thickness=${2.5}
-								line-length=${0.7}
-								activated=${() => this.menuOpen}
-							/>
-						</lume-element3d>
-					</lume-element3d>
-				</Show>
+									<lume-element3d
+										class="menuButtonWrapper"
+										ref="${e => (this.menuButtonWrapper = e)}"
+										size="140 100"
+										align-point="1 0"
+										position="0 0"
+										mount-point="1 0"
+										onClick="${() => this.toggleMenu()}"
+									>
+										<hamburger-button
+											size="40 19"
+											align-point="0.5 0.5"
+											mount-point="0.5 0.5"
+											position="0 0"
+											line-thickness="2.5"
+											line-length="0.7"
+											activated="${() => this.menuOpen}"
+										></hamburger-button>
+									</lume-element3d>
+								</lume-element3d>
+						  `
+						: [
+								// html`
+								// 	<lume-element3d
+								// 		ref="${e => (this.circle = e)}"
+								// 		class="circle"
+								// 		mount-point="0.5 0.5"
+								// 		size="200 200"
+								// 	/>
+								// `,
+						  ]}
 			</lume-element3d>
 		</lume-scene>
 	`
@@ -440,10 +449,10 @@ export {MenuLinks}
 class MenuLinks extends Element {
 	@booleanAttribute isMobile = false
 
-	menuLinks?: HTMLDivElement
+	@signal menuLinks?: HTMLDivElement
 
 	template = () => html`
-		<div class=${() => `menuLinks${this.isMobile ? ' menuLinksMobile' : ''}`} ref=${e => (this.menuLinks = e)}>
+		<div class="${() => `menuLinks${this.isMobile ? ' menuLinksMobile' : ''}`}" ref="${e => (this.menuLinks = e)}">
 			<div data-comment="empty space"></div>
 			<div data-comment="empty space"></div>
 			<a class="menuLink" href="//docs.lume.io"> Documentation </a>
@@ -504,10 +513,18 @@ class MenuLinks extends Element {
         }
     `
 
+	constructor() {
+		super()
+		console.log('MenuLinks constructor')
+		if (count++ > 100) debugger
+	}
+
 	connectedCallback() {
+		console.log('MenuLinks connectedCallback')
 		super.connectedCallback()
 
 		createEffect(() => {
+			console.log('MenuLinks isMobile:', this.menuLinks, this.isMobile)
 			this.menuLinks?.style.setProperty('--isMobile', '' + (this.isMobile ? 1 : 0))
 		})
 	}
@@ -525,32 +542,36 @@ class HamburgerButton extends Element3D {
 	}
 	set root(_v) {}
 
+	constructor() {
+		super()
+		console.log('HamburgerButton constructor')
+		if (count++ > 100) debugger
+	}
+
 	template = () => html`
-		<>
-			<lume-element3d
-				class="menuButtonLine"
-				size-mode="proportional literal"
-				size=${() => [this.lineLength, this.lineThickness]}
-				align-point=${() => (this.activated ? '0.5 0.5' : '1 0')}
-				mount-point=${() => (this.activated ? '0.5 0.5' : '1 0')}
-				rotation=${() => [0, 0, this.activated ? -45 : 0]}
-			></lume-element3d>
-			<lume-element3d
-				classList=${() => ({menuButtonLine: true, hide: this.activated})}
-				size-mode="proportional literal"
-				size=${() => [this.lineLength, this.lineThickness]}
-				align-point="0 0.5"
-				mount-point="0 0.5"
-			></lume-element3d>
-			<lume-element3d
-				class="menuButtonLine"
-				size-mode="proportional literal"
-				size=${() => [this.lineLength, this.lineThickness]}
-				align-point=${() => (this.activated ? '0.5 0.5' : '1 1')}
-				mount-point=${() => (this.activated ? '0.5 0.5' : '1 1')}
-				rotation=${() => [0, 0, this.activated ? 45 : 0]}
-			></lume-element3d>
-		</>
+		<lume-element3d
+			class="menuButtonLine"
+			size-mode="proportional literal"
+			size="${() => [this.lineLength, this.lineThickness]}"
+			align-point="${() => (this.activated ? '0.5 0.5' : '1 0')}"
+			mount-point="${() => (this.activated ? '0.5 0.5' : '1 0')}"
+			rotation="${() => [0, 0, this.activated ? -45 : 0]}"
+		></lume-element3d>
+		<lume-element3d
+			classList="${() => ({menuButtonLine: true, hide: this.activated})}"
+			size-mode="proportional literal"
+			size="${() => [this.lineLength, this.lineThickness]}"
+			align-point="0 0.5"
+			mount-point="0 0.5"
+		></lume-element3d>
+		<lume-element3d
+			class="menuButtonLine"
+			size-mode="proportional literal"
+			size="${() => [this.lineLength, this.lineThickness]}"
+			align-point="${() => (this.activated ? '0.5 0.5' : '1 1')}"
+			mount-point="${() => (this.activated ? '0.5 0.5' : '1 1')}"
+			rotation="${() => [0, 0, this.activated ? 45 : 0]}"
+		></lume-element3d>
 	`
 
 	css = /*css*/ `
@@ -646,7 +667,7 @@ declare global {
 
 //////////////////////////////////////////////////////////////////////////
 
-type HamburgerButtonAttributes = NodeAttributes | 'lineThickness' | 'lineLength' | 'activated'
+type HamburgerButtonAttributes = Element3DAttributes | 'lineThickness' | 'lineLength' | 'activated'
 
 declare module 'solid-js' {
 	namespace JSX {

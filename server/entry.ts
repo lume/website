@@ -1,4 +1,5 @@
 // Allow only certain domains to access content.
+// @ts-expect-error TODO WebApp is not defined
 WebApp.rawConnectHandlers.use(
 	/*'/public',*/
 	function (req, res, next) {
