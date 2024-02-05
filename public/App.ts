@@ -456,11 +456,11 @@ class MenuLinks extends Element {
 		<div class="${() => `menuLinks${this.isMobile ? ' menuLinksMobile' : ''}`}" ref="${e => (this.menuLinks = e)}">
 			<div data-comment="empty space"></div>
 			<div data-comment="empty space"></div>
-			<a class="menuLink" href="//docs.lume.io"> Documentation </a>
-			<a class="menuLink" href="//docs.lume.io/examples/hello-world/"> Examples </a>
-			<a class="menuLink" href="//lume.community"> Forum </a>
-			<a class="menuLink" href="//discord.gg/PgeyevP"> Chat </a>
-			<a class="menuLink" href="//github.com/lume/lume"> Source </a>
+			<a class="menuLink" href="//docs.lume.io"> <span>Documentation</span> </a>
+			<a class="menuLink" href="//docs.lume.io/examples/hello-world/"> <span>Examples</span> </a>
+			<a class="menuLink" href="//lume.community"> <span>Forum</span> </a>
+			<a class="menuLink" href="//discord.gg/PgeyevP"> <span>Chat</span> </a>
+			<a class="menuLink" href="//github.com/lume/lume"> <span>Source</span> </a>
 			<div data-comment="empty space"></div>
 			<div data-comment="empty space"></div>
 		</div>
@@ -476,6 +476,9 @@ class MenuLinks extends Element {
                 4vw * var(--isMobile) +
                 14px * (1 - var(--isMobile))
             );
+			height: 100%;
+			display: flex;
+			align-items: center;
         }
 
         .menuLinksMobile {
@@ -484,6 +487,7 @@ class MenuLinks extends Element {
             width: 100%;
             height: 100%;
             justify-content: space-around;
+			align-items: start;
         }
 
         .menuLink {
@@ -492,10 +496,6 @@ class MenuLinks extends Element {
             margin-left: calc(
                 0px * var(--isMobile) +
                 40px * (1 - var(--isMobile))
-            );
-            margin-top: calc(
-                0px * var(--isMobile) +
-                80px * (1 - var(--isMobile))
             );
             letter-spacing: 0.105em;
             color: white;
@@ -511,6 +511,9 @@ class MenuLinks extends Element {
                 4% * var(--isMobile) +
                 0px * (1 - var(--isMobile))
             );
+			height: 100%;
+			display: flex;
+			align-items: center;
         }
     `
 

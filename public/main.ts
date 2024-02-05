@@ -13,5 +13,5 @@ function main() {
 	root.id = 'root' // needed for styling
 	document.body.append(root)
 
-	root.append(new App()) // continue: use custom element instead
+	root.append(new App())
 }
