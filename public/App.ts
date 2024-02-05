@@ -1,5 +1,6 @@
 import {Motor, Element, element, Element3D, numberAttribute, booleanAttribute} from 'lume'
 import {html} from 'pota/src/renderer/html.js'
+import {Show} from 'pota/src/components/flow/Show.js'
 import * as THREE from 'three'
 import {Tween, Easing} from '@tweenjs/tween.js'
 import {createEffect} from 'solid-js'
@@ -8,6 +9,8 @@ import './Cube.js'
 import type {ElementAttributes} from '@lume/element'
 import type {Element3DAttributes, RenderTask, Scene} from 'lume'
 import {type LandingCube} from './Cube.js'
+
+html.define({Show})
 
 const MENU_WIDTH = 0.8 // percent of viewport
 const HEADER_HEIGHT = 100
@@ -106,6 +109,7 @@ class App extends Element {
 	@signal viewWidth = 0
 	@signal viewHeight = 0
 
+	// TODO @memo decorator to avoid unnecessary re-calculation downstream
 	get isMobile() {
 		return this.viewWidth <= 1200
 	}
@@ -116,86 +120,87 @@ class App extends Element {
 		return this.viewHeight >= this.viewWidth
 	}
 
+	stoppers: Array<() => void> = []
+
 	connectedCallback() {
 		console.log('App connectedCallback()')
 		super.connectedCallback()
 
-		createEffect(() => {
-			const {scene, rotator, cubeNode, menuButtonWrapper} = this
+		const {scene, rotator, cubeNode, menuButtonWrapper} = this
 
-			if (!scene || !rotator || !cubeNode || !menuButtonWrapper) return
+		if (!scene || !rotator || !cubeNode || !menuButtonWrapper) throw new Error('Missing!')
 
-			this.menuButtonWrapper.onclick = () => this.toggleMenu()
+		const task = Motor.addRenderTask((_t, dt) => (cubeNode.rotation.y += dt / 50))
+		this.stoppers.push(() => Motor.removeRenderTask(task))
 
-			Motor.addRenderTask((_t, dt) => (cubeNode.rotation.y += dt / 50))
+		window.addEventListener('resize', this.resize)
+		this.resize()
+		this.stoppers.push(() => window.removeEventListener('resize', this.resize))
 
-			window.addEventListener('resize', this.resize)
-			this.resize()
+		///// ROTATION ON POINTER MOVE ///////////////////////////////////////////////
 
-			///// ROTATION ON POINTER MOVE ///////////////////////////////////////////////
+		const rotationRange = 10
+		const targetRotation = {
+			x: 0,
+			y: 0,
+		}
 
-			const rotationRange = 10
-			const targetRotation = {
-				x: 0,
-				y: 0,
-			}
+		const setTargetRotation = (event: PointerEvent) => {
+			const size = scene.calculatedSize
 
-			const setTargetRotation = (event: PointerEvent) => {
-				const size = scene.calculatedSize
+			// TODO use offsetX/Y so we get events relative to `currentTarget`,
+			// and make an abstraction so that the offsets can be calculated
+			// from event.target instead of event.currentTarget, otherwise the
+			// behavior is strange when trying to use mouse values relative to
+			// an element instead of relative to the viewport. ...
+			// targetRotation.y = (event.offsetX / size.x) * (rotationRange * 2) - rotationRange
+			// targetRotation.x = -((event.offsetY / size.y) * (rotationRange * 2) - rotationRange)
 
-				// TODO use offsetX/Y so we get events relative to `currentTarget`,
-				// and make an abstraction so that the offsets can be calculated
-				// from event.target instead of event.currentTarget, otherwise the
-				// behavior is strange when trying to use mouse values relative to
-				// an element instead of relative to the viewport. ...
-				// targetRotation.y = (event.offsetX / size.x) * (rotationRange * 2) - rotationRange
-				// targetRotation.x = -((event.offsetY / size.y) * (rotationRange * 2) - rotationRange)
+			// ... For now just use clientX/Y. ...
+			targetRotation.y = (event.clientX / size.x) * (rotationRange * 2) - rotationRange
+			targetRotation.x = -((event.clientY / size.y) * (rotationRange * 2) - rotationRange)
 
-				// ... For now just use clientX/Y. ...
-				targetRotation.y = (event.clientX / size.x) * (rotationRange * 2) - rotationRange
-				targetRotation.x = -((event.clientY / size.y) * (rotationRange * 2) - rotationRange)
+			// ... See https://discourse.wicg.io/t/4236 for discussion
 
-				// ... See https://discourse.wicg.io/t/4236 for discussion
+			const circle = this.circle
+			if (!circle) return
+			circle.position.x = event.clientX
+			circle.position.y = event.clientY
+		}
 
-				const circle = this.circle
-				if (!circle) return
-				circle.position.x = event.clientX
-				circle.position.y = event.clientY
-			}
+		// Rotate the image a little bit based on pointer position.
+		scene.addEventListener('pointermove', setTargetRotation)
+		scene.addEventListener('pointerdown', setTargetRotation)
 
-			// Rotate the image a little bit based on pointer position.
-			scene.addEventListener('pointermove', setTargetRotation)
-			scene.addEventListener('pointerdown', setTargetRotation)
+		// Rotate the container towards the targetRotation over time to make it smooth.
+		const task2 = Motor.addRenderTask(() => {
+			rotator.rotation.x += (targetRotation.x - rotator.rotation.x) * 0.02
+			rotator.rotation.y += (targetRotation.y - rotator.rotation.y) * 0.02
 
-			// Rotate the container towards the targetRotation over time to make it smooth.
-			Motor.addRenderTask(() => {
-				rotator.rotation.x += (targetRotation.x - rotator.rotation.x) * 0.02
-				rotator.rotation.y += (targetRotation.y - rotator.rotation.y) * 0.02
-
-				rotator.position.x = rotator.rotation.y * -3
-				rotator.position.y = rotator.rotation.x * 2
-			})
-
-			scene.addEventListener('pointermove', event => {
-				const circle = this.circle
-				if (!circle) return
-				circle.position.x = event.clientX
-				circle.position.y = event.clientY
-			})
-
-			// TODO, this custom svgTexture handling broke with the latest LUME
-			// update. The CSS version works and looks the same, for now. To switch,
-			// re-enable svgTexture calls, and uncomment the <canvas> elements, and
-			// remove scene's swap-layers (it places CSS in front).
-			//
-			// svgTexture(otherPlane, otherImg, otherCanvas, 960, 146)
-			// svgTexture(numbersPlane, numbersImg, numbersCanvas, 118, 686)
+			rotator.position.x = rotator.rotation.y * -3
+			rotator.position.y = rotator.rotation.x * 2
 		})
+		this.stoppers.push(() => Motor.removeRenderTask(task2))
+
+		scene.addEventListener('pointermove', event => {
+			const circle = this.circle
+			if (!circle) return
+			circle.position.x = event.clientX
+			circle.position.y = event.clientY
+		})
+
+		// TODO, this custom svgTexture handling broke with the latest LUME
+		// update. The CSS version works and looks the same, for now. To switch,
+		// re-enable svgTexture calls, and uncomment the <canvas> elements, and
+		// remove scene's swap-layers (it places CSS in front).
+		//
+		// svgTexture(otherPlane, otherImg, otherCanvas, 960, 146)
+		// svgTexture(numbersPlane, numbersImg, numbersCanvas, 118, 686)
 	}
 
 	resize = (_e?: UIEvent) => {
-		this.viewWidth = window.innerWidth
-		this.viewHeight = window.innerHeight
+		if (this.viewWidth !== window.innerWidth) this.viewWidth = window.innerWidth
+		if (this.viewHeight !== window.innerHeight) this.viewHeight = window.innerHeight
 	}
 
 	get wordmarkAspectRatio() {
@@ -234,13 +239,10 @@ class App extends Element {
 						>
 							<div class="headerBarInner">
 								<img src="/images/logo.svg" class="logo" />
-								${() =>
-									!this.isMobile
-										? html`
-												<div class="header-space"></div>
-												<menu-links></menu-links>
-										  `
-										: []}
+								<Show when="${() => !this.isMobile}">
+									<div class="header-space"></div>
+									<menu-links></menu-links>
+								</Show>
 							</div>
 						</lume-element3d>
 
@@ -327,53 +329,52 @@ class App extends Element {
 					</lume-element3d>
 				</lume-scene>
 
-				${() =>
-					this.isMobile
-						? html`
-								<lume-element3d class="mobileNav" size-mode="proportional proportional" size="1 1 0">
-									<lume-element3d
-										ref="${e => (this.menu = e)}"
-										class="mobileMenu"
-										size-mode="proportional proportional"
-										size="${[MENU_WIDTH, 1]}"
-										align-point="1 0"
-										comment="start closed position"
-										opacity="0.97"
-									>
-										<menu-links is-mobile="${true}"></menu-links>
-									</lume-element3d>
+				<Show
+					when="${() => this.isMobile}"
+					fallback="${() => html`
+						<lume-element3d
+							ref="${e => (this.circle = e)}"
+							visible="false"
+							class="circle"
+							mount-point="0.5 0.5"
+							size="200 200"
+						/>
+					`}"
+				>
+					<lume-element3d class="mobileNav" size-mode="proportional proportional" size="1 1 0">
+						<lume-element3d
+							ref="${e => (this.menu = e)}"
+							class="mobileMenu"
+							size-mode="proportional proportional"
+							size="${[MENU_WIDTH, 1]}"
+							align-point="1 0"
+							comment="start closed position"
+							opacity="1"
+						>
+							<menu-links is-mobile="${true}"></menu-links>
+						</lume-element3d>
 
-									<lume-element3d
-										class="menuButtonWrapper"
-										ref="${e => (this.menuButtonWrapper = e)}"
-										size="140 100"
-										align-point="1 0"
-										position="0 0"
-										mount-point="1 0"
-										onClick="${() => this.toggleMenu()}"
-									>
-										<hamburger-button
-											size="40 19"
-											align-point="0.5 0.5"
-											mount-point="0.5 0.5"
-											position="0 0"
-											line-thickness="2.5"
-											line-length="0.7"
-											activated="${() => this.menuOpen}"
-										></hamburger-button>
-									</lume-element3d>
-								</lume-element3d>
-						  `
-						: [
-								// html`
-								// 	<lume-element3d
-								// 		ref="${e => (this.circle = e)}"
-								// 		class="circle"
-								// 		mount-point="0.5 0.5"
-								// 		size="200 200"
-								// 	/>
-								// `,
-						  ]}
+						<lume-element3d
+							class="menuButtonWrapper"
+							ref="${e => (this.menuButtonWrapper = e)}"
+							size="140 100"
+							align-point="1 0"
+							position="0 0"
+							mount-point="1 0"
+							onclick="${() => this.toggleMenu()}"
+						>
+							<hamburger-button
+								size="40 19"
+								align-point="0.5 0.5"
+								mount-point="0.5 0.5"
+								position="0 0"
+								line-thickness="2.5"
+								line-length="0.7"
+								activated="${() => this.menuOpen}"
+							></hamburger-button>
+						</lume-element3d>
+					</lume-element3d>
+				</Show>
 			</lume-element3d>
 		</lume-scene>
 	`
@@ -433,8 +434,8 @@ class App extends Element {
         }
 
         .mobileMenu {
-            background: rgba(0, 25, 93, 0.3);
-            backdrop-filter: blur(14px) brightness(130%);
+            background: rgba(0, 25, 93, 0.85);
+            backdrop-filter: blur(14px) brightness(130%); /* not working as desired, https://issues.chromium.org/issues/323735424 */
             pointer-events: auto;
         }
 
@@ -558,7 +559,8 @@ class HamburgerButton extends Element3D {
 			rotation="${() => [0, 0, this.activated ? -45 : 0]}"
 		></lume-element3d>
 		<lume-element3d
-			classList="${() => ({menuButtonLine: true, hide: this.activated})}"
+			TODO="no classList"
+			class="${() => ({menuButtonLine: true, hide: this.activated})}"
 			size-mode="proportional literal"
 			size="${() => [this.lineLength, this.lineThickness]}"
 			align-point="0 0.5"
