@@ -1,4 +1,7 @@
-export const Meteor = globalThis.Meteor
-export const Tracker = globalThis.Package.tracker.Tracker
-export const Mongo = globalThis.Package.mongo.Mongo
-export const Session = globalThis.Package.session.Session
+// This file is used in the importmap to export the Meteor global APIs from "meteor/*" packages.
+// See the importmap in public/index.html.
+const global = globalThis as any
+export const Meteor = global.Meteor
+export const Tracker = global.Package.tracker.Tracker
+export const Mongo = global.Package.mongo.Mongo
+export const Session = global.Package.session.Session

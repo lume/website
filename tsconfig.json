@@ -13,6 +13,9 @@
 		"verbatimModuleSyntax": true,
 		"skipLibCheck": true,
 
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+
 		// "preserveSymlinks": true, // makes no difference for meteor types for me.
 		"paths": {
 			"meteor/*": ["./node_modules/@types/meteor/*", "./.meteor/local/types/packages.d.ts"]

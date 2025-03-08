@@ -1,5 +1,4 @@
 module.exports = {
-	tabWidth: 4,
 	useTabs: true,
 	semi: false,
 	singleQuote: true,
@@ -7,12 +6,6 @@ module.exports = {
 	bracketSpacing: false,
 	printWidth: 120,
 	arrowParens: 'avoid',
-	overrides: [
-		{
-			files: '*.md',
-			options: {
-				tabWidth: 2,
-			},
-		},
-	],
+
+	overrides: [{files: '*.md', options: {useTabs: false}}],
 }

@@ -1,3 +1,19 @@
+// Native ESM test: ///////////////////////////////////////////////////////
+// This is not working natively (without ecmascript package) because import() not available in a Node `vm`: https://forums.meteor.com/t/attempt-to-import-native-es-modules-in-meteor-3-0-beta-0-no-luck-yet/61085
+// import('./imports/test.js').then(({foo}) => console.log('foo', foo))
+//
+// This is also not working (with ecmascript installed) with the same error:
+// function nativeImport(path) {
+// 	console.log('eval import')
+// 	return eval(`import('${path}')`)
+// }
+// nativeImport('./imports/test.js').then(({foo}) => console.log('foo', foo))
+//
+// This works with ecmascript installed when projects are not symlinked, which doesn't work for lume's repo (https://github.com/meteor/meteor/issues/12952):
+// import {foo} from './imports/test.js'
+// console.log('foo', foo)
+///////////////////////////////////////////////////////////////////////////
+
 // Allow only certain domains to access content.
 // @ts-expect-error TODO WebApp is not defined
 WebApp.rawConnectHandlers.use(

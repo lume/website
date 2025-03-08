@@ -11,24 +11,26 @@
 		"clean": "npm run clean:unix || npm run --script-shell=pwsh clean:windows",
 		"clean:unix": "rm -rf `find client -name '*.js*'` && rm -rf `find public -name '*.js*'` && rm -rf `find server -name '*.js*'`",
 		"clean:windows": "Get-ChildItem -r -i client | Where{$_.Name -Match '*.\\.js*.'} | rm -r -fo && Get-ChildItem -r -i public | Where{$_.Name -Match '*.\\.js*.'} | rm -r -fo && Get-ChildItem -r -i server | Where{$_.Name -Match '*.\\.js*.'} | rm -r -fo",
-		"postinstall": "echo POSTINSTALL && echo && cd public/ && npx npm install",
 		"// LUME Scripts below ///////////////////////////////////////": "",
 		"typecheck": "lume typecheck",
 		"typecheck:watch": "lume typecheckWatch"
 	},
+	"overrides": {
+		"@lume/element": "$@lume/element"
+	},
 	"dependencies": {
 		"@babel/runtime": "^7.15.4",
-		"@lume/element": "^0.11.0",
+		"@lume/element": "^0.15.0",
 		"@tweenjs/tween.js": "^18.6.4",
 		"@types/meteor": "^2.6.2",
-		"lume": "^0.3.0-alpha.37",
+		"lume": "^0.3.0-alpha.44",
 		"meteor-node-stubs": "^1.0.0",
-		"solid-js": "^1.4.0",
+		"solid-js": "^1.9.0",
 		"typescript": "^5.0.0"
 	},
 	"devDependencies": {
-		"@lume/cli": "^0.11.0",
-		"prettier": "3.0.3"
+		"@lume/cli": "^0.15.0",
+		"prettier": "3.5.3"
 	},
 	"meteor": {
 		"mainModule": {
