@@ -4,13 +4,14 @@
 	"// we want to use type:module, but Meteor code is still CommonJS. So we set type:commonjs, then import our es modules from server/entry.js on the server": "",
 	"type": "commonjs",
 	"scripts": {
-		"start": "npm run _meteor -- -p 8765",
+		"start": "npm run build && npm run _meteor -- -p 8765",
 		"build": "tsc",
 		"dev": "tsc --watch",
 		"_meteor": "meteor --exclude-archs web.browser.legacy",
 		"clean": "npm run clean:unix || npm run --script-shell=pwsh clean:windows",
 		"clean:unix": "rm -rf `find client -name '*.js*'` && rm -rf `find public -name '*.js*'` && rm -rf `find server -name '*.js*'`",
 		"clean:windows": "Get-ChildItem -r -i client | Where{$_.Name -Match '*.\\.js*.'} | rm -r -fo && Get-ChildItem -r -i public | Where{$_.Name -Match '*.\\.js*.'} | rm -r -fo && Get-ChildItem -r -i server | Where{$_.Name -Match '*.\\.js*.'} | rm -r -fo",
+		"publish": "git push && git push git@github.com:lumechef/website.git",
 		"// LUME Scripts below ///////////////////////////////////////": "",
 		"typecheck": "lume typecheck",
 		"typecheck:watch": "lume typecheckWatch"
