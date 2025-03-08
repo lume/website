@@ -599,7 +599,6 @@ declare global {
 @element('menu-links')
 export class MenuLinks extends Element {
 	@booleanAttribute isMobile = false
-
 	@signal menuLinks?: HTMLDivElement
 
 	template = () => html`
