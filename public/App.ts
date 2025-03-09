@@ -120,59 +120,69 @@ export class App extends Element {
 		onCleanup(() => Motor.removeRenderTask(task))
 	}
 
-	rotateSceneOnPointerMove() {
-		const {scene, rotator, cube, menuButtonWrapper} = this
+	scenePointerInteraction() {
+		createEffect(() => {
+			const {scene, rotator, cube, menuButtonWrapper} = this
 
-		if (!scene || !rotator || !cube || !menuButtonWrapper) throw new Error('Missing!')
+			if (!scene || !rotator || !cube || !menuButtonWrapper) throw new Error('Missing!')
 
-		const rotationRange = 10
-		const targetRotation = {
-			x: 0,
-			y: 0,
-		}
+			const rotationRange = this.isMobile() ? 15 : 10
+			const targetRotation = {x: 0, y: 0}
 
-		const setTargetRotation = (event: PointerEvent) => {
-			const size = scene.calculatedSize
+			const setTargetRotation = (event: PointerEvent) => {
+				const size = scene.calculatedSize
 
-			// TODO use offsetX/Y so we get events relative to `currentTarget`,
-			// and make an abstraction so that the offsets can be calculated
-			// from event.target instead of event.currentTarget, otherwise the
-			// behavior is strange when trying to use mouse values relative to
-			// an element instead of relative to the viewport. ...
-			// targetRotation.y = (event.offsetX / size.x) * (rotationRange * 2) - rotationRange
-			// targetRotation.x = -((event.offsetY / size.y) * (rotationRange * 2) - rotationRange)
+				// TODO use offsetX/Y so we get events relative to `currentTarget`,
+				// and make an abstraction so that the offsets can be calculated
+				// from event.target instead of event.currentTarget, otherwise the
+				// behavior is strange when trying to use mouse values relative to
+				// an element instead of relative to the viewport. ...
+				// targetRotation.y = (event.offsetX / size.x) * (rotationRange * 2) - rotationRange
+				// targetRotation.x = -((event.offsetY / size.y) * (rotationRange * 2) - rotationRange)
 
-			// ... For now just use clientX/Y. ...
-			targetRotation.y = (event.clientX / size.x) * (rotationRange * 2) - rotationRange
-			targetRotation.x = -((event.clientY / size.y) * (rotationRange * 2) - rotationRange)
+				// ... For now just use clientX/Y. ...
+				targetRotation.y = (event.clientX / size.x) * (rotationRange * 2) - rotationRange
+				targetRotation.x = -((event.clientY / size.y) * (rotationRange * 2) - rotationRange)
 
-			// ... See https://discourse.wicg.io/t/4236 for discussion
+				// ... See https://discourse.wicg.io/t/4236 for discussion
 
-			const circle = this.circle
-			if (!circle) return
-			circle.position.x = event.clientX
-			circle.position.y = event.clientY
-		}
+				const circle = this.circle
+				if (!circle) return
+				circle.position.x = event.clientX
+				circle.position.y = event.clientY
+			}
 
-		// Rotate the image a little bit based on pointer position.
-		scene.addEventListener('pointermove', setTargetRotation)
-		scene.addEventListener('pointerdown', setTargetRotation)
+			const controller = new AbortController()
+			const signal = controller.signal
 
-		// Rotate the container towards the targetRotation over time to make it smooth.
-		const task2 = Motor.addRenderTask(() => {
-			rotator.rotation.x += (targetRotation.x - rotator.rotation.x) * 0.02
-			rotator.rotation.y += (targetRotation.y - rotator.rotation.y) * 0.02
+			// Rotate the image a little bit based on pointer position.
+			scene.addEventListener('pointermove', setTargetRotation, {signal})
+			scene.addEventListener('pointerdown', setTargetRotation, {signal})
 
-			rotator.position.x = rotator.rotation.y * -3
-			rotator.position.y = rotator.rotation.x * 2
-		})
-		onCleanup(() => Motor.removeRenderTask(task2))
+			// Rotate the container towards the targetRotation over time to make it smooth.
+			const task2 = Motor.addRenderTask(() => {
+				rotator.rotation.x += (targetRotation.x - rotator.rotation.x) * 0.02
+				rotator.rotation.y += (targetRotation.y - rotator.rotation.y) * 0.02
 
-		scene.addEventListener('pointermove', event => {
-			const circle = this.circle
-			if (!circle) return
-			circle.position.x = event.clientX
-			circle.position.y = event.clientY
+				rotator.position.x = rotator.rotation.y * (this.isMobile() ? -1 : -3)
+				rotator.position.y = rotator.rotation.x * (this.isMobile() ? 0.7 : 2)
+			})
+
+			scene.addEventListener(
+				'pointermove',
+				event => {
+					const circle = this.circle
+					if (!circle) return
+					circle.position.x = event.clientX
+					circle.position.y = event.clientY
+				},
+				{signal},
+			)
+
+			onCleanup(() => {
+				Motor.removeRenderTask(task2)
+				controller.abort()
+			})
 		})
 	}
 
@@ -198,7 +208,7 @@ export class App extends Element {
 		this.createEffect(() => {
 			this.rotateCube()
 
-			this.rotateSceneOnPointerMove()
+			this.scenePointerInteraction()
 
 			this.lightPositionHack()
 
@@ -416,10 +426,10 @@ export class App extends Element {
 				<lume-element3d
 					ref=${e => fitContent(e, e.children[0])}
 					mount-point="0.5 0.5"
-					align-point="0.5 0.8"
+					align-point=${() => [0.5, this.isMobile() ? 0.86 : 0.8]}
 					size="200 50"
 				>
-					<div style="position: absolute; white-space: nowrap; font-size: 2em;">
+					<div style=${() => `position: absolute; white-space: nowrap; font-size: ${this.isMobile() ? '1em' : '2em'};`}>
 						<span>Rich 2D and 3D graphics for any website.</span>
 					</div>
 				</lume-element3d>
@@ -435,7 +445,7 @@ export class App extends Element {
 					<lume-element3d
 						ref="${e => (this.wordmarkContainer = e)}"
 						size-mode="proportional proportional"
-						size="${() => (this.viewIsTall() ? '0 0.7 0' : '0.5 0 0')}"
+						size="${() => (this.viewIsTall() ? '0 0.6 0' : '0.5 0 0')}"
 						mount-point="0.5 0.5"
 						align-point="0.5 0.5"
 					>
@@ -581,14 +591,24 @@ export class App extends Element {
 			</lume-element3d>
 		</lume-element3d>
 
-		<!-- <lume-element3d align-point="0 1" mount-point="0 1" size-mode="p l" size="1 50" style="background: #ee449988;">
-			<div>
-				<span>Get early access to Lume's web design and development environment.</span>
-				<br />
-				<input type="text" placeholder="Enter your email" />
-				<button>Get early access</button>
-			</div>
-		</lume-element3d> -->
+		<lume-element3d
+			align-point="0 1"
+			mount-point="0 1"
+			size-mode="p l"
+			size="1 50"
+			ref=${e => fitContent(e, e.children[0], false, true)}
+			style=${() => `font-size: ${this.isMobile() ? '0.8em' : '1em'};`}
+		>
+			<!-- <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+				<span>Get early access to Lume's design and code environment.</span>
+				<span style="margin-bottom: 25px; display: flex; background: white; border-radius: 3px; align-items: center;">
+					<input type="email" placeholder="Your email" style="border: none; background: none;" />
+					<button style="border: none; background: none;">
+						<img width="18" height="18" src="/images/send-icon.png" />
+					</button>
+				</span>
+			</div> -->
+		</lume-element3d>
 	`
 
 	css = css/*css*/ `
@@ -751,8 +771,6 @@ export class MenuLinks extends Element {
 			color: white;
 			padding-left: calc(10% * var(--isMobile) + 20px * (1 - var(--isMobile)));
 			padding-right: calc(0px * var(--isMobile) + 20px * (1 - var(--isMobile)));
-			padding-top: calc(4% * var(--isMobile) + 0px * (1 - var(--isMobile)));
-			padding-bottom: calc(4% * var(--isMobile) + 0px * (1 - var(--isMobile)));
 			height: calc(100% * var(--isMobile) + 50px * (1 - var(--isMobile)));
 			width: 100%;
 			display: flex;

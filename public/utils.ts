@@ -169,10 +169,10 @@ export function elementSize(el: Element | (() => Element | undefined | null)) {
 }
 
 /** Make an Element3D be the size of the given element. */
-export function fitContent(el3d: Element3D, el: Element) {
+export function fitContent(el3d: Element3D, el: Element, width = true, height = true) {
 	const {clientWidth, clientHeight} = elementSize(el)
 	createEffect(() => {
-		el3d.size.set(clientWidth(), clientHeight(), 0)
-		console.log(clientWidth(), clientHeight(), 0)
+		if (width) el3d.size.x = clientWidth()
+		if (height) el3d.size.y = clientHeight()
 	})
 }
