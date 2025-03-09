@@ -14,8 +14,12 @@
 // console.log('foo', foo)
 ///////////////////////////////////////////////////////////////////////////
 
+// WebApp is defined by Meteor, but the type is missin.
+declare const WebApp: any
+
+WebApp.addHtmlAttributeHook(() => ({lang: 'en'}))
+
 // Allow only certain domains to access content.
-// @ts-expect-error TODO WebApp is not defined
 WebApp.rawConnectHandlers.use(
 	/*'/public',*/
 	function (req, res, next) {
