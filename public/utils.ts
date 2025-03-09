@@ -1,5 +1,7 @@
-import type {Mesh} from 'lume'
+import type {Element3D, Mesh} from 'lume'
 import * as THREE from 'three'
+import {batch, createEffect, createMemo, createSignal, onCleanup, untrack, type Signal} from 'solid-js'
+import {Easing} from '@tweenjs/tween.js'
 
 export async function svgTexture(
 	plane: Mesh,
@@ -38,4 +40,139 @@ export function imgLoaded(img) {
 		else img.addEventListener('load', res)
 	})
 	return p
+}
+
+interface AnimateValueOptions {
+	/** Duration of the animation in milliseconds. Defaults to 1000. */
+	duration?: number
+
+	/**
+	 * The easing curve to use. The function
+	 * accepts a value between 0 and 1 indicating start to finish time,
+	 * and returns a value between 0 and 1 indicating start to finish
+	 * position. You can pass any Tween.js Easing curve here, for
+	 * example. Defaults to Tween.js Easing.Cubic.InOut
+	 */
+	curve?: (amount: number) => number
+
+	/**
+	 * A boolean signal that if provided, prevents the animation from
+	 * starting until it is true. Toggling it back to false also stops the
+	 * animation, setting back to true starts it again.
+	 */
+	start?: () => boolean
+}
+
+/**
+ * Animates a signal from its current value to a target value.
+ *
+ * @param signal - The signal to animate.
+ * @param targetValue - The target value to animate to.
+ * @param options - An object containing optional parameters for the animation.
+ * @param options.duration - The duration of the animation in milliseconds. Defaults to 1000.
+ * @param options.curve - The easing curve to use for the animation. Defaults to Easing.Cubic.InOut.
+ * @param options.start - A signal that controls when the animation starts. If provided, the animation will only start when this signal is true.
+ */
+export function animateSignalTo(
+	signal: Signal<number>,
+	targetValue: number,
+	{duration = 1000, curve = Easing.Cubic.InOut, start}: AnimateValueOptions = {},
+) {
+	const [getValue, setValue] = signal
+	const [done, setDone] = createSignal(false)
+	const startValue = untrack(getValue)
+
+	createEffect(() => {
+		if (untrack(getValue) === targetValue) return setDone(true)
+
+		if (start && !start()) return
+
+		let frame = 0
+		const startTime = performance.now()
+
+		frame = requestAnimationFrame(function loop(time) {
+			let val = getValue()
+
+			const elapsed = time - startTime
+			const elapsedPortion = elapsed / duration
+			const amount = curve(elapsedPortion > 1 ? 1 : elapsedPortion)
+			const valuePortion = amount * (targetValue - startValue)
+
+			val = startValue + valuePortion
+			setValue(val)
+
+			if (val === targetValue) return setDone(true)
+
+			frame = requestAnimationFrame(loop)
+		})
+
+		onCleanup(() => {
+			cancelAnimationFrame(frame)
+			setDone(false)
+		})
+	})
+
+	return done
+}
+
+// Creates a signal that updates based on an element's natural size.
+function naturalSize(element: Element) {
+	const [getSize, setSize] = createSignal({
+		width: element.clientWidth,
+		height: element.clientHeight,
+	})
+
+	const observer = new ResizeObserver(entries => {
+		for (const entry of entries) {
+			const {width, height} = entry.contentRect
+			setSize({width, height})
+		}
+	})
+
+	observer.observe(element)
+
+	onCleanup(() => observer.disconnect())
+
+	return getSize
+}
+
+/** Return two signals for the width and height of an element. */
+export function elementSize(el: Element | (() => Element | undefined | null)) {
+	const [clientWidth, setClientWidth] = createSignal(0)
+	const [clientHeight, setClientHeight] = createSignal(0)
+
+	const element = createMemo(() => (typeof el === 'function' ? el() : el))
+
+	createEffect(() => {
+		const el = element()
+
+		if (!el) {
+			setClientWidth(0)
+			setClientHeight(0)
+			return
+		}
+
+		const observer = new ResizeObserver(records => {
+			console.log('resize', records)
+			batch(() => {
+				setClientWidth(el.clientWidth)
+				setClientHeight(el.clientHeight)
+			})
+		})
+
+		observer.observe(el)
+
+		onCleanup(() => observer.disconnect())
+	})
+
+	return {clientWidth, clientHeight}
+}
+
+/** Make an Element3D be the size of the given element. */
+export function fitContent(el3d: Element3D, el: Element) {
+	const {clientWidth, clientHeight} = elementSize(el)
+	createEffect(() => {
+		el3d.size.set(clientWidth(), clientHeight(), 0)
+		console.log(clientWidth(), clientHeight(), 0)
+	})
 }

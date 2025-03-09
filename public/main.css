@@ -5,8 +5,7 @@ body,
 	height: 100%;
 	padding: 0;
 	margin: 0;
-
-	background: radial-gradient(circle, rgb(23, 132, 252) 0%, rgb(0, 0, 198) 43.67%, rgb(13, 9, 98) 100%);
+	color: white;
 }
 
 /* prettier-ignore */
