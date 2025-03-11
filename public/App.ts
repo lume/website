@@ -4,9 +4,10 @@ import {createEffect, createMemo, onCleanup, type Signal} from 'solid-js'
 import {signal} from 'classy-solid'
 import './Cube.js'
 import type {ElementAttributes} from '@lume/element'
-import type {Element3DAttributes, MixedPlane, Plane, RenderTask, Scene} from 'lume'
+import type {Element3DAttributes, MixedPlane, Plane, RenderTask, Scene, Sphere} from 'lume'
 import {type LandingCube} from './Cube.js'
-import {animateSignalTo, fadePageOnNav, fitContent, svgTexture} from './utils.js'
+import {animateSignalTo, clamp, elementSize, fadePageOnNav, svgTexture} from './utils.js'
+import {Meteor} from 'meteor/meteor'
 
 const MENU_WIDTH = 0.8 // percent of viewport
 const HEADER_HEIGHT = 100
@@ -105,10 +106,11 @@ export class App extends Element {
 	cubeSize = () => (this.viewIsTall() ? 0.65 * this.viewWidth : 0.5 * this.viewHeight)
 	viewIsTall = () => this.viewHeight >= this.viewWidth
 	wordmarkAspectRatio = () => (this.viewIsTall() ? 118 / 686 : 960 / 146)
+	rotatorAlignPoint = () => (this.viewIsTall() ? [0.5, 0.4] : [0.5, 0.45])
 
 	// TODO @memo decorator in classy-solid to replace this #memoize() method.
 	#memoize() {
-		memoize(this, 'isMobile', 'cubeSize', 'viewIsTall', 'wordmarkAspectRatio')
+		memoize(this, 'isMobile', 'cubeSize', 'viewIsTall', 'wordmarkAspectRatio', 'rotatorAlignPoint')
 	}
 
 	rotateCube() {
@@ -197,6 +199,91 @@ export class App extends Element {
 		})
 	}
 
+	onSubmitStudioSignup = (event: SubmitEvent) => {
+		event.preventDefault()
+		const input = (event.target as HTMLFormElement).querySelector('input')
+		if (!input.value) return
+		const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+		if (!emailRegex.test(input.value)) return
+		if (input.value.includes('..')) return
+		Meteor.call('studioSignup', input.value)
+		input.value = ''
+
+		// TODO move this into an effect in connectedCallback, trigger it from here, so it will be robust (cancelable/repeatable).
+		// Make a little explosiong animation out of spheres.
+		const sphereParent = this.scene.querySelector('#explosionSpheres') as Element3D
+		const spheres = Array.from(sphereParent.children) as Sphere[]
+		const button = (event.target as HTMLFormElement).querySelector('button')
+		const rect = button.getBoundingClientRect()
+		const buttonPosition = {
+			x: rect.x + rect.width / 2,
+			y: rect.y + rect.height / 2,
+		}
+		const maxDistance = 250
+		const duration = 1500
+		const curve = Easing.Exponential.Out
+		const colors = ['yellow', 'deeppink', 'cyan', 'blue', 'purple', 'pink']
+
+		// explosion happens at the button position
+		sphereParent.position = [buttonPosition.x, buttonPosition.y, 10]
+		let i = 0
+		for (const sphere of spheres) {
+			const color = colors[i++ % colors.length]
+
+			sphere.opacity = 1
+			sphere.visible = true
+			sphere.position.x = sphere.position.y = 0
+			sphere.size.x = 70
+			sphere.color = color
+
+			// animate the sphere to a random 3D position `distance` units away
+			const randomAnglePhi = Math.random() * Math.PI * 2
+			const randomAngleTheta = Math.random() * Math.PI * 2
+			const target = {
+				x: Math.sin(randomAngleTheta) * Math.cos(randomAnglePhi) * maxDistance,
+				y: Math.sin(randomAngleTheta) * Math.sin(randomAnglePhi) * maxDistance,
+				z: Math.cos(randomAngleTheta) * maxDistance,
+			}
+
+			const xDone = animateSignalTo(
+				[() => sphere.position.x, (n: number) => (sphere.position.x = n)] as Signal<number>,
+				target.x,
+				{duration, curve},
+			)
+			const yDone = animateSignalTo(
+				[() => sphere.position.y, (n: number) => (sphere.position.y = n)] as Signal<number>,
+				target.y,
+				{duration, curve},
+			)
+			const zDone = animateSignalTo(
+				[() => sphere.position.z, (n: number) => (sphere.position.z = n)] as Signal<number>,
+				target.z,
+				{duration, curve},
+			)
+
+			// animate size to 0
+			const sizeDone = animateSignalTo([() => sphere.size.x, (n: number) => (sphere.size.x = n)] as Signal<number>, 0, {
+				duration,
+				curve,
+			})
+
+			// animate opacity to 0
+			const opacityDone = animateSignalTo(
+				[() => sphere.opacity, (n: number) => (sphere.opacity = n)] as Signal<number>,
+				0,
+				{duration, curve},
+			)
+
+			const allDone = createMemo(() => xDone() && yDone() && zDone() && opacityDone() && sizeDone())
+
+			createEffect(() => {
+				if (!allDone()) return
+				sphere.opacity = 0
+				sphere.visible = false
+			})
+		}
+	}
+
 	connectedCallback() {
 		this.#memoize()
 		super.connectedCallback()
@@ -265,9 +352,44 @@ export class App extends Element {
 				else unrecede()
 			})
 		})
+
+		// set explosionSpheres to initially invisible after they've had a
+		// chance to render (so that they are uploaded to GPU and don't cause a
+		// pause when we show them later)
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => {
+				const spheres = Array.from(this.scene.querySelectorAll('.explosionSpheres')) as Sphere[]
+				for (const sphere of spheres) {
+					sphere.opacity = 0
+					sphere.visible = false
+				}
+			})
+		})
 	}
 
 	@signal recede = false
+
+	SvgAirplane = () => html`
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6">
+			<!-- Paper airplane shape -->
+			<!-- <path d="M2,21 L20,12 L2,3 L3,9 L18,12 L3,15 L2,21 Z" /> -->
+			<path d="M 2 4 L 3 5 L 5 3 L 3 1 L 2 2 L 3 3 L 2 4" />
+		</svg>
+	`
+
+	SvgAirplaneCSS = css/*css*/ `
+		svg {
+			aspect-ratio: 1;
+
+			path {
+				fill: white;
+				/* stroke: white; */
+				/* stroke-width: 2; */
+				/* stroke-linejoin: round; */
+				/* stroke-linecap: round; */
+			}
+		}
+	`
 
 	UI = () => html`
 		<lume-element3d
@@ -293,17 +415,43 @@ export class App extends Element {
 		</lume-element3d>
 
 		<lume-element3d
-			ref=${e => fitContent(e, e.children[0])}
+			ref=${(e: Element3D) => {
+				const content = e.children[0] as HTMLElement
+				const {clientWidth, clientHeight} = elementSize(content)
+				createEffect(() => {
+					e.size.x = clamp(clientWidth(), 0, this.scene!.calculatedSize.x)
+					e.size.y = clientHeight()
+					console.log('e size', e.size.x, e.size.y)
+
+					createEffect(() => {
+						if (e.size.x === this.scene!.calculatedSize.x) content.style.whiteSpace = 'normal'
+						else content.style.whiteSpace = 'nowrap'
+					})
+				})
+			}}
 			mount-point="0.5 1"
 			align-point=${() => [0.5, this.isMobile() ? 1 : 1]}
 			size="200 50"
 		>
 			<div id="info">
-				<span id="tagline">Easy 2D and 3D graphics for any website.</span>
-				<span id="signupCall" style=${() => ``}> Get early access to Lume's design and code environment. </span>
-				<form id="signupForm" onsubmit="event.preventDefault()">
-					<input type="email" placeholder="Your email" id="signupInput" />
-					<button id="signupButton"></button>
+				<span id="tagline">
+					<span>Graphics made easy,</span>
+					&#x20;
+					<span>for any website.</span>
+				</span>
+				<span id="signupCall" style=${() => ``}>
+					<span>Get early access to Lume's visual</span>
+					&#x20;
+					<span>programming and design studio.</span>
+				</span>
+				<form id="signupForm" onsubmit=${this.onSubmitStudioSignup}>
+					<input
+						type="email"
+						pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}"
+						placeholder="Enter your email"
+						id="signupInput"
+					/>
+					<button id="signupButton">${this.SvgAirplane()}</button>
 				</form>
 			</div>
 		</lume-element3d>
@@ -342,7 +490,7 @@ export class App extends Element {
 		</lume-element3d>
 	`
 
-	uiCss = css/*css*/ `
+	UICSS = css/*css*/ `
 		#headerBar {
 			pointer-events: none;
 		}
@@ -392,25 +540,51 @@ export class App extends Element {
 			gap: 10px;
 			align-items: center;
 			justify-content: center;
-			font-size: calc(1rem * var(--isMobile) + 2rem * var(--notIsMobile));
-			padding-bottom: 25px;
+			font-size: calc(1.5rem * var(--isMobile) + 2rem * var(--notIsMobile));
+			text-align: center;
+			padding: 25px;
 		}
 
 		#tagline {
 			text-transform: uppercase;
+
+			span {
+				display: inline-block;
+				white-space: nowrap;
+				width: auto;
+			}
 		}
 
 		#signupCall {
-			font-size: calc(0.75rem * var(--isMobile) + 1.5rem * var(--notIsMobile));
+			font-size: 0.8em;
+			padding-bottom: 10px;
+
+			span {
+				display: inline-block;
+				white-space: nowrap;
+				width: auto;
+			}
 		}
 
 		#signupForm {
 			display: flex;
 			background: white;
-			border-radius: 3px;
+			/* border-radius: 3px; */
 			align-items: center;
-			height: 30px;
-			width: 200px;
+			height: 1.5em;
+			width: 12em;
+			max-width: 100%;
+			border: 2px solid rgb(255 255 255 / 0.5);
+			background: rgb(255 255 255 / 0.1);
+
+			&:hover {
+				border-color: white;
+			}
+
+			&:focus-within {
+				background: rgb(255 255 255 / 0.2);
+				border-color: white;
+			}
 		}
 
 		#signupInput {
@@ -418,12 +592,21 @@ export class App extends Element {
 			background: none;
 			height: 100%;
 			flex-grow: 1;
-			padding-left: 5px;
+			min-width: 0; /* allow the input to shrink */
+			padding-left: 0.5em;
+			outline: none;
+			font-size: 0.65em;
+			font-style: italic;
+
+			color: white;
+
+			&::placeholder {
+				color: rgb(255 255 255 / 0.5);
+			}
 		}
 
 		#signupButton {
 			border: none;
-			background-image: url(/images/send-icon.png);
 			height: 100%;
 			aspect-ratio: 1;
 			background-size: 70%;
@@ -431,6 +614,18 @@ export class App extends Element {
 			background-color: transparent;
 			background-repeat: no-repeat;
 			background-position: center;
+			outline: none;
+
+			svg {
+				height: 100%;
+				display: block;
+			}
+
+			&:hover svg path {
+				fill: deeppink;
+			}
+
+			${this.SvgAirplaneCSS}
 		}
 	`
 
@@ -474,7 +669,7 @@ export class App extends Element {
 					role="img"
 					xaria-label="A 3D cube with each face showing different pink/yellow/blue/cyan gradient colors, floating behind the 'LUME' wordmark."
 					aria-labelledby="cubeLabel"
-					align-point="0.5 0.45"
+					align-point=${this.rotatorAlignPoint}
 					mount-point="0.5 0.5"
 					size-mode="proportional proportional"
 					size="1 1"
@@ -539,7 +734,7 @@ export class App extends Element {
 				<lume-element3d
 					ref="${e => (this.rotator = e)}"
 					class="rotator"
-					align-point="0.5 0.45"
+					align-point=${this.rotatorAlignPoint}
 					mount-point="0.5 0.5"
 					size-mode="proportional proportional"
 					size="1 1"
@@ -547,7 +742,7 @@ export class App extends Element {
 					<lume-element3d
 						ref="${e => (this.wordmarkContainer = e)}"
 						size-mode="proportional proportional"
-						size="${() => (this.viewIsTall() ? '0 0.6 0' : '0.5 0 0')}"
+						size="${() => (this.viewIsTall() ? '0 0.5 0' : '0.5 0 0')}"
 						mount-point="0.5 0.5"
 						align-point="0.5 0.5"
 					>
@@ -685,6 +880,26 @@ export class App extends Element {
 				></lume-element3d>
 			</lume-mixed-plane>
 			<!-- </lume-element3d> -->
+
+			<lume-element3d id="explosionSpheres">
+				<!-- Spheres used for little explosion -->
+				${Array.from({length: 40}).map(
+					() => html`
+						<lume-sphere
+							class="explosionSphere"
+							has="basic-material"
+							color="yellow"
+							cast-shadow="false"
+							receive-shadow="false"
+							size="20 20 20"
+							mount-point="0.5 0.5 0.5"
+							position="0 0 0"
+							visible="true"
+							opacity="0"
+						></lume-sphere>
+					`,
+				)}
+			</lume-element3d>
 		</lume-scene>
 	`
 
@@ -695,7 +910,7 @@ export class App extends Element {
 			height: 100%;
 		}
 
-		${this.uiCss}
+		${this.UICSS}
 
 		.label {
 			display: none;

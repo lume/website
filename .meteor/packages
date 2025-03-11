@@ -6,23 +6,34 @@
 
 # default packages
 
-meteor-base@1.5.2-beta300.0             # Packages every Meteor app needs to have
-mobile-experience@1.1.1-beta300.0       # Packages for a great mobile UX
-mongo@2.0.0-beta300.0                   # The database Meteor supports right now
-reactive-var@1.0.13-beta300.0            # Reactive variable for tracker
+meteor-base@1.5.2                       # Packages every Meteor app needs to have
+mobile-experience@1.1.2                 # Packages for a great mobile UX
+mongo@2.1.0                             # The database Meteor supports right now
+reactive-var@1.0.13                     # Reactive variable for tracker
 
-#standard-minifier-css@1.9.2   # CSS minifier run for production mode
-#standard-minifier-js@2.8.1    # JS minifier run for production mode
-#es5-shim@4.8.0                # ECMAScript 5 compatibility for older browsers
-#ecmascript@0.16.8-beta300.0              # Enable ECMAScript2015+ syntax in app code
-#typescript@4.9.4              # Enable TypeScript syntax in .ts and .tsx modules
-shell-server@0.6.0-beta300.0            # Server-side component of the `meteor shell` command
-hot-module-replacement@0.5.4-beta300.0  # Update client in development without reloading the page
+#es5-shim@4.8.1                          # ECMAScript 5 compatibility for older browsers
 
-static-html@1.3.3-beta300.0             # Define static page content in .html files
+# Enable all of these for standard Meteor module bundling, disable them when
+# testing native Node.js ESM.
+ecmascript@0.16.10                      # Enable ECMAScript2015+ syntax in app code
+
+# We don't have this disabled because right now we're building TS files
+# ourselves (see package.json scripts).
+#typescript@5.6.3                        # Enable TypeScript syntax in .ts and .tsx modules
+
+# Enable production optimization when needed (less is more to start with)
+#standard-minifier-css@1.9.3             # CSS minifier run for production mode
+#standard-minifier-js@3.0.0              # JS minifier run for production mode
+
+shell-server@0.6.1                      # Server-side component of the `meteor shell` command
+hot-module-replacement@0.5.4            # Update client in development without reloading the page
+
+static-html@1.4.0                       # Define static page content in .html files
 
 # added packages
 
-#accounts-ui # not supported in 3.0 yet
-#accounts-password
-session@1.2.2-beta300.0
+#accounts-ui # not supported in 3.0 yet (TODO see if supported yet)
+accounts-password@3.0.3
+
+session@1.2.2
+ferjep:persistent-session

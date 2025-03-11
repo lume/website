@@ -13,5 +13,7 @@ public/docs
 package-lock.json
 
 public/**/*.js*
+public/imports
 client/**/*.js*
 server/**/*.js*
+imports/**/*.js*

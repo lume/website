@@ -14,6 +14,9 @@
 // console.log('foo', foo)
 ///////////////////////////////////////////////////////////////////////////
 
+import {Meteor} from 'meteor/meteor'
+import '../imports/collections/index.js'
+
 // WebApp is defined by Meteor, but the type is missin.
 declare const WebApp: any
 
@@ -49,3 +52,11 @@ WebApp.rawConnectHandlers.use(
 		return next()
 	},
 )
+
+// If the user hasn't visited the current page before, increment the page visits.
+// .......
+
+if (Meteor.isDevelopment) {
+	// clear the database on server restart
+	await Meteor.users.removeAsync({})
+}
