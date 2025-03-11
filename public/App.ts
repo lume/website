@@ -1,15 +1,16 @@
 import {Motor, Element, element, Element3D, numberAttribute, booleanAttribute, html, css} from 'lume'
 import {Tween, Easing} from '@tweenjs/tween.js'
-import {createEffect, createMemo, onCleanup, untrack, type Signal} from 'solid-js'
+import {createEffect, createMemo, onCleanup, type Signal} from 'solid-js'
 import {signal} from 'classy-solid'
 import './Cube.js'
 import type {ElementAttributes} from '@lume/element'
 import type {Element3DAttributes, MixedPlane, Plane, RenderTask, Scene} from 'lume'
 import {type LandingCube} from './Cube.js'
-import {animateSignalTo, fitContent, svgTexture} from './utils.js'
+import {animateSignalTo, fadePageOnNav, fitContent, svgTexture} from './utils.js'
 
 const MENU_WIDTH = 0.8 // percent of viewport
 const HEADER_HEIGHT = 100
+const IS_FIREFOX = navigator.userAgent.includes('Firefox')
 
 @element('app-root')
 export class App extends Element {
@@ -20,7 +21,7 @@ export class App extends Element {
 
 	@signal cube?: LandingCube
 	@signal cube2?: LandingCube
-	@signal menu?: Element3D
+	@signal mobileMenu?: Element3D
 	@signal scene?: Scene
 	@signal rotator?: Element3D
 	@signal rotator2?: Element3D
@@ -28,7 +29,6 @@ export class App extends Element {
 	@signal circle?: Element3D
 	@signal light?: Element3D
 	@signal light2?: Element3D
-	@signal menuButtonWrapper?: Element3D
 	@signal wordMarkHorizontal?: Plane
 	@signal horizontalImg?: HTMLImageElement
 	@signal horizontalCanvas?: HTMLCanvasElement
@@ -43,18 +43,18 @@ export class App extends Element {
 	@signal menuOpen = false
 
 	makeOpenTween() {
-		this.openTween = new Tween({menuPosition: this.menu?.alignPoint.x || 1})
+		this.openTween = new Tween({menuPosition: this.mobileMenu?.alignPoint.x || 1})
 			.onComplete(() => this.openTween?.stop())
-			.onUpdate(obj => this.menu && (this.menu.alignPoint.x = obj.menuPosition))
+			.onUpdate(obj => this.mobileMenu && (this.mobileMenu.alignPoint.x = obj.menuPosition))
 			.easing(Easing.Exponential.Out)
 	}
 
 	makeCloseTween() {
 		this.closeTween = new Tween({
-			menuPosition: this.menu?.alignPoint.x || 1 - MENU_WIDTH,
+			menuPosition: this.mobileMenu?.alignPoint.x || 1 - MENU_WIDTH,
 		})
 			.onComplete(() => this.closeTween?.stop())
-			.onUpdate(obj => this.menu && (this.menu.alignPoint.x = obj.menuPosition))
+			.onUpdate(obj => this.mobileMenu && (this.mobileMenu.alignPoint.x = obj.menuPosition))
 			.easing(Easing.Exponential.Out)
 	}
 
@@ -122,9 +122,9 @@ export class App extends Element {
 
 	scenePointerInteraction() {
 		createEffect(() => {
-			const {scene, rotator, cube, menuButtonWrapper} = this
+			const {scene, rotator, cube} = this
 
-			if (!scene || !rotator || !cube || !menuButtonWrapper) throw new Error('Missing!')
+			if (!scene || !rotator || !cube) throw new Error('Missing!')
 
 			const rotationRange = this.isMobile() ? 15 : 10
 			const targetRotation = {x: 0, y: 0}
@@ -201,9 +201,14 @@ export class App extends Element {
 		this.#memoize()
 		super.connectedCallback()
 
-		const {scene, rotator, cube, menuButtonWrapper} = this
+		createEffect(() => {
+			this.style.setProperty('--isMobile', '' + (this.isMobile() ? 1 : 0))
+			this.style.setProperty('--notIsMobile', '' + (this.isMobile() ? 0 : 1))
+		})
 
-		if (!scene || !rotator || !cube || !menuButtonWrapper) throw new Error('Missing!')
+		const {scene, rotator, cube} = this
+
+		if (!scene || !rotator || !cube) throw new Error('Missing!')
 
 		this.createEffect(() => {
 			this.rotateCube()
@@ -264,61 +269,169 @@ export class App extends Element {
 
 	@signal recede = false
 
-	template = () => html`
-		<lume-scene
-			ref="${e => (this.scene = e)}"
-			id="outerScene"
-			role="figure"
-			xaria-label="A 3D scene with a 3D cube and the 'LUME' wordmark, with the cube rotating and the wordmark floating in front of it. The scene is interactive, with the cube and wordmark slightly rotating and shifting around based on pointer movement."
-			aria-labelledby="sceneLabel"
-			webgl
-			background-color="black"
-			background-opacity="1"
-			fog-mode="linear"
-			fog-color="black"
-			fog-far="1250"
-			fog-near="800"
+	UI = () => html`
+		<lume-element3d
+			id="headerBar"
+			comment="setting a string override Lume style (including transforms, etc)."
+			xstyle="${() => 'pointer-events: ' + (this.isMobile() ? 'none' : 'auto')}"
+			style="${() => ({pointerEvents: this.isMobile() ? 'none' : 'auto'})}"
+			size-mode="proportional literal"
+			size="${[1, HEADER_HEIGHT, 0]}"
 		>
-			<span id="sceneLabel" class="label">
-				A 3D scene with a 3D cube and the 'LUME' wordmark, with the cube rotating and the wordmark floating in front of
-				it. The scene is interactive, with the cube and wordmark slightly rotating and shifting around based on pointer
-				movement.
-			</span>
+			<div id="headerBarInner">
+				<img
+					src="/images/logo.svg"
+					id="logo"
+					alt="The Lume logo, positioned statically at the top left of the site on top of a 3D scene."
+				/>
 
-			<!-- <lume-element3d size-mode="proportional proportional" size="1 1 0"> -->
-			<lume-mixed-plane
-				id="innerScene"
-				ref=${e => (this.innerScene = e)}
+				<div style=${() => ({display: this.isMobile() ? 'none' : 'contents'})}>
+					<div class="headerSpace"></div>
+					<menu-links></menu-links>
+				</div>
+			</div>
+		</lume-element3d>
+
+		<lume-element3d
+			ref=${e => fitContent(e, e.children[0])}
+			mount-point="0.5 1"
+			align-point=${() => [0.5, this.isMobile() ? 1 : 1]}
+			size="200 50"
+		>
+			<div id="info">
+				<span id="tagline">Easy 2D and 3D graphics for any website.</span>
+				<span id="signupCall" style=${() => ``}> Get early access to Lume's design and code environment. </span>
+				<form id="signupForm" onsubmit="event.preventDefault()">
+					<input type="email" placeholder="Your email" id="signupInput" />
+					<button id="signupButton"></button>
+				</form>
+			</div>
+		</lume-element3d>
+
+		<lume-element3d id="mobileNav" size-mode="proportional proportional" size="1 1 0" visible=${() => this.isMobile()}>
+			<lume-element3d
+				ref="${e => (this.mobileMenu = e)}"
+				id="mobileMenu"
 				size-mode="proportional proportional"
-				size="1 1 0"
-				material-opacity="0"
-				origin="0 0 0"
+				size="${[MENU_WIDTH, 1]}"
+				align-point="1 0"
+				comment="start closed position"
+				opacity="1"
 			>
-				<!-- TODO When animating the outerScene, the inner scenes will not animate unless they are wrapped in divs. -->
+				<menu-links is-mobile="${true}"></menu-links>
+			</lume-element3d>
 
-				<div style="width: 100%; height: 100%; position: absolute; top: 0; left: 0">
-					<!-- Cube Scene #################################### -->
-					<${this.CubeScene} />
-				</div>
-
-				<div style="width: 100%; height: 100%; position: absolute; top: 0; left: 0">
-					<!-- Wordmark Scene ################################ -->
-					<${this.WordmarkScene} />
-				</div>
-
-				<!-- UI ############################################ -->
-				<${this.UI} />
-
-				<lume-element3d
-					ref="${e => (this.circle = e)}"
-					visible=${() => !this.isMobile() && false}
-					class="circle"
+			<lume-element3d
+				class="hamburgerButtonWrapper"
+				size="140 100"
+				align-point="1 0"
+				position="0 0 1"
+				mount-point="1 0"
+				onclick="${() => this.toggleMenu()}"
+			>
+				<hamburger-button
+					size="40 19"
+					align-point="0.5 0.5"
 					mount-point="0.5 0.5"
-					size="200 200"
-				></lume-element3d>
-			</lume-mixed-plane>
-			<!-- </lume-element3d> -->
-		</lume-scene>
+					position="0 0"
+					line-thickness="2.5"
+					line-length="0.7"
+					activated="${() => this.menuOpen}"
+				></hamburger-button>
+			</lume-element3d>
+		</lume-element3d>
+	`
+
+	uiCss = css/*css*/ `
+		#headerBar {
+			pointer-events: none;
+		}
+
+		#mobileNav {
+			pointer-events: none;
+		}
+
+		#mobileMenu {
+			/* The backdrop-filter is not working as desired depending on how the DOM is set up in Chrome, and not at all in Firefox, https://issues.chromium.org/issues/323735424 */
+			background: ${IS_FIREFOX ? `rgb(0 26 166 / 0.87)` : `rgb(0 61 225 / 43%)`};
+			backdrop-filter: blur(16px);
+			pointer-events: auto;
+		}
+
+		.hamburgerButtonWrapper {
+			pointer-events: auto;
+			cursor: pointer;
+		}
+
+		#headerBarInner {
+			display: flex;
+			height: 100%;
+			align-items: center;
+			padding-left: 60px;
+			padding-right: 60px;
+		}
+
+		#logo {
+			width: 50px;
+			height: 50px;
+			object-fit: fill;
+
+			/* push everything else to the right side of the header */
+			/*margin-right: auto;*/
+		}
+
+		.headerSpace {
+			flex-grow: 1;
+		}
+
+		#info {
+			position: absolute;
+			white-space: nowrap;
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			align-items: center;
+			justify-content: center;
+			font-size: calc(1rem * var(--isMobile) + 2rem * var(--notIsMobile));
+			padding-bottom: 25px;
+		}
+
+		#tagline {
+			text-transform: uppercase;
+		}
+
+		#signupCall {
+			font-size: calc(0.75rem * var(--isMobile) + 1.5rem * var(--notIsMobile));
+		}
+
+		#signupForm {
+			display: flex;
+			background: white;
+			border-radius: 3px;
+			align-items: center;
+			height: 30px;
+			width: 200px;
+		}
+
+		#signupInput {
+			border: none;
+			background: none;
+			height: 100%;
+			flex-grow: 1;
+			padding-left: 5px;
+		}
+
+		#signupButton {
+			border: none;
+			background-image: url(/images/send-icon.png);
+			height: 100%;
+			aspect-ratio: 1;
+			background-size: 70%;
+			cursor: pointer;
+			background-color: transparent;
+			background-repeat: no-repeat;
+			background-position: center;
+		}
 	`
 
 	CubeScene = () => html`
@@ -424,17 +537,6 @@ export class App extends Element {
 
 			<lume-element3d size-mode="proportional proportional" size="1 1 0">
 				<lume-element3d
-					ref=${e => fitContent(e, e.children[0])}
-					mount-point="0.5 0.5"
-					align-point=${() => [0.5, this.isMobile() ? 0.86 : 0.8]}
-					size="200 50"
-				>
-					<div style=${() => `position: absolute; white-space: nowrap; font-size: ${this.isMobile() ? '1em' : '2em'};`}>
-						<span>Rich 2D and 3D graphics for any website.</span>
-					</div>
-				</lume-element3d>
-
-				<lume-element3d
 					ref="${e => (this.rotator = e)}"
 					class="rotator"
 					align-point="0.5 0.45"
@@ -529,86 +631,61 @@ export class App extends Element {
 		</lume-scene>
 	`
 
-	UI = () => html`
-		<lume-element3d
-			class="headerBar"
-			comment="setting a string override Lume style (including transforms, etc)."
-			xstyle="${() => 'pointer-events: ' + (this.isMobile() ? 'none' : 'auto')}"
-			style="${() => ({pointerEvents: this.isMobile() ? 'none' : 'auto'})}"
-			size-mode="proportional literal"
-			size="${[1, HEADER_HEIGHT, 0]}"
+	template = () => html`
+		<lume-scene
+			ref="${e => (this.scene = e)}"
+			id="outerScene"
+			role="figure"
+			xaria-label="A 3D scene with a 3D cube and the 'LUME' wordmark, with the cube rotating and the wordmark floating in front of it. The scene is interactive, with the cube and wordmark slightly rotating and shifting around based on pointer movement."
+			aria-labelledby="sceneLabel"
+			webgl
+			background-color="black"
+			background-opacity="1"
+			fog-mode="linear"
+			fog-color="black"
+			fog-far="1250"
+			fog-near="800"
 		>
-			<div class="headerBarInner">
-				<img
-					src="/images/logo.svg"
-					class="logo"
-					alt="The Lume logo, positioned statically at the top left of the site on top of a 3D scene."
-				/>
+			<span id="sceneLabel" class="label">
+				A 3D scene with a 3D cube and the 'LUME' wordmark, with the cube rotating and the wordmark floating in front of
+				it. The scene is interactive, with the cube and wordmark slightly rotating and shifting around based on pointer
+				movement.
+			</span>
 
-				<div style=${() => ({display: this.isMobile() ? 'none' : 'contents'})}>
-					<div class="header-space"></div>
-					<menu-links></menu-links>
-				</div>
-			</div>
-		</lume-element3d>
-
-		<lume-element3d
-			class="mobileNav"
-			size-mode="proportional proportional"
-			size="1 1 0"
-			visible=${() => this.isMobile()}
-		>
-			<lume-element3d
-				ref="${e => (this.menu = e)}"
-				class="mobileMenu"
+			<!-- <lume-element3d size-mode="proportional proportional" size="1 1 0"> -->
+			<lume-mixed-plane
+				id="innerScene"
+				ref=${e => (this.innerScene = e)}
 				size-mode="proportional proportional"
-				size="${[MENU_WIDTH, 1]}"
-				align-point="1 0"
-				comment="start closed position"
-				opacity="1"
+				size="1 1 0"
+				material-opacity="0"
+				origin="0 0 0"
 			>
-				<menu-links is-mobile="${true}"></menu-links>
-			</lume-element3d>
+				<!-- TODO When animating the outerScene, the inner scenes will not animate unless they are wrapped in divs. -->
 
-			<lume-element3d
-				class="menuButtonWrapper"
-				ref="${e => (this.menuButtonWrapper = e)}"
-				size="140 100"
-				align-point="1 0"
-				position="0 0"
-				mount-point="1 0"
-				onclick="${() => this.toggleMenu()}"
-			>
-				<hamburger-button
-					size="40 19"
-					align-point="0.5 0.5"
+				<div style="width: 100%; height: 100%; position: absolute; top: 0; left: 0">
+					<!-- Cube Scene #################################### -->
+					<${this.CubeScene} />
+				</div>
+
+				<div style="width: 100%; height: 100%; position: absolute; top: 0; left: 0">
+					<!-- Wordmark Scene ################################ -->
+					<${this.WordmarkScene} />
+				</div>
+
+				<!-- UI ############################################ -->
+				<${this.UI} />
+
+				<lume-element3d
+					ref="${e => (this.circle = e)}"
+					visible=${() => !this.isMobile() && false}
+					class="circle"
 					mount-point="0.5 0.5"
-					position="0 0"
-					line-thickness="2.5"
-					line-length="0.7"
-					activated="${() => this.menuOpen}"
-				></hamburger-button>
-			</lume-element3d>
-		</lume-element3d>
-
-		<lume-element3d
-			align-point="0 1"
-			mount-point="0 1"
-			size-mode="p l"
-			size="1 50"
-			ref=${e => fitContent(e, e.children[0], false, true)}
-			style=${() => `font-size: ${this.isMobile() ? '0.8em' : '1em'};`}
-		>
-			<!-- <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-				<span>Get early access to Lume's design and code environment.</span>
-				<span style="margin-bottom: 25px; display: flex; background: white; border-radius: 3px; align-items: center;">
-					<input type="email" placeholder="Your email" style="border: none; background: none;" />
-					<button style="border: none; background: none;">
-						<img width="18" height="18" src="/images/send-icon.png" />
-					</button>
-				</span>
-			</div> -->
-		</lume-element3d>
+					size="200 200"
+				></lume-element3d>
+			</lume-mixed-plane>
+			<!-- </lume-element3d> -->
+		</lume-scene>
 	`
 
 	css = css/*css*/ `
@@ -617,6 +694,8 @@ export class App extends Element {
 			width: 100%;
 			height: 100%;
 		}
+
+		${this.uiCss}
 
 		.label {
 			display: none;
@@ -636,37 +715,8 @@ export class App extends Element {
 			background: radial-gradient(circle, rgb(23, 132, 252) 0%, rgb(0, 0, 198) 43.67%, rgb(13, 9, 98) 100%);
 		}
 
-		.headerBar {
-			pointer-events: none;
-		}
-
-		.headerBarInner {
-			display: flex;
-			height: 100%;
-			align-items: center;
-			padding-left: 60px;
-			padding-right: 60px;
-		}
-
-		.mobileNav {
-			pointer-events: none;
-		}
-
 		menu-links {
 			pointer-events: auto;
-		}
-
-		.logo {
-			width: 50px;
-			height: 50px;
-			object-fit: fill;
-
-			/* push everything else to the right side of the header */
-			/*margin-right: auto;*/
-		}
-
-		.header-space {
-			flex-grow: 1;
 		}
 
 		.rotator {
@@ -682,18 +732,6 @@ export class App extends Element {
 			background: rgba(0, 25, 93, 0.3);
 			backdrop-filter: blur(14px) brightness(130%);
 			border-radius: 100%;
-		}
-
-		.mobileMenu {
-			background: rgba(0, 25, 93, 0.85);
-			/* background: rgb(0 33 121 / 85%);
-			background: rgb(0 49 180 / 60%); */
-			backdrop-filter: blur(24px) brightness(130%); /* not working as desired, https://issues.chromium.org/issues/323735424 */
-			pointer-events: auto;
-		}
-
-		.menuButtonWrapper {
-			pointer-events: auto;
 		}
 
 		canvas {
@@ -727,6 +765,13 @@ export class MenuLinks extends Element {
 	@booleanAttribute isMobile = false
 	@signal menuLinks?: HTMLDivElement
 
+	connectedCallback() {
+		super.connectedCallback()
+
+		const links = Array.from(this.menuLinks!.querySelectorAll('.menuLink')) as HTMLAnchorElement[]
+		fadePageOnNav(links)
+	}
+
 	template = () => html`
 		<nav
 			aria-label="Main"
@@ -749,7 +794,8 @@ export class MenuLinks extends Element {
 		}
 
 		.menuLinks {
-			font-size: calc(4vw * var(--isMobile) + 14px * (1 - var(--isMobile)));
+			font-size: calc(4vw * var(--isMobile) + 14px * var(--notIsMobile));
+			font-weight: bold;
 			height: 100%;
 			display: flex;
 			align-items: center;
@@ -766,28 +812,22 @@ export class MenuLinks extends Element {
 		.spacer {
 			text-decoration: none;
 			text-transform: uppercase;
-			/* margin-left: calc(0px * var(--isMobile) + 40px * (1 - var(--isMobile))); */
 			letter-spacing: 0.105em;
 			color: white;
-			padding-left: calc(10% * var(--isMobile) + 20px * (1 - var(--isMobile)));
-			padding-right: calc(0px * var(--isMobile) + 20px * (1 - var(--isMobile)));
-			height: calc(100% * var(--isMobile) + 50px * (1 - var(--isMobile)));
+			padding-left: calc(10% * var(--isMobile) + 20px * var(--notIsMobile));
+			padding-right: calc(0px * var(--isMobile) + 20px * var(--notIsMobile));
+			height: calc(100% * var(--isMobile) + 50px * var(--notIsMobile));
 			width: 100%;
 			display: flex;
 			align-items: center;
 		}
-		.menuLink:hover {
+		.menuLinksMobile .menuLink:hover {
 			background: rgb(255 255 255 / 0.1);
 		}
+		:not(.menuLinksMobile) .menuLink:hover {
+			color: color-mix(in srgb, deeppink 80%, white 20%);
+		}
 	`
-
-	connectedCallback() {
-		super.connectedCallback()
-
-		createEffect(() => {
-			this.menuLinks?.style.setProperty('--isMobile', '' + (this.isMobile ? 1 : 0))
-		})
-	}
 }
 
 type MenuLinksAttributes = 'isMobile'

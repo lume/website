@@ -6,6 +6,7 @@ body,
 	padding: 0;
 	margin: 0;
 	color: white;
+	pointer-events: none;
 }
 
 /* prettier-ignore */
@@ -51,8 +52,100 @@ body {
 }
 
 @font-face {
-	font-family: 'Gotham Bold';
+	font-family: 'Gotham';
+	src: url(/fonts/Gotham-Thin.otf);
+	font-weight: 100;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Gotham';
+	src: url(/fonts/Gotham-ThinItalic.otf);
+	font-weight: 100;
+	font-style: italic;
+}
+@font-face {
+	font-family: 'Gotham';
+	src: url(/fonts/Gotham-ExtraLight.otf);
+	font-weight: 200;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Gotham';
+	src: url(/fonts/Gotham-ExtraLightItalic.otf);
+	font-weight: 200;
+	font-style: italic;
+}
+@font-face {
+	font-family: 'Gotham';
+	src: url(/fonts/Gotham-Light.otf);
+	font-weight: 300;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Gotham';
+	src: url(/fonts/Gotham-LightItalic.otf);
+	font-weight: 300;
+	font-style: italic;
+}
+@font-face {
+	font-family: 'Gotham';
+	src: url(/fonts/Gotham-Book.otf);
+	font-weight: 400;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Gotham';
+	src: url(/fonts/Gotham-BookItalic.otf);
+	font-weight: 400;
+	font-style: italic;
+}
+@font-face {
+	font-family: 'Gotham';
+	src: url(/fonts/Gotham-Medium.otf);
+	font-weight: 500;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Gotham';
+	src: url(/fonts/Gotham-MediumItalic.otf);
+	font-weight: 500;
+	font-style: italic;
+}
+@font-face {
+	font-family: 'Gotham';
 	src: url(/fonts/Gotham-Bold.otf);
+	font-weight: 600;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Gotham';
+	src: url(/fonts/Gotham-BoldItalic.otf);
+	font-weight: 600;
+	font-style: italic;
+}
+@font-face {
+	font-family: 'Gotham';
+	src: url(/fonts/Gotham-Black.otf);
+	font-weight: 700;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Gotham';
+	src: url(/fonts/Gotham-BlackItalic.otf);
+	font-weight: 700;
+	font-style: italic;
+}
+@font-face {
+	font-family: 'Gotham';
+	src: url(/fonts/Gotham-Ultra.otf);
+	font-weight: 800;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Gotham';
+	src: url(/fonts/Gotham-UltraItalic.otf);
+	font-weight: 800;
+	font-style: italic;
 }
 
 body {
@@ -64,8 +157,13 @@ body {
 	-webkit-perspective: 0;
 	perspective: none;
 	overflow: hidden;
-	font-family: 'Gotham Bold', 'Helvetica', sans-serif;
+	font-family: 'Gotham', 'Helvetica', sans-serif;
 	font-size: 14px;
+}
+
+body.fadePageOut {
+	opacity: 0;
+	transition: opacity 0.5s;
 }
 
 .centerText {

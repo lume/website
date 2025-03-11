@@ -115,27 +115,6 @@ export function animateSignalTo(
 	return done
 }
 
-// Creates a signal that updates based on an element's natural size.
-function naturalSize(element: Element) {
-	const [getSize, setSize] = createSignal({
-		width: element.clientWidth,
-		height: element.clientHeight,
-	})
-
-	const observer = new ResizeObserver(entries => {
-		for (const entry of entries) {
-			const {width, height} = entry.contentRect
-			setSize({width, height})
-		}
-	})
-
-	observer.observe(element)
-
-	onCleanup(() => observer.disconnect())
-
-	return getSize
-}
-
 /** Return two signals for the width and height of an element. */
 export function elementSize(el: Element | (() => Element | undefined | null)) {
 	const [clientWidth, setClientWidth] = createSignal(0)
@@ -175,4 +154,18 @@ export function fitContent(el3d: Element3D, el: Element, width = true, height = 
 		if (width) el3d.size.x = clientWidth()
 		if (height) el3d.size.y = clientHeight()
 	})
+}
+
+export function fadePageOnNav(links: HTMLAnchorElement[]) {
+	const aborter = new AbortController()
+	const signal = aborter.signal
+	for (const link of links) {
+		link.addEventListener('click', event => {
+			event.preventDefault()
+			if (signal.aborted) return
+			aborter.abort()
+			document.body.classList.add('fadePageOut')
+			document.body.addEventListener('transitionend', () => (location.href = link.href))
+		})
+	}
 }
