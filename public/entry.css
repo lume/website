@@ -171,6 +171,10 @@ body.fadePageOut {
 	vertical-align: middle;
 }
 
+.hidden {
+	display: none;
+}
+
 _ {
 	color: #224dd9;
 	color: #0e4fe6;
