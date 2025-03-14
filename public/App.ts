@@ -440,9 +440,9 @@ export class App extends Element {
 					<span>for any website.</span>
 				</span>
 				<span id="signupCall" style=${() => ``}>
-					<span>Get access to Lume's visual programming</span>
+					<span>Get access to Lume's AI-powered visual</span>
 					&#x20;
-					<span>and design studio.</span>
+					<span>programming and design studio.</span>
 				</span>
 				<form id="signupForm" onsubmit=${this.onSubmitStudioSignup}>
 					<input

@@ -1,19 +1,29 @@
+<!-- prettier-ignore -->
 <head>
-	<title>Lume: Web graphics made easy.</title>
+	<title>Lume. Web Graphics Made Easy</title>
+	<link rel="icon" href="/images/logo-icon.svg" />
 
 	<meta charset="utf-8" />
 	<meta name="robots" content="all" />
 
 	<meta name="application-title" content="Lume" />
-	<link rel="icon" href="/images/logo-icon.svg" />
-	<meta
-		name="description"
-		content="Lume is a library of HTML elements for easily creating advanced 2D and 3D graphics on any website, compatible with all web frameworks including React, Vue, Svelte, Solid.js, Angular, and more."
-	/>
-	<meta
-		name="keywords"
-		content="3D, 2D, graphics, HTML, JavaScript, CSS, WebGL, WebGPU, WebXR, AR, VR, Custom Elements, Web Components, Solid.js, Three.js"
-	/>
+	<meta name="description" content="Create powerful graphics on any website with simple HTML compatible with all web frameworks including React, Vue, Svelte, Solid.js, Angular, and more." />
+	<meta name="keywords" content="3D, 2D, graphics, HTML, JavaScript, CSS, WebGL, WebGPU, WebXR, AR, VR, Custom Elements, Web Components, Solid.js, Three.js" />
+
+	<meta property="og:title" content="Lume. Web Graphics Made Easy" />
+	<meta property="og:description" content="Create powerful graphics on any website with simple HTML compatible with all web frameworks including React, Vue, Svelte, Solid.js, Angular, and more." />
+	<meta property="og:url" content="https://lume.io" />
+	<meta property="og:image" content="https://lume.io/images/LUME5.png" />
+	<meta property="og:image:alt" content="The 'LUME' wordmark in front of a colorful 3D cube, both floating within a vibrant royal blue space. The wordmark goes from cyan at the bottom left to deeppink color at a slight angle, the cube has solid cyan edges, and the cube faces have yellow/pink/cyan/blue/orange gradients. The cube recedes into a royal blue fog to blend with the vibrant background. The cube is at an angle such that no one side is facing parallel or perpendicular to the viewer." />
+	<meta property="og:site_name" content="Lume" />
+	<meta property="og:type" content="website" />
+
+	<meta name="twitter:title" content="Lume. Web Graphics Made Easy" />
+	<meta name="twitter:description" content="Create powerful graphics on any website with simple HTML compatible with all web frameworks including React, Vue, Svelte, Solid.js, Angular, and more." />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:site" content="@Lume3D" />
+	<meta name="twitter:creator" content="@trusktr" />
+	<meta name="twitter:image" content="https://lume.io/images/LUME5.png" />
 
 	<meta name="generator" content="#!/bin/joe-pea --trusktr" />
 	<meta name="color-scheme" content="only light" />
@@ -27,7 +37,9 @@
 
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Work+Sans:100,200,300,400,500,600,700" />
 	<link rel="stylesheet" href="/entry.css" />
+</head>
 
+<body>
 	<script>
 		if (globalThis.location.pathname.startsWith('/docs')) {
 			let path = location.href.split('/docs')[1]
@@ -81,15 +93,6 @@
 			}
 		}
 	</script>
-</head>
-
-<body>
-	<img
-		class="hidden"
-		src="/images/LUME5.png"
-		alt="A screenshot of this very website showing the 'LUME' wordmark in front of a 3D both floating and slightly moving depending on he cursor position."
-	/>
-
 	<script type="module">
 		import '/entry.js'
 	</script>

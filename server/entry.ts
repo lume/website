@@ -20,7 +20,10 @@ import '../imports/collections/index.js'
 // WebApp is defined by Meteor, but the type is missin.
 declare const WebApp: any
 
-WebApp.addHtmlAttributeHook(() => ({lang: 'en'}))
+WebApp.addHtmlAttributeHook(() => ({
+	lang: 'en',
+	prefix: 'og: http://ogp.me/ns#',
+}))
 
 // Allow only certain domains to access content.
 WebApp.rawConnectHandlers.use(
