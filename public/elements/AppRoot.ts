@@ -1,22 +1,25 @@
-import {Motor, Element, element, Element3D, numberAttribute, booleanAttribute, html, css} from 'lume'
+import {Meteor} from 'meteor/meteor'
+import {Motor, Element, element, Element3D, html, css} from 'lume'
+import type {MixedPlane, Plane, RenderTask, Scene, Sphere} from 'lume'
+import type {ElementAttributes} from '@lume/element'
 import {Tween, Easing} from '@tweenjs/tween.js'
 import {createEffect, createMemo, onCleanup, type Signal} from 'solid-js'
 import {signal} from 'classy-solid'
-import './Cube.js'
-import type {ElementAttributes} from '@lume/element'
-import type {Element3DAttributes, MixedPlane, Plane, RenderTask, Scene, Sphere} from 'lume'
 import {type LandingCube} from './Cube.js'
-import {animateSignalTo, clamp, elementSize, fadePageOnNav, svgTexture} from './utils.js'
-import {Meteor} from 'meteor/meteor'
+import './MenuLinks.js'
+import './HamburgerButton.js'
+import {animateSignalTo, clamp, elementSize, memoize, svgTexture} from '../utils.js'
+
+const logoUrl = new URL('../images/logo.svg', import.meta.url).href
+const wordmarkUrl = new URL('../images/logo-wordmark.svg', import.meta.url).href
+const wordmarkVerticalUrl = new URL('../images/logo-wordmark-vertical.svg', import.meta.url).href
 
 const MENU_WIDTH = 0.8 // percent of viewport
 const HEADER_HEIGHT = 100
 const IS_FIREFOX = navigator.userAgent.includes('Firefox')
 
 @element('app-root')
-export class App extends Element {
-	hasShadow = false
-
+export class AppRoot extends Element {
 	// Used in AppAttributes to denote no attributes. See TODO there.
 	_____?: undefined
 
@@ -402,7 +405,8 @@ export class App extends Element {
 		>
 			<div id="headerBarInner">
 				<img
-					src="/images/logo.svg"
+					crossorigin
+					src=${logoUrl}
 					id="logo"
 					alt="The Lume logo, positioned statically at the top left of the site on top of a 3D scene."
 				/>
@@ -421,7 +425,6 @@ export class App extends Element {
 				createEffect(() => {
 					e.size.x = clamp(clientWidth(), 0, this.scene!.calculatedSize.x)
 					e.size.y = clientHeight()
-					console.log('e size', e.size.x, e.size.y)
 
 					createEffect(() => {
 						if (e.size.x === this.scene!.calculatedSize.x) content.style.whiteSpace = 'normal'
@@ -761,7 +764,8 @@ export class App extends Element {
 							]}"
 							mount-point="0 0.5"
 							opacity="0.99"
-							Xtexture="/images/logo-wordmark.svg"
+							todo="update to lume texture handling is needed for SVGs to work properly cross-platform (https://discourse.threejs.org/t/any-ideas-why-svg-texture-does-not-show-in-firefox/33361)."
+							Xtexture=${wordmarkUrl}
 							color="cyan"
 						>
 							<span id="wordmarkHorizontalLabel" class="label">
@@ -774,7 +778,8 @@ export class App extends Element {
 								<canvas ref=${e => (this.horizontalCanvas = e)}></canvas>
 								<img
 									ref=${e => (this.horizontalImg = e)}
-									src="/images/logo-wordmark.svg"
+									crossorigin
+									src=${wordmarkUrl}
 									width="960"
 									height="146"
 									style="width: 100%; height: 100%;"
@@ -797,7 +802,8 @@ export class App extends Element {
 							]}"
 							mount-point="0.5 0"
 							opacity="0.99"
-							Xtexture="/images/logo-wordmark-vertical.svg"
+							todo="update to lume texture handling is needed for SVGs to work properly cross-platform (https://discourse.threejs.org/t/any-ideas-why-svg-texture-does-not-show-in-firefox/33361)."
+							Xtexture=${wordmarkVerticalUrl}
 							color="cyan"
 						>
 							<span id="wordmarkVerticalLabel" class="label">
@@ -810,7 +816,8 @@ export class App extends Element {
 								<canvas ref=${e => (this.verticalCanvas = e)}></canvas>
 								<img
 									ref=${e => (this.verticalImg = e)}
-									src="/images/logo-wordmark-vertical.svg"
+									crossorigin
+									src=${wordmarkVerticalUrl}
 									width="118"
 									height="686"
 									style="width: 100%; height: 100%"
@@ -962,175 +969,13 @@ type AppAttributes = '_____'
 declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
-			'app-root': ElementAttributes<App, AppAttributes>
+			'app-root': ElementAttributes<AppRoot, AppAttributes>
 		}
 	}
 }
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'app-root': App
+		'app-root': AppRoot
 	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-@element('menu-links')
-export class MenuLinks extends Element {
-	@booleanAttribute isMobile = false
-	@signal menuLinks?: HTMLDivElement
-
-	connectedCallback() {
-		super.connectedCallback()
-
-		const links = Array.from(this.menuLinks!.querySelectorAll('.menuLink')) as HTMLAnchorElement[]
-		fadePageOnNav(links)
-	}
-
-	template = () => html`
-		<nav
-			aria-label="Main"
-			class="${() => `menuLinks${this.isMobile ? ' menuLinksMobile' : ''}`}"
-			ref="${e => (this.menuLinks = e)}"
-		>
-			<div class=${this.isMobile ? 'spacer' : ''}></div>
-			<a class="menuLink" href="//docs.lume.io"> <span>Documentation</span> </a>
-			<a class="menuLink" href="//docs.lume.io/examples/hello-world/"> <span>Examples</span> </a>
-			<a class="menuLink" href="//lume.community"> <span>Forum</span> </a>
-			<a class="menuLink" href="//discord.gg/PgeyevP"> <span>Chat</span> </a>
-			<a class="menuLink" href="//github.com/lume/lume"> <span>Source</span> </a>
-			<div class=${this.isMobile ? 'spacer' : ''}></div>
-		</nav>
-	`
-
-	css = css/*css*/ `
-		:host {
-			display: contents;
-		}
-
-		.menuLinks {
-			font-size: calc(4vw * var(--isMobile) + 14px * var(--notIsMobile));
-			font-weight: bold;
-			height: 100%;
-			display: flex;
-			align-items: center;
-		}
-
-		.menuLinksMobile {
-			width: 100%;
-			flex-direction: column;
-			align-items: start;
-			justify-content: space-around;
-		}
-
-		.menuLink,
-		.spacer {
-			text-decoration: none;
-			text-transform: uppercase;
-			letter-spacing: 0.105em;
-			color: white;
-			padding-left: calc(10% * var(--isMobile) + 20px * var(--notIsMobile));
-			padding-right: calc(0px * var(--isMobile) + 20px * var(--notIsMobile));
-			height: calc(100% * var(--isMobile) + 50px * var(--notIsMobile));
-			width: 100%;
-			display: flex;
-			align-items: center;
-		}
-		.menuLinksMobile .menuLink:hover {
-			background: rgb(255 255 255 / 0.1);
-		}
-		:not(.menuLinksMobile) .menuLink:hover {
-			color: color-mix(in srgb, deeppink 80%, white 20%);
-		}
-	`
-}
-
-type MenuLinksAttributes = 'isMobile'
-
-declare module 'solid-js' {
-	namespace JSX {
-		interface IntrinsicElements {
-			'menu-links': ElementAttributes<MenuLinks, MenuLinksAttributes>
-		}
-	}
-}
-
-declare global {
-	interface HTMLElementTagNameMap {
-		'menu-links': MenuLinks
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-@element('hamburger-button')
-export class HamburgerButton extends Element3D {
-	@numberAttribute lineThickness = 2
-	@numberAttribute lineLength = 0.8
-	@booleanAttribute activated = false
-
-	get root() {
-		return this
-	}
-	set root(_v) {}
-
-	template = () => html`
-		<lume-element3d
-			class="menuButtonLine"
-			size-mode="proportional literal"
-			size="${() => [this.lineLength, this.lineThickness]}"
-			align-point="${() => (this.activated ? '0.5 0.5' : '1 0')}"
-			mount-point="${() => (this.activated ? '0.5 0.5' : '1 0')}"
-			rotation="${() => [0, 0, this.activated ? -45 : 0]}"
-		></lume-element3d>
-		<lume-element3d
-			TODO="no classList"
-			class="${() => ({menuButtonLine: true, hide: this.activated})}"
-			size-mode="proportional literal"
-			size="${() => [this.lineLength, this.lineThickness]}"
-			align-point="0 0.5"
-			mount-point="0 0.5"
-		></lume-element3d>
-		<lume-element3d
-			class="menuButtonLine"
-			size-mode="proportional literal"
-			size="${() => [this.lineLength, this.lineThickness]}"
-			align-point="${() => (this.activated ? '0.5 0.5' : '1 1')}"
-			mount-point="${() => (this.activated ? '0.5 0.5' : '1 1')}"
-			rotation="${() => [0, 0, this.activated ? 45 : 0]}"
-		></lume-element3d>
-	`
-
-	css = css/*css*/ `
-		.menuButtonLine {
-			background: white;
-		}
-
-		.hide {
-			display: none !important;
-		}
-	`
-}
-
-type HamburgerButtonAttributes = Element3DAttributes | 'lineThickness' | 'lineLength' | 'activated'
-
-declare module 'solid-js' {
-	namespace JSX {
-		interface IntrinsicElements {
-			'hamburger-button': ElementAttributes<HamburgerButton, HamburgerButtonAttributes>
-		}
-	}
-}
-
-declare global {
-	interface HTMLElementTagNameMap {
-		'hamburger-button': HamburgerButton
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-function memoize<T extends object, K extends keyof T>(obj: T, ...keys: K[]) {
-	// @ts-expect-error valid indexed access
-	for (const key of keys) obj[key] = createMemo(obj[key])
 }

@@ -131,8 +131,7 @@ export function elementSize(el: Element | (() => Element | undefined | null)) {
 			return
 		}
 
-		const observer = new ResizeObserver(records => {
-			console.log('resize', records)
+		const observer = new ResizeObserver(() => {
 			batch(() => {
 				setClientWidth(el.clientWidth)
 				setClientHeight(el.clientHeight)
@@ -171,3 +170,9 @@ export function fadePageOnNav(links: HTMLAnchorElement[]) {
 }
 
 export const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n))
+
+/** Memoize the given keys of an object (the values should be functions). */
+export function memoize<T extends object, K extends keyof T>(obj: T, ...keys: K[]) {
+	// @ts-expect-error valid indexed access
+	for (const key of keys) obj[key] = createMemo(obj[key])
+}

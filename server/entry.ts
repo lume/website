@@ -20,46 +20,45 @@ import '../imports/collections/index.js'
 // WebApp is defined by Meteor, but the type is missin.
 declare const WebApp: any
 
-WebApp.addHtmlAttributeHook(() => ({
-	lang: 'en',
-	prefix: 'og: http://ogp.me/ns#',
-}))
+WebApp.addHtmlAttributeHook(() => ({lang: 'en', prefix: 'og: http://ogp.me/ns#'}))
 
-// Allow only certain domains to access content.
-WebApp.rawConnectHandlers.use(
-	/*'/public',*/
-	function (req, res, next) {
-		// For development mode allow localhost origins.
-		if (
-			[
-				// landing page (the Meteor app)
-				'localhost:3000',
-				'127.0.0.1:3000',
-				'0.0.0.0:3000',
-				// docs site (the static Docsify app)
-				'localhost:54321',
-				'127.0.0.1:54321',
-				'0.0.0.0:54321',
-			].includes(req.headers.host)
-		) {
-			// We use 'http://' for local development.
-			res.setHeader('Access-Control-Allow-Origin', 'http://' + req.headers.host)
-		}
-		// Otherwise only allow lume.io.
-		else {
-			// Asumption: lume.io is only accessible via HTTPS, so that's why we
-			// can confidently use 'https://' in the following.
-			res.setHeader('Access-Control-Allow-Origin', 'https://lume.io')
-		}
+if (Meteor.isDevelopment) {
+	// Allow only certain domains to access content.
+	WebApp.rawConnectHandlers.use(
+		/*'/public',*/
+		function (req, res, next) {
+			// For development mode allow localhost origins.
+			if (
+				[
+					// landing page (the Meteor app)
+					'localhost:8765',
+					'127.0.0.1:8765',
+					'0.0.0.0:8765',
+					// docs site (the static Docsify app)
+					'localhost:54321',
+					'127.0.0.1:54321',
+					'0.0.0.0:54321',
+				].some(val => req.headers.host === val)
+			) {
+				// We use 'http://' for local development.
+				// res.setHeader('Access-Control-Allow-Origin', 'http://' + req.headers.host)
+				res.setHeader('Access-Control-Allow-Origin', '*')
+			}
+			// Otherwise only allow lume.io.
+			else if (req.headers.host === 'lume.io' || req.headers.host === 'docs.lume.io') {
+				// lume.io is only accessible via HTTPS
+				res.setHeader('Access-Control-Allow-Origin', req.protocol + '://' + req.headers.host)
+			}
 
-		return next()
-	},
-)
+			return next()
+		},
+	)
+}
 
 // If the user hasn't visited the current page before, increment the page visits.
 // .......
 
-if (Meteor.isDevelopment) {
-	// clear the database on server restart
-	await Meteor.users.removeAsync({})
-}
+// if (Meteor.isDevelopment) {
+// 	// clear the database on server restart
+// 	await Meteor.users.removeAsync({})
+// }

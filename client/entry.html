@@ -89,11 +89,16 @@
 				"meteor/blaze": "/meteor-packages.js",
 				"meteor/templating": "/meteor-packages.js",
 				"meteor/mongo": "/meteor-packages.js",
-				"meteor/session": "/meteor-packages.js"
+				"meteor/session": "/meteor-packages.js",
+				"meteor/reactive-var": "/meteor-packages.js"
 			}
 		}
 	</script>
+
+	<div id="root"></div>
+
 	<script type="module">
-		import '/entry.js'
+		import AppRoot from '/entry.js'
+		root.append(new AppRoot())
 	</script>
 </body>
