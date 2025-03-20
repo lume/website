@@ -1,6 +1,5 @@
 import {Meteor} from 'meteor/meteor'
 import {Mongo} from 'meteor/mongo'
-import {Tracker} from 'meteor/tracker'
 
 export const Visits = new Mongo.Collection<{
 	host?: string // No host means lume.io (otherwise we have to do a migration to fix it)
