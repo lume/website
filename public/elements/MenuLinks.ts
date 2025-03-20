@@ -14,7 +14,7 @@ export class MenuLinks extends Element {
 	connectedCallback() {
 		super.connectedCallback()
 
-		const links = Array.from(this.menuLinks!.querySelectorAll('.menuLink')) as HTMLAnchorElement[]
+		const links = Array.from(this.menuLinks!.querySelectorAll('.menuLink:not(#signin)')) as HTMLAnchorElement[]
 		fadePageOnNav(links)
 	}
 
@@ -30,6 +30,14 @@ export class MenuLinks extends Element {
 			<a class="menuLink" href="//lume.community"> <span>Forum</span> </a>
 			<a class="menuLink" href="//discord.gg/PgeyevP"> <span>Chat</span> </a>
 			<a class="menuLink" href="//github.com/lume/lume"> <span>Source Code</span> </a>
+			<a
+				class="menuLink"
+				href="#"
+				id="signin"
+				onclick=${e => (e.preventDefault(), this.dispatchEvent(new Event('signinclick')))}
+			>
+				<span>Sign in ▾</span>
+			</a>
 			<div class=${this.isMobile ? 'spacer' : ''}></div>
 		</nav>
 	`
@@ -62,17 +70,25 @@ export class MenuLinks extends Element {
 			color: white;
 			padding-left: calc(10% * var(--isMobile) + 20px * var(--notIsMobile));
 			padding-right: calc(0px * var(--isMobile) + 20px * var(--notIsMobile));
-			height: calc(100% * var(--isMobile) + 50px * var(--notIsMobile));
+			height: calc(100% * var(--isMobile) + var(--desktopMenuItemHeight) * var(--notIsMobile));
 			width: 100%;
 			white-space: nowrap;
 			display: flex;
 			align-items: center;
+
+			&:last-of-type {
+				padding-right: 0;
+			}
 		}
 		.menuLinksMobile .menuLink:hover {
 			background: rgb(255 255 255 / 0.1);
 		}
 		:not(.menuLinksMobile) .menuLink:hover {
 			color: color-mix(in srgb, deeppink 80%, white 20%);
+		}
+
+		#signin {
+			display: none;
 		}
 	`
 }

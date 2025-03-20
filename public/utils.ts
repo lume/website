@@ -176,3 +176,13 @@ export function memoize<T extends object, K extends keyof T>(obj: T, ...keys: K[
 	// @ts-expect-error valid indexed access
 	for (const key of keys) obj[key] = createMemo(obj[key])
 }
+
+/** Clone a CSSStyleSheet object. */
+export function cloneCSSStyleSheet(sheet: CSSStyleSheet) {
+	const newSheet = new CSSStyleSheet()
+	const styletext = Array.from(sheet.cssRules)
+		.map(rule => rule.cssText)
+		.join(' ')
+	newSheet.replaceSync(styletext)
+	return newSheet
+}

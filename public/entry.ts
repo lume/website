@@ -1,4 +1,5 @@
 import './await-startup.js'
+import './promise.withResolvers.js'
 import {appTitle} from './routes.js'
 import {effect} from './meteor-signals.js'
 import {AppRoot} from './elements/AppRoot.js'

@@ -8,15 +8,39 @@ import {signal} from 'classy-solid'
 import {type LandingCube} from './Cube.js'
 import './MenuLinks.js'
 import './HamburgerButton.js'
+import './BlazeComponent.js'
 import {animateSignalTo, clamp, elementSize, memoize, svgTexture} from '../utils.js'
 
 const logoUrl = new URL('../images/logo.svg', import.meta.url).href
 const wordmarkUrl = new URL('../images/logo-wordmark.svg', import.meta.url).href
 const wordmarkVerticalUrl = new URL('../images/logo-wordmark-vertical.svg', import.meta.url).href
 
-const MENU_WIDTH = 0.8 // percent of viewport
-const HEADER_HEIGHT = 100
 const IS_FIREFOX = navigator.userAgent.includes('Firefox')
+
+const styleVars = {
+	menuWidth: '80%' as any as number, // percent of viewport
+	desktopMenuItemHeight: 50,
+	headerHeight: 100,
+	pageTopBottomPadding: 25,
+	pageLeftRightPadding: 60,
+}
+
+const style = document.createElement('style')
+style.textContent = css`
+	:root {
+		${Object.entries(styleVars)
+			.map(([k, v]) => `--${k}: ${typeof v === 'number' ? v + 'px' : v};`)
+			.join('\n')}
+	}
+`
+document.head.append(style)
+
+for (const [key, val] of Object.entries(styleVars)) {
+	// @ts-ignore
+	styleVars[key] = typeof val === 'string' && val.endsWith('%') ? Number(val.replace('%', '')) / 100 : val
+}
+
+console.log('VALUE:', styleVars.menuWidth)
 
 @element('app-root')
 export class AppRoot extends Element {
@@ -41,10 +65,14 @@ export class AppRoot extends Element {
 	@signal verticalCanvas?: HTMLCanvasElement
 	@signal innerScene?: MixedPlane
 
+	@signal loginButtonsOpen = false
+
 	openTween: Tween<{menuPosition: number}> | null = null
 	closeTween: Tween<{menuPosition: number}> | null = null
 
 	@signal menuOpen = false
+
+	hasShadow = false
 
 	makeOpenTween() {
 		this.openTween = new Tween({menuPosition: this.mobileMenu?.alignPoint.x || 1})
@@ -55,7 +83,7 @@ export class AppRoot extends Element {
 
 	makeCloseTween() {
 		this.closeTween = new Tween({
-			menuPosition: this.mobileMenu?.alignPoint.x || 1 - MENU_WIDTH,
+			menuPosition: this.mobileMenu?.alignPoint.x || 1 - styleVars.menuWidth,
 		})
 			.onComplete(() => this.closeTween?.stop())
 			.onUpdate(obj => this.mobileMenu && (this.mobileMenu.alignPoint.x = obj.menuPosition))
@@ -71,7 +99,7 @@ export class AppRoot extends Element {
 		this.makeOpenTween()
 		// TODO Tween.start() time arg should be optional.
 		// XXX this.openTween exists here! Optional chaining operator is needed to satisfy type system
-		this.openTween?.to({menuPosition: 1 - MENU_WIDTH}, 800).start(performance.now())
+		this.openTween?.to({menuPosition: 1 - styleVars.menuWidth}, 800).start(performance.now())
 		this.possiblyStartTweenLoop()
 	}
 
@@ -111,8 +139,12 @@ export class AppRoot extends Element {
 	wordmarkAspectRatio = () => (this.viewIsTall() ? 118 / 686 : 960 / 146)
 	rotatorAlignPoint = () => (this.viewIsTall() ? [0.5, 0.4] : [0.5, 0.45])
 
+	#memoized = false
+
 	// TODO @memo decorator in classy-solid to replace this #memoize() method.
 	#memoize() {
+		if (this.#memoized) return
+		this.#memoized = true
 		memoize(this, 'isMobile', 'cubeSize', 'viewIsTall', 'wordmarkAspectRatio', 'rotatorAlignPoint')
 	}
 
@@ -368,14 +400,30 @@ export class AppRoot extends Element {
 				}
 			})
 		})
+
+		let firstRun = true
+
+		this.createEffect(() => {
+			this.loginButtonsOpen
+			if (firstRun) return (firstRun = false)
+			const loginOpenButton = this.querySelector('#login-sign-in-link') as HTMLDivElement
+			const loginOpenButton2 = this.querySelector('#login-name-link') as HTMLDivElement
+			const loginCloseButton = this.querySelector('.login-close-text') as HTMLAnchorElement
+			if (this.loginButtonsOpen) loginOpenButton?.click() ?? loginOpenButton2.click()
+			else loginCloseButton.click()
+		})
+
+		// CONTINUE observer existence of login dropdowns to determine
+		// open/closed state
+		// const mo = new MutationObserver(records => { })
+		// mo.observe
+		// elementSize()
 	}
 
 	@signal recede = false
 
 	SvgAirplane = () => html`
 		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6">
-			<!-- Paper airplane shape -->
-			<!-- <path d="M2,21 L20,12 L2,3 L3,9 L18,12 L3,15 L2,21 Z" /> -->
 			<path d="M 2 4 L 3 5 L 5 3 L 3 1 L 2 2 L 3 3 L 2 4" />
 		</svg>
 	`
@@ -401,7 +449,7 @@ export class AppRoot extends Element {
 			xstyle="${() => 'pointer-events: ' + (this.isMobile() ? 'none' : 'auto')}"
 			style="${() => ({pointerEvents: this.isMobile() ? 'none' : 'auto'})}"
 			size-mode="proportional literal"
-			size="${[1, HEADER_HEIGHT, 0]}"
+			size="${[1, styleVars.headerHeight, 0]}"
 		>
 			<div id="headerBarInner">
 				<img
@@ -413,7 +461,7 @@ export class AppRoot extends Element {
 
 				<div style=${() => ({display: this.isMobile() ? 'none' : 'contents'})}>
 					<div class="headerSpace"></div>
-					<menu-links></menu-links>
+					<menu-links onsigninclick=${() => (this.loginButtonsOpen = !this.loginButtonsOpen)}></menu-links>
 				</div>
 			</div>
 		</lume-element3d>
@@ -434,7 +482,7 @@ export class AppRoot extends Element {
 			}}
 			mount-point="0.5 1"
 			align-point=${() => [0.5, this.isMobile() ? 1 : 1]}
-			size="200 50"
+			size="200 0"
 		>
 			<div id="info">
 				<span id="tagline">
@@ -464,7 +512,7 @@ export class AppRoot extends Element {
 				ref="${e => (this.mobileMenu = e)}"
 				id="mobileMenu"
 				size-mode="proportional proportional"
-				size="${[MENU_WIDTH, 1]}"
+				size="${[styleVars.menuWidth, 1]}"
 				align-point="1 0"
 				comment="start closed position"
 				opacity="1"
@@ -518,13 +566,13 @@ export class AppRoot extends Element {
 			display: flex;
 			height: 100%;
 			align-items: center;
-			padding-left: 60px;
-			padding-right: 60px;
+			padding-left: var(--pageLeftRightPadding);
+			padding-right: var(--pageLeftRightPadding);
 		}
 
 		#logo {
-			width: 50px;
-			height: 50px;
+			width: var(--desktopMenuItemHeight);
+			height: var(--desktopMenuItemHeight);
 			object-fit: fill;
 
 			/* push everything else to the right side of the header */
@@ -545,7 +593,7 @@ export class AppRoot extends Element {
 			justify-content: center;
 			font-size: calc(1.5rem * var(--isMobile) + 2rem * var(--notIsMobile));
 			text-align: center;
-			padding: 25px;
+			padding: var(--pageTopBottomPadding);
 		}
 
 		#tagline {
@@ -908,6 +956,8 @@ export class AppRoot extends Element {
 				)}
 			</lume-element3d>
 		</lume-scene>
+
+		<blaze-component id="loginButtons" tmpl="loginButtons" data=${{align: 'right'}}></blaze-component>
 	`
 
 	css = css/*css*/ `
@@ -958,6 +1008,32 @@ export class AppRoot extends Element {
 
 		canvas {
 			display: none;
+		}
+
+		#loginButtons {
+			display: flex !important;
+			position: absolute;
+			top: calc(var(--pageTopBottomPadding) + var(--desktopMenuItemHeight));
+			right: var(--pageLeftRightPadding);
+
+			/* hide the built-in open/close links, we use our own */
+			.login-close-text,
+			#login-sign-in-link,
+			#login-name-link {
+				display: none;
+			}
+
+			#login-dropdown-list {
+				pointer-events: auto;
+			}
+		}
+
+		#login-buttons.login-buttons-dropdown-align-right #login-dropdown-list {
+			top: 0;
+			right: 0;
+			bottom: unset;
+			left: unset;
+			margin: unset;
 		}
 	`
 }
