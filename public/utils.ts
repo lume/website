@@ -1,7 +1,8 @@
 import type {Element3D, Mesh} from 'lume'
 import * as THREE from 'three'
-import {batch, createEffect, createMemo, createSignal, onCleanup, untrack, type Signal} from 'solid-js'
+import {batch, createEffect, createMemo, createSignal, getOwner, onCleanup, untrack, type Signal} from 'solid-js'
 import {Easing} from '@tweenjs/tween.js'
+import {effect} from './meteor-signals.js'
 
 export async function svgTexture(
 	plane: Mesh,
@@ -185,4 +186,12 @@ export function cloneCSSStyleSheet(sheet: CSSStyleSheet) {
 		.join(' ')
 	newSheet.replaceSync(styletext)
 	return newSheet
+}
+
+export function toSolidSignal<T>(meteorGetter: () => T) {
+	const [get, set] = createSignal<T>(meteorGetter())
+	// @ts-expect-error no handling of function values for now
+	const comp = effect(() => set(meteorGetter()))
+	if (getOwner()) onCleanup(() => comp.stop())
+	return get
 }

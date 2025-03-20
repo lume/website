@@ -54,11 +54,3 @@ if (Meteor.isDevelopment) {
 		},
 	)
 }
-
-// If the user hasn't visited the current page before, increment the page visits.
-// .......
-
-// if (Meteor.isDevelopment) {
-// 	// clear the database on server restart
-// 	await Meteor.users.removeAsync({})
-// }

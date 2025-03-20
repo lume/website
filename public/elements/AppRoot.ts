@@ -9,7 +9,10 @@ import {type LandingCube} from './Cube.js'
 import './MenuLinks.js'
 import './HamburgerButton.js'
 import './BlazeComponent.js'
-import {animateSignalTo, clamp, elementSize, memoize, svgTexture} from '../utils.js'
+import {animateSignalTo, clamp, elementSize, memoize, svgTexture, toSolidSignal} from '../utils.js'
+import {effect} from '../meteor-signals.js'
+import {Visits} from '../imports/collections/Visits.js'
+import {StudioSignups} from '../imports/collections/StudioSignups.js'
 
 const logoUrl = new URL('../images/logo.svg', import.meta.url).href
 const wordmarkUrl = new URL('../images/logo-wordmark.svg', import.meta.url).href
@@ -41,6 +44,10 @@ for (const [key, val] of Object.entries(styleVars)) {
 }
 
 console.log('VALUE:', styleVars.menuWidth)
+
+const meteorUser = toSolidSignal(() => Meteor.user())
+const isAdmin = createMemo(() => meteorUser()?.emails.some(e => e.address.toLowerCase() == 'joe@lume.io'))
+const studioSignups = toSolidSignal(() => StudioSignups.find({}).fetch())
 
 @element('app-root')
 export class AppRoot extends Element {
@@ -418,6 +425,19 @@ export class AppRoot extends Element {
 		// const mo = new MutationObserver(records => { })
 		// mo.observe
 		// elementSize()
+
+		this.meteorEffect(() => {
+			this.visits = Visits.find({}).fetch()
+		})
+	}
+
+	@signal visits = []
+
+	meteorEffect(fn: () => void) {
+		this.createEffect(() => {
+			const computation = effect(fn)
+			onCleanup(() => computation.stop())
+		})
 	}
 
 	@signal recede = false
@@ -957,6 +977,14 @@ export class AppRoot extends Element {
 			</lume-element3d>
 		</lume-scene>
 
+		<div id="statsUI" class=${() => (isAdmin() ? '' : 'hidden')}>
+			<h2>Page visits:</h2>
+			${() => this.visits.map(v => html` <div><b>${v.host ?? ''}${v.route}:</b> &#32; ${v.visits}</div> `)}
+
+			<h2>Studio signups:</h2>
+			${() => studioSignups().map(s => html` <div>${s.email}</div> `)}
+		</div>
+
 		<blaze-component id="loginButtons" tmpl="loginButtons" data=${{align: 'right'}}></blaze-component>
 	`
 
@@ -1034,6 +1062,20 @@ export class AppRoot extends Element {
 			bottom: unset;
 			left: unset;
 			margin: unset;
+		}
+
+		#statsUI {
+			pointer-events: auto;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 50%;
+			height: 50%;
+			transform: translate3d(-50%, -50%, 0);
+			background: rgba(255, 255, 255, 0.2);
+			backdrop-filter: blur(14px);
+			padding: 20px;
+			color: white;
 		}
 	`
 }

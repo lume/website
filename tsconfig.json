@@ -16,6 +16,9 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 
+		// disable global types, use import syntax instead of globals
+		"types": [],
+
 		// "preserveSymlinks": true, // makes no difference for meteor types for me.
 		"paths": {
 			"meteor/*": ["./node_modules/@types/meteor/*", "./.meteor/local/types/packages.d.ts"]

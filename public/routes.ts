@@ -1,6 +1,7 @@
 import {Session} from 'meteor/session'
-import {effect} from './meteor-signals.js'
 import {ReactiveVar} from 'meteor/reactive-var'
+import {Meteor} from 'meteor/meteor'
+import {effect} from './meteor-signals.js'
 
 let appName = 'LUME'
 const _appTitle = new ReactiveVar(appName)
@@ -57,5 +58,6 @@ effect(() => {
 		},
 	})
 
+	console.log('incrementing visits for', location.href)
 	Meteor.call('visits.increment', location.href)
 })
