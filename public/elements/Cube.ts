@@ -27,12 +27,13 @@ export class LandingCube extends Element3D {
 	connectedCallback() {
 		super.connectedCallback()
 
-		const planes = Array.from(this.shadowRoot.querySelectorAll('.cubeFace')) as Plane[]
+		const planes = Array.from(this.shadowRoot!.querySelectorAll('.cubeFace')) as Plane[]
 
 		if (this.visible) {
 			for (const plane of planes) {
 				const canvas = plane.querySelector('canvas')
 				const img = plane.querySelector('img')
+				if (!canvas || !img) throw new Error('Canvas or image missing')
 				svgTexture(plane, img, canvas, 1000, 1000)
 			}
 		}

@@ -32,7 +32,7 @@ export class BlazeComponent extends Element {
 
 	hasShadow = false
 
-	#container: HTMLDivElement | null = null
+	#container!: HTMLDivElement
 
 	#tmpl = () => (typeof this.tmpl === 'string' ? (Template[this.tmpl] as Blaze.Template | undefined) : this.tmpl)
 
@@ -57,7 +57,7 @@ export class BlazeComponent extends Element {
 			globalSheetPromise = promise
 
 			const link = document.head.querySelector('link[href*="accounts-ui"]') as HTMLLinkElement
-			const onStyleLoad = () => resolve(cloneCSSStyleSheet(link.sheet))
+			const onStyleLoad = () => resolve(cloneCSSStyleSheet(link.sheet!))
 			const styleLoaded = link.sheet?.cssRules.length
 
 			if (!styleLoaded) link.addEventListener('load', onStyleLoad)
@@ -122,7 +122,9 @@ export class BlazeComponent extends Element {
 		})
 	}
 
-	template = () => html` <div id="container" part="container" ref=${e => (this.#container = e)}></div> `
+	template = () => html`
+		<div id="container" part="container" ref=${(e: HTMLDivElement) => (this.#container = e)}></div>
+	`
 
 	css = css/*css*/ `
 		:host {

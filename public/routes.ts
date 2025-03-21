@@ -3,18 +3,16 @@ import {ReactiveVar} from 'meteor/reactive-var'
 import {Meteor} from 'meteor/meteor'
 import {effect} from './meteor-signals.js'
 
-let appName = 'LUME'
+// We'll keep the title up to date once we add routing. For now it is just "Lume".
+let appName = 'Lume'
 const _appTitle = new ReactiveVar(appName)
 export const appTitle = () => _appTitle.get()
 
+// Track the url of the current page on route change. This is used to track
+// visits to the page.
+
 const _url = new ReactiveVar(new URL(location.href))
 export const url = () => _url.get()
-
-const _href = new ReactiveVar(_url.get().href)
-export const href = () => _href.get()
-
-// TODO make it a memo
-effect(() => _href.set(_url.get().href))
 
 window.addEventListener('popstate', () => _url.set(new URL(location.href)))
 
@@ -32,21 +30,24 @@ history.replaceState = History.prototype.replaceState = function (...args) {
 	return ret
 }
 
-declare module 'meteor/session' {
-	namespace Session {
-		function setPersistent(key: string, value: string | object): void
+// Track which routes the user has already visited in local storage, that way we
+// can count unique visits.
+
+interface Visited {
+	[host: string]: {
+		[pathname: string]: boolean
 	}
 }
 
-export const visited = () => Session.get('visited')
-const setVisited = visited => Session.setPersistent('visited', visited)
+export const visited = () => Session.get('visited') as Visited
+const setVisited = (visited: Visited) => Session.setPersistent('visited', visited)
 
 if (!visited()) setVisited({})
 
 // If the user hasn't visited the current page before, increment the page visits.
 // For now we have only a root page.
 effect(() => {
-	href() // re-run on route change
+	url() // re-run on route change
 
 	if (visited()[location.host]?.[location.pathname]) return
 
@@ -58,6 +59,5 @@ effect(() => {
 		},
 	})
 
-	console.log('incrementing visits for', location.href)
 	Meteor.call('visits.increment', location.href)
 })

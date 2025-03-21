@@ -13,6 +13,7 @@
 		"verbatimModuleSyntax": true,
 		"skipLibCheck": true,
 
+		"strict": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 
@@ -21,7 +22,14 @@
 
 		// "preserveSymlinks": true, // makes no difference for meteor types for me.
 		"paths": {
-			"meteor/*": ["./node_modules/@types/meteor/*", "./.meteor/local/types/packages.d.ts"]
+			"meteor/*": [
+				//
+				"./node_modules/@types/meteor/*",
+
+				// This is from zodern:types. It appears to not do anything
+				// though??? Plus missing packages???
+				"./.meteor/local/types/packages.d.ts"
+			]
 		}
 	},
 

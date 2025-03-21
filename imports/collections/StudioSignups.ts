@@ -3,15 +3,12 @@ import {Mongo} from 'meteor/mongo'
 
 export const StudioSignups = new Mongo.Collection<{email: string}>('StudioSignups')
 
-const admins = ['joe@lume.io']
-
 if (Meteor.isServer) {
 	Meteor.publish('StudioSignups', async () => {
 		const user = await Meteor.userAsync()
-		const isAdmin = !!user?.emails.some(email => admins.includes(email.address.toLowerCase()))
+		const isAdmin = !!user?.profile?.isAdmin
 
 		if (isAdmin) return StudioSignups.find({})
-
 		return []
 	})
 

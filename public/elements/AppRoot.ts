@@ -11,7 +11,8 @@ import './HamburgerButton.js'
 import './BlazeComponent.js'
 import {animateSignalTo, clamp, elementSize, memoize, svgTexture, toSolidSignal} from '../utils.js'
 import {effect} from '../meteor-signals.js'
-import {Visits} from '../imports/collections/Visits.js'
+import {Visits, type Visit} from '../imports/collections/Visits.js'
+import '../imports/collections/Users.js'
 import {StudioSignups} from '../imports/collections/StudioSignups.js'
 
 const logoUrl = new URL('../images/logo.svg', import.meta.url).href
@@ -43,10 +44,8 @@ for (const [key, val] of Object.entries(styleVars)) {
 	styleVars[key] = typeof val === 'string' && val.endsWith('%') ? Number(val.replace('%', '')) / 100 : val
 }
 
-console.log('VALUE:', styleVars.menuWidth)
-
 const meteorUser = toSolidSignal(() => Meteor.user())
-const isAdmin = createMemo(() => meteorUser()?.emails.some(e => e.address.toLowerCase() == 'joe@lume.io'))
+const isAdmin = createMemo(() => meteorUser()?.profile?.isAdmin)
 const studioSignups = toSolidSignal(() => StudioSignups.find({}).fetch())
 
 @element('app-root')
@@ -54,23 +53,23 @@ export class AppRoot extends Element {
 	// Used in AppAttributes to denote no attributes. See TODO there.
 	_____?: undefined
 
-	@signal cube?: LandingCube
-	@signal cube2?: LandingCube
-	@signal mobileMenu?: Element3D
-	@signal scene?: Scene
-	@signal rotator?: Element3D
-	@signal rotator2?: Element3D
-	@signal wordmarkContainer?: Element3D
-	@signal circle?: Element3D
-	@signal light?: Element3D
-	@signal light2?: Element3D
-	@signal wordMarkHorizontal?: Plane
-	@signal horizontalImg?: HTMLImageElement
-	@signal horizontalCanvas?: HTMLCanvasElement
-	@signal wordMarkVertical?: Plane
-	@signal verticalImg?: HTMLImageElement
-	@signal verticalCanvas?: HTMLCanvasElement
-	@signal innerScene?: MixedPlane
+	@signal cube!: LandingCube
+	@signal cube2!: LandingCube
+	@signal mobileMenu!: Element3D
+	@signal scene!: Scene
+	@signal rotator!: Element3D
+	@signal rotator2!: Element3D
+	@signal wordmarkContainer!: Element3D
+	@signal circle!: Element3D
+	@signal light!: Element3D
+	@signal light2!: Element3D
+	@signal wordMarkHorizontal!: Plane
+	@signal horizontalImg!: HTMLImageElement
+	@signal horizontalCanvas!: HTMLCanvasElement
+	@signal wordMarkVertical!: Plane
+	@signal verticalImg!: HTMLImageElement
+	@signal verticalCanvas!: HTMLCanvasElement
+	@signal innerScene!: MixedPlane
 
 	@signal loginButtonsOpen = false
 
@@ -236,14 +235,16 @@ export class AppRoot extends Element {
 		this.light.position = (x, y, z) => [x, y, z]
 		this.light2.position = (x, y, z) => [x, y, z]
 		onCleanup(() => {
-			this.light.position = null
-			this.light2.position = null
+			// re-assignment stops animation functions.
+			this.light.position = this.light.position
+			this.light2.position = this.light2.position
 		})
 	}
 
 	onSubmitStudioSignup = (event: SubmitEvent) => {
 		event.preventDefault()
 		const input = (event.target as HTMLFormElement).querySelector('input')
+		if (!input) throw new Error('Missing input')
 		if (!input.value) return
 		const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 		if (!emailRegex.test(input.value)) return
@@ -256,6 +257,7 @@ export class AppRoot extends Element {
 		const sphereParent = this.scene.querySelector('#explosionSpheres') as Element3D
 		const spheres = Array.from(sphereParent.children) as Sphere[]
 		const button = (event.target as HTMLFormElement).querySelector('button')
+		if (!button) throw new Error('Missing button')
 		const rect = button.getBoundingClientRect()
 		const buttonPosition = {
 			x: rect.x + rect.width / 2,
@@ -431,7 +433,7 @@ export class AppRoot extends Element {
 		})
 	}
 
-	@signal visits = []
+	@signal visits: Visit[] = []
 
 	meteorEffect(fn: () => void) {
 		this.createEffect(() => {
@@ -529,7 +531,7 @@ export class AppRoot extends Element {
 
 		<lume-element3d id="mobileNav" size-mode="proportional proportional" size="1 1 0" visible=${() => this.isMobile()}>
 			<lume-element3d
-				ref="${e => (this.mobileMenu = e)}"
+				ref="${(e: Element3D) => (this.mobileMenu = e)}"
 				id="mobileMenu"
 				size-mode="proportional proportional"
 				size="${[styleVars.menuWidth, 1]}"
@@ -715,7 +717,7 @@ export class AppRoot extends Element {
 		>
 			<lume-ambient-light color="white" intensity="2"></lume-ambient-light>
 			<lume-point-light
-				ref=${e => (this.light2 = e)}
+				ref=${(e: Element3D) => (this.light2 = e)}
 				color="white"
 				intensity="1500"
 				shadow-bias="-0.1"
@@ -735,7 +737,7 @@ export class AppRoot extends Element {
 			<!-- Cube ################################ -->
 			<lume-element3d size-mode="proportional proportional" size="1 1 0">
 				<lume-element3d
-					ref="${e => (this.rotator2 = e)}"
+					ref="${(e: Element3D) => (this.rotator2 = e)}"
 					class="rotator"
 					role="img"
 					xaria-label="A 3D cube with each face showing different pink/yellow/blue/cyan gradient colors, floating behind the 'LUME' wordmark."
@@ -750,13 +752,13 @@ export class AppRoot extends Element {
 						wordmark.
 					</span>
 
-					<${this.Cube} ref=${e => (this.cube2 = e)} />
+					<${this.Cube} ref=${(e: LandingCube) => (this.cube2 = e)} />
 				</lume-element3d>
 			</lume-element3d>
 		</lume-scene>
 	`
 
-	Cube = props => html`
+	Cube = (props: {ref: (e: LandingCube) => void; visible: boolean}) => html`
 		<landing-cube
 			ref="${props.ref}"
 			size="${() => [this.cubeSize()]}"
@@ -784,7 +786,7 @@ export class AppRoot extends Element {
 		>
 			<lume-ambient-light color="white" intensity="2"></lume-ambient-light>
 			<lume-point-light
-				ref=${e => (this.light = e)}
+				ref=${(e: Element3D) => (this.light = e)}
 				color="pink"
 				intensity="10000"
 				shadow-bias="-0.1"
@@ -803,7 +805,7 @@ export class AppRoot extends Element {
 
 			<lume-element3d size-mode="proportional proportional" size="1 1 0">
 				<lume-element3d
-					ref="${e => (this.rotator = e)}"
+					ref="${(e: Element3D) => (this.rotator = e)}"
 					class="rotator"
 					align-point=${this.rotatorAlignPoint}
 					mount-point="0.5 0.5"
@@ -811,7 +813,7 @@ export class AppRoot extends Element {
 					size="1 1"
 				>
 					<lume-element3d
-						ref="${e => (this.wordmarkContainer = e)}"
+						ref="${(e: Element3D) => (this.wordmarkContainer = e)}"
 						size-mode="proportional proportional"
 						size="${() => (this.viewIsTall() ? '0 0.5 0' : '0.5 0 0')}"
 						mount-point="0.5 0.5"
@@ -819,7 +821,7 @@ export class AppRoot extends Element {
 					>
 						<!-- <lume-element3d -->
 						<lume-plane
-							ref=${e => (this.wordMarkHorizontal = e)}
+							ref=${(e: Plane) => (this.wordMarkHorizontal = e)}
 							class="wordmark"
 							role="img"
 							xaria-label="The 'LUME' wordmark with letters flowing horizontally, positioned to be floating in front of a 3D cube in the background, visible to people who have a screen that is wider than tall (f.e. desktop or tablets in landscape orientation)."
@@ -843,9 +845,9 @@ export class AppRoot extends Element {
 							</span>
 
 							<div style="width: 100%; height: 100%">
-								<canvas ref=${e => (this.horizontalCanvas = e)}></canvas>
+								<canvas ref=${(e: HTMLCanvasElement) => (this.horizontalCanvas = e)}></canvas>
 								<img
-									ref=${e => (this.horizontalImg = e)}
+									ref=${(e: HTMLImageElement) => (this.horizontalImg = e)}
 									crossorigin
 									src=${wordmarkUrl}
 									width="960"
@@ -858,7 +860,7 @@ export class AppRoot extends Element {
 
 						<!-- <lume-element3d -->
 						<lume-plane
-							ref=${e => (this.wordMarkVertical = e)}
+							ref=${(e: Plane) => (this.wordMarkVertical = e)}
 							class="wordmark"
 							role="img"
 							xaria-label="The 'LUME' wordmark with letters flowing vertically, positioned to be floating in front of a 3D cube in the background, visible to people who have a screen that is taller than wide (f.e. phones in portrait orientation)."
@@ -881,9 +883,9 @@ export class AppRoot extends Element {
 							</span>
 
 							<div style="width: 100%; height: 100%">
-								<canvas ref=${e => (this.verticalCanvas = e)}></canvas>
+								<canvas ref=${(e: HTMLCanvasElement) => (this.verticalCanvas = e)}></canvas>
 								<img
-									ref=${e => (this.verticalImg = e)}
+									ref=${(e: HTMLImageElement) => (this.verticalImg = e)}
 									crossorigin
 									src=${wordmarkVerticalUrl}
 									width="118"
@@ -895,7 +897,7 @@ export class AppRoot extends Element {
 						<!-- </lume-element3d> -->
 					</lume-element3d>
 
-					<${this.Cube} ref=${e => (this.cube = e)} visible="false" />
+					<${this.Cube} ref=${(e: LandingCube) => (this.cube = e)} visible="false" />
 				</lume-element3d>
 			</lume-element3d>
 		</lume-scene>
@@ -903,7 +905,7 @@ export class AppRoot extends Element {
 
 	template = () => html`
 		<lume-scene
-			ref="${e => (this.scene = e)}"
+			ref="${(e: Scene) => (this.scene = e)}"
 			id="outerScene"
 			role="figure"
 			xaria-label="A 3D scene with a 3D cube and the 'LUME' wordmark, with the cube rotating and the wordmark floating in front of it. The scene is interactive, with the cube and wordmark slightly rotating and shifting around based on pointer movement."
@@ -925,7 +927,7 @@ export class AppRoot extends Element {
 			<!-- <lume-element3d size-mode="proportional proportional" size="1 1 0"> -->
 			<lume-mixed-plane
 				id="innerScene"
-				ref=${e => (this.innerScene = e)}
+				ref=${(e: MixedPlane) => (this.innerScene = e)}
 				size-mode="proportional proportional"
 				size="1 1 0"
 				material-opacity="0"
@@ -947,7 +949,7 @@ export class AppRoot extends Element {
 				<${this.UI} />
 
 				<lume-element3d
-					ref="${e => (this.circle = e)}"
+					ref="${(e: Element3D) => (this.circle = e)}"
 					visible=${() => !this.isMobile() && false}
 					class="circle"
 					mount-point="0.5 0.5"
@@ -981,7 +983,7 @@ export class AppRoot extends Element {
 			<h2>Page visits:</h2>
 			${() => this.visits.map(v => html` <div><b>${v.host ?? ''}${v.route}:</b> &#32; ${v.visits}</div> `)}
 
-			<h2>Studio signups:</h2>
+			<h2>Studio signups: (${() => studioSignups().length - 2})</h2>
 			${() => studioSignups().map(s => html` <div>${s.email}</div> `)}
 		</div>
 
@@ -1076,6 +1078,7 @@ export class AppRoot extends Element {
 			backdrop-filter: blur(14px);
 			padding: 20px;
 			color: white;
+			overflow-x: auto;
 		}
 	`
 }

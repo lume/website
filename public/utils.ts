@@ -12,6 +12,7 @@ export async function svgTexture(
 	height: number,
 ) {
 	const ctx = canvas.getContext('2d')
+	if (!ctx) throw new Error('Canvas already has a different context.')
 
 	await Promise.all([imgLoaded(img)])
 
@@ -21,11 +22,11 @@ export async function svgTexture(
 
 	const tex = new THREE.CanvasTexture(canvas)
 	tex.colorSpace = THREE.SRGBColorSpace
-	plane.three.material.map = tex
-	plane.three.material.needsUpdate = true
+	;(plane.three.material as THREE.MeshPhysicalMaterial).map = tex
+	;(plane.three.material as THREE.Material).needsUpdate = true
 	plane.needsUpdate()
 	setTimeout(() => {
-		plane.three.material.needsUpdate = true
+		;(plane.three.material as THREE.Material).needsUpdate = true
 		plane.needsUpdate()
 	}, 2000)
 
@@ -35,10 +36,10 @@ export async function svgTexture(
 	img.remove()
 }
 
-export function imgLoaded(img) {
+export function imgLoaded(img: HTMLImageElement) {
 	const p = new Promise<void>(res => {
 		if (img.complete) res()
-		else img.addEventListener('load', res)
+		else img.addEventListener('load', () => res())
 	})
 	return p
 }

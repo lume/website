@@ -9,7 +9,7 @@ const docsHost = isDev ? 'localhost:54321' : 'docs.lume.io'
 @element('menu-links')
 export class MenuLinks extends Element {
 	@booleanAttribute isMobile = false
-	@signal menuLinks?: HTMLDivElement
+	@signal menuLinks?: HTMLElement
 
 	connectedCallback() {
 		super.connectedCallback()
@@ -22,7 +22,7 @@ export class MenuLinks extends Element {
 		<nav
 			aria-label="Main"
 			class="${() => `menuLinks${this.isMobile ? ' menuLinksMobile' : ''}`}"
-			ref="${e => (this.menuLinks = e)}"
+			ref="${(e: HTMLElement) => (this.menuLinks = e)}"
 		>
 			<div class=${this.isMobile ? 'spacer' : ''}></div>
 			<a class="menuLink" href=${'//' + docsHost}> <span>Documentation</span> </a>
@@ -34,7 +34,7 @@ export class MenuLinks extends Element {
 				class="menuLink"
 				href="#"
 				id="signin"
-				onclick=${e => (e.preventDefault(), this.dispatchEvent(new Event('signinclick')))}
+				onclick=${(e: PointerEvent) => (e.preventDefault(), this.dispatchEvent(new Event('signinclick')))}
 			>
 				<span>Sign in ▾</span>
 			</a>

@@ -16,10 +16,10 @@
 
 import {Meteor} from 'meteor/meteor'
 import '../imports/collections/index.js'
+import {WebApp} from 'meteor/webapp'
 
-// WebApp is defined by Meteor, but the type is missin.
-declare const WebApp: any
-
+// @ts-expect-error missing type (TODO update away from @types/meteor? Ask
+// Meteor's AI "How to set up TypeScript", there's some good docs.)
 WebApp.addHtmlAttributeHook(() => ({lang: 'en', prefix: 'og: http://ogp.me/ns#'}))
 
 if (Meteor.isDevelopment) {
@@ -47,7 +47,7 @@ if (Meteor.isDevelopment) {
 			// Otherwise only allow lume.io.
 			else if (req.headers.host === 'lume.io' || req.headers.host === 'docs.lume.io') {
 				// lume.io is only accessible via HTTPS
-				res.setHeader('Access-Control-Allow-Origin', req.protocol + '://' + req.headers.host)
+				res.setHeader('Access-Control-Allow-Origin', (req as any).protocol + '://' + req.headers.host)
 			}
 
 			return next()

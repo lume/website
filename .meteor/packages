@@ -37,10 +37,12 @@ static-html@1.4.0                       # Define static page content in .html fi
 
 # added packages
 
-accounts-ui@1.4.3
 accounts-password@3.0.3
+accounts-ui@1.4.3
 # manually add jquery because accounts-ui needs blaze which needs jquery (bug: https://github.com/meteor/meteor/issues/13658)
 jquery@3.0.2
 
 session@1.2.2
 ferjep:persistent-session@0.4.13        # Enables Session to persist across page reloads using localStorage
+
+zodern:types@1.0.13                     # types for Meteor packages

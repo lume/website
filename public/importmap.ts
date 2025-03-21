@@ -34,7 +34,8 @@
 					"meteor/templating": "/meteor-packages.js",
 					"meteor/mongo": "/meteor-packages.js",
 					"meteor/session": "/meteor-packages.js",
-					"meteor/reactive-var": "/meteor-packages.js"
+					"meteor/reactive-var": "/meteor-packages.js",
+					"meteor/accounts-base": "/meteor-packages.js"
 				}
 			}
 		</script>
