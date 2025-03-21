@@ -17,3 +17,5 @@ public/imports
 client/**/*.js*
 server/**/*.js*
 imports/**/*.js*
+
+website.tar.gz
