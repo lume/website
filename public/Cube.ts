@@ -1,5 +1,5 @@
 import {element, Element3D} from 'lume'
-import {html} from 'pota/src/renderer/html.js'
+import html from 'solid-js/html'
 import type {ElementAttributes} from '@lume/element'
 import type {Element3DAttributes} from 'lume'
 

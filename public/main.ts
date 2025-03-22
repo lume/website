@@ -1,3 +1,4 @@
+import 'lume'
 import './routes.js'
 import {Session} from 'meteor/session'
 import {Tracker} from 'meteor/tracker'

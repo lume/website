@@ -1,6 +1,5 @@
 import {Motor, Element, element, Element3D, numberAttribute, booleanAttribute} from 'lume'
-import {html} from 'pota/src/renderer/html.js'
-import {Show} from 'pota/src/components/flow/Show.js'
+import html from 'solid-js/html'
 import * as THREE from 'three'
 import {Tween, Easing} from '@tweenjs/tween.js'
 import {createEffect} from 'solid-js'
@@ -9,8 +8,6 @@ import './Cube.js'
 import type {ElementAttributes} from '@lume/element'
 import type {Element3DAttributes, RenderTask, Scene} from 'lume'
 import {type LandingCube} from './Cube.js'
-
-html.define({Show})
 
 const MENU_WIDTH = 0.8 // percent of viewport
 const HEADER_HEIGHT = 100
@@ -129,6 +126,7 @@ class App extends Element {
 		const {scene, rotator, cubeNode, menuButtonWrapper} = this
 
 		if (!scene || !rotator || !cubeNode || !menuButtonWrapper) throw new Error('Missing!')
+		console.log('App connectedCallback() scene:', scene, rotator, cubeNode, menuButtonWrapper)
 
 		const task = Motor.addRenderTask((_t, dt) => (cubeNode.rotation.y += dt / 50))
 		this.stoppers.push(() => Motor.removeRenderTask(task))
@@ -207,177 +205,182 @@ class App extends Element {
 		return this.viewIsTall ? 118 / 686 : 960 / 146
 	}
 
-	template = () => html`
-		<lume-scene ref="${e => (this.scene = e)}" class="scene">
-			<lume-element3d size-mode="proportional proportional" size="1 1 0">
-				<lume-scene
-					fog-mode="linear"
-					fog-near="800"
-					fog-far="1400"
-					fog-color="#224dd9"
-					perspective="800"
-					id="innerScene"
-					webgl="true"
-					enable-css="true"
-					swap-layers
-				>
-					<lume-ambient-light color="white" intensity="0.5"></lume-ambient-light>
-					<lume-point-light
-						color="white"
-						intensity="1.5"
-						position="500 0 500"
-						shadow-bias="-0.1"
-					></lume-point-light>
-					<lume-element3d size-mode="proportional proportional" size="1 1 0">
-						<lume-element3d
-							class="headerBar"
-							comment="setting a string override Lume style (including transforms, etc)."
-							xstyle="${() => 'pointerEvents: ' + (this.isMobile ? 'none' : 'auto')}"
-							style="${() => ({pointerEvents: this.isMobile ? 'none' : 'auto'})}"
-							size-mode="proportional literal"
-							size="${[1, HEADER_HEIGHT, 0]}"
-						>
-							<div class="headerBarInner">
-								<img src="/images/logo.svg" class="logo" />
-								<Show when="${() => !this.isMobile}">
-									<div class="header-space"></div>
-									<menu-links></menu-links>
-								</Show>
-							</div>
-						</lume-element3d>
-
-						<lume-element3d
-							ref="${e => (this.rotator = e)}"
-							class="rotator"
-							align-point="0.5 0.5"
-							mount-point="0.5 0.5"
-							size-mode="proportional proportional"
-							size="1 1"
-						>
+	template = () => {
+		const res = html`
+			<lume-scene ref="${e => (this.scene = e)}" class="scene">
+				<lume-element3d size-mode="proportional proportional" size="1 1 0">
+					<lume-scene
+						fog-mode="linear"
+						fog-near="800"
+						fog-far="1400"
+						fog-color="#224dd9"
+						perspective="800"
+						id="innerScene"
+						webgl="true"
+						enable-css="true"
+						swap-layers
+						physically-correct-lighting="false"
+					>
+						<lume-ambient-light color="white" intensity="0.5"></lume-ambient-light>
+						<lume-point-light color="white" intensity="1200" position="500 0 500" shadow-bias="-0.1"></lume-point-light>
+						<lume-element3d size-mode="proportional proportional" size="1 1 0">
 							<lume-element3d
-								ref="${e => (this.wordmarkContainer = e)}"
-								size-mode="proportional proportional"
-								size="${() => (this.viewIsTall ? '0 0.7 0' : '0.5 0 0')}"
-								mount-point="0.5 0.5"
-								align-point="0.5 0.5"
+								class="headerBar"
+								comment="setting a string override Lume style (including transforms, etc)."
+								xstyle="${() => 'pointerEvents: ' + (this.isMobile ? 'none' : 'auto')}"
+								style="${() => ({pointerEvents: this.isMobile ? 'none' : 'auto'})}"
+								size-mode="proportional literal"
+								size="${[1, HEADER_HEIGHT, 0]}"
 							>
-								<!-- TODO restore the SVG texture with lume-plane+canvas instead of lume-element3d -->
-								<!-- <lume-plane -->
-								<lume-element3d
-									id="otherPlane"
-									visible="${() => !this.viewIsTall}"
-									TODO="relative size based on parent size, but not necessarily the same axis (f.e. map child Y size to proportion of parent X size)"
-									size="${() => [
-										this.wordmarkContainer?.calculatedSize?.x ?? 1,
-										(this.wordmarkContainer?.calculatedSize?.x ?? 1) / this.wordmarkAspectRatio,
-									]}"
-									mount-point="0 0.5"
-									opacity="0.99"
-									Xtexture="/images/logo-wordmark.svg"
-									color="white"
-								>
-									<div style="width: 100%; height: 100%">
-										<!-- <canvas id="otherCanvas"></canvas> -->
-										<img
-											id="otherImg"
-											src="/images/logo-wordmark.svg"
-											width="960"
-											height="146"
-											style="width: 100%; height: 100%;"
-										/>
-									</div>
-								</lume-element3d>
-								<!-- </lume-plane> -->
-
-								<!-- TODO restore the SVG texture with lume-plane+canvas instead of lume-element3d -->
-								<!-- <lume-plane -->
-								<lume-element3d
-									id="numbersPlane"
-									visible="${() => this.viewIsTall}"
-									size="${() => [
-										(this.wordmarkContainer?.calculatedSize?.y ?? 1) * this.wordmarkAspectRatio,
-										this.wordmarkContainer?.calculatedSize?.y ?? 1,
-									]}"
-									mount-point="0.5 0"
-									opacity="0.99"
-									Xtexture="/images/logo-wordmark-vertical.svg"
-									color="white"
-								>
-									<div style="width: 100%; height: 100%">
-										<!-- <canvas id="numbersCanvas"></canvas> -->
-										<img
-											id="numbersImg"
-											src="/images/logo-wordmark-vertical.svg"
-											width="118"
-											height="686"
-											style="width: 100%; height: 100%"
-										/>
-									</div>
-								</lume-element3d>
-								<!-- </lume-plane> -->
+								<div class="headerBarInner">
+									<img src="/images/logo.svg" class="logo" />
+									${() =>
+										!this.isMobile
+											? html`
+													<div class="header-space"></div>
+													<menu-links></menu-links>
+												`
+											: ''}
+								</div>
 							</lume-element3d>
 
-							<landing-cube
-								ref="${e => (this.cubeNode = e)}"
-								size="${() => [this.cubeSize]}"
-								align-point="0.5 0.5 0.5"
-								mount-point="0.5 0.5 0.5"
-								position="${() => [0, 0, -this.cubeSize]}"
-								rotation="45 45 45"
-							></landing-cube>
-						</lume-element3d>
-					</lume-element3d>
-				</lume-scene>
-
-				<Show
-					when="${() => this.isMobile}"
-					fallback="${() => html`
-						<lume-element3d
-							ref="${e => (this.circle = e)}"
-							visible="false"
-							class="circle"
-							mount-point="0.5 0.5"
-							size="200 200"
-						/>
-					`}"
-				>
-					<lume-element3d class="mobileNav" size-mode="proportional proportional" size="1 1 0">
-						<lume-element3d
-							ref="${e => (this.menu = e)}"
-							class="mobileMenu"
-							size-mode="proportional proportional"
-							size="${[MENU_WIDTH, 1]}"
-							align-point="1 0"
-							comment="start closed position"
-							opacity="1"
-						>
-							<menu-links is-mobile="${true}"></menu-links>
-						</lume-element3d>
-
-						<lume-element3d
-							class="menuButtonWrapper"
-							ref="${e => (this.menuButtonWrapper = e)}"
-							size="140 100"
-							align-point="1 0"
-							position="0 0"
-							mount-point="1 0"
-							onclick="${() => this.toggleMenu()}"
-						>
-							<hamburger-button
-								size="40 19"
+							<lume-element3d
+								ref="${e => (this.rotator = e)}"
+								class="rotator"
 								align-point="0.5 0.5"
 								mount-point="0.5 0.5"
-								position="0 0"
-								line-thickness="2.5"
-								line-length="0.7"
-								activated="${() => this.menuOpen}"
-							></hamburger-button>
+								size-mode="proportional proportional"
+								size="1 1"
+							>
+								<lume-element3d
+									ref="${e => (this.wordmarkContainer = e)}"
+									size-mode="proportional proportional"
+									size="${() => (this.viewIsTall ? '0 0.7 0' : '0.5 0 0')}"
+									mount-point="0.5 0.5"
+									align-point="0.5 0.5"
+								>
+									<!-- TODO restore the SVG texture with lume-plane+canvas instead of lume-element3d -->
+									<!-- <lume-plane -->
+									<lume-element3d
+										id="otherPlane"
+										visible="${() => !this.viewIsTall}"
+										TODO="relative size based on parent size, but not necessarily the same axis (f.e. map child Y size to proportion of parent X size)"
+										size="${() => [
+											this.wordmarkContainer?.calculatedSize?.x ?? 1,
+											(this.wordmarkContainer?.calculatedSize?.x ?? 1) / this.wordmarkAspectRatio,
+										]}"
+										mount-point="0 0.5"
+										opacity="0.99"
+										Xtexture="/images/logo-wordmark.svg"
+										color="white"
+									>
+										<div style="width: 100%; height: 100%">
+											<!-- <canvas id="otherCanvas"></canvas> -->
+											<img
+												id="otherImg"
+												src="/images/logo-wordmark.svg"
+												width="960"
+												height="146"
+												style="width: 100%; height: 100%;"
+											/>
+										</div>
+									</lume-element3d>
+									<!-- </lume-plane> -->
+
+									<!-- TODO restore the SVG texture with lume-plane+canvas instead of lume-element3d -->
+									<!-- <lume-plane -->
+									<lume-element3d
+										id="numbersPlane"
+										visible="${() => this.viewIsTall}"
+										size="${() => [
+											(this.wordmarkContainer?.calculatedSize?.y ?? 1) * this.wordmarkAspectRatio,
+											this.wordmarkContainer?.calculatedSize?.y ?? 1,
+										]}"
+										mount-point="0.5 0"
+										opacity="0.99"
+										Xtexture="/images/logo-wordmark-vertical.svg"
+										color="white"
+									>
+										<div style="width: 100%; height: 100%">
+											<!-- <canvas id="numbersCanvas"></canvas> -->
+											<img
+												id="numbersImg"
+												src="/images/logo-wordmark-vertical.svg"
+												width="118"
+												height="686"
+												style="width: 100%; height: 100%"
+											/>
+										</div>
+									</lume-element3d>
+									<!-- </lume-plane> -->
+								</lume-element3d>
+
+								<landing-cube
+									ref="${e => (this.cubeNode = e)}"
+									size="${() => [this.cubeSize]}"
+									align-point="0.5 0.5 0.5"
+									mount-point="0.5 0.5 0.5"
+									position="${() => [0, 0, -this.cubeSize]}"
+									rotation="45 45 45"
+								></landing-cube>
+							</lume-element3d>
 						</lume-element3d>
-					</lume-element3d>
-				</Show>
-			</lume-element3d>
-		</lume-scene>
-	`
+					</lume-scene>
+
+					${() =>
+						this.isMobile
+							? html`
+									<lume-element3d class="mobileNav" size-mode="proportional proportional" size="1 1 0">
+										<lume-element3d
+											ref="${e => (this.menu = e)}"
+											class="mobileMenu"
+											size-mode="proportional proportional"
+											size="${[MENU_WIDTH, 1]}"
+											align-point="1 0"
+											comment="start closed position"
+											opacity="1"
+										>
+											<menu-links is-mobile="${true}"></menu-links>
+										</lume-element3d>
+
+										<lume-element3d
+											class="menuButtonWrapper"
+											ref="${e => (this.menuButtonWrapper = e)}"
+											size="140 100"
+											align-point="1 0"
+											position="0 0"
+											mount-point="1 0"
+											onclick="${() => this.toggleMenu()}"
+										>
+											<hamburger-button
+												size="40 19"
+												align-point="0.5 0.5"
+												mount-point="0.5 0.5"
+												position="0 0"
+												line-thickness="2.5"
+												line-length="0.7"
+												activated="${() => this.menuOpen}"
+											></hamburger-button>
+										</lume-element3d>
+									</lume-element3d>
+								`
+							: html`
+									<lume-element3d
+										ref="${e => (this.circle = e)}"
+										visible="false"
+										class="circle"
+										mount-point="0.5 0.5"
+										size="200 200"
+									/>
+								`}
+				</lume-element3d>
+			</lume-scene>
+		`
+
+		console.log(res)
+
+		return res
+	}
 
 	css = /*css*/ `
         :host {

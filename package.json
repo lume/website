@@ -11,7 +11,7 @@
 		"clean": "npm run clean:unix || npm run --script-shell=pwsh clean:windows",
 		"clean:unix": "rm -rf `find client -name '*.js*'` && rm -rf `find public -name '*.js*'` && rm -rf `find server -name '*.js*'`",
 		"clean:windows": "Get-ChildItem -r -i client | Where{$_.Name -Match '*.\\.js*.'} | rm -r -fo && Get-ChildItem -r -i public | Where{$_.Name -Match '*.\\.js*.'} | rm -r -fo && Get-ChildItem -r -i server | Where{$_.Name -Match '*.\\.js*.'} | rm -r -fo",
-		"postinstall": "echo POSTINSTALL && echo && cd public/ && npx npm install",
+		"xpostinstall": "echo POSTINSTALL && echo && cd public/ && npx npm install",
 		"// LUME Scripts below ///////////////////////////////////////": "",
 		"typecheck": "lume typecheck",
 		"typecheck:watch": "lume typecheckWatch"
@@ -21,8 +21,11 @@
 		"@lume/element": "^0.11.0",
 		"@tweenjs/tween.js": "^18.6.4",
 		"@types/meteor": "^2.6.2",
-		"lume": "^0.3.0-alpha.37",
+		"classy-solid": "^0.4.3",
+		"lowclass": "^8.0.2",
+		"lume": "0.3.0-alpha.44",
 		"meteor-node-stubs": "^1.0.0",
+		"pota": "^0.9.93",
 		"solid-js": "^1.4.0",
 		"typescript": "^5.0.0"
 	},
