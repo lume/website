@@ -14,7 +14,6 @@
 // console.log('foo', foo)
 ///////////////////////////////////////////////////////////////////////////
 
-import {Meteor} from 'meteor/meteor'
 import '../imports/collections/index.js'
 import {WebApp} from 'meteor/webapp'
 
@@ -22,35 +21,45 @@ import {WebApp} from 'meteor/webapp'
 // Meteor's AI "How to set up TypeScript", there's some good docs.)
 WebApp.addHtmlAttributeHook(() => ({lang: 'en', prefix: 'og: http://ogp.me/ns#'}))
 
-if (Meteor.isDevelopment) {
-	// Allow only certain domains to access content.
-	WebApp.rawConnectHandlers.use(
-		/*'/public',*/
-		function (req, res, next) {
-			// For development mode allow localhost origins.
-			if (
-				[
-					// landing page (the Meteor app)
-					'localhost:8765',
-					'127.0.0.1:8765',
-					'0.0.0.0:8765',
-					// docs site (the static Docsify app)
-					'localhost:54321',
-					'127.0.0.1:54321',
-					'0.0.0.0:54321',
-				].some(val => req.headers.host === val)
-			) {
-				// We use 'http://' for local development.
-				// res.setHeader('Access-Control-Allow-Origin', 'http://' + req.headers.host)
-				res.setHeader('Access-Control-Allow-Origin', '*')
-			}
-			// Otherwise only allow lume.io.
-			else if (req.headers.host === 'lume.io' || req.headers.host === 'docs.lume.io') {
-				// lume.io is only accessible via HTTPS
-				res.setHeader('Access-Control-Allow-Origin', (req as any).protocol + '://' + req.headers.host)
-			}
+const allowedOrigins = [
+	'https://lume.io',
+	'https://docs.lume.io',
 
-			return next()
-		},
-	)
-}
+	// lume.io on localhost
+	'http://localhost:8765',
+	'http://127.0.0.1:8765',
+	'http://0.0.0.0:8765',
+
+	// docs.lume.io on localhost
+	'http://localhost:54321',
+	'http://127.0.0.1:54321',
+	'http://0.0.0.0:54321',
+]
+
+// Allow only certain domains to access content.
+WebApp.rawConnectHandlers.use(
+	/*'/public',*/
+	function (req, res, next) {
+		// Check if the request is from a valid origin, and if so allow it.
+		//
+		// If there is no origin header, it means its a same-origin request GET
+		// or HEAD request, otherwise it is another type of same-origin request,
+		// or a cross-origin request.
+		// (https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Origin#description)
+		if (!req.headers.origin || allowedOrigins.includes(req.headers.origin)) {
+			res.setHeader(
+				'Access-Control-Allow-Origin',
+				req.headers.origin
+					? req.headers.origin
+					: req.headers.host
+						? (req as any).protocol
+							? (req as any).protocol + '://' + req.headers.host
+							: 'https://' + req.headers.host
+						: '*',
+			)
+			res.setHeader('Vary', 'Origin')
+		}
+
+		return next()
+	},
+)
