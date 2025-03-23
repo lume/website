@@ -9,7 +9,7 @@
 		"build:clean": "npm run clean && npm run build",
 		"dev": "npm run clean && npm run _link && tsc --watch",
 		"_link": "symlink-dir imports public/imports",
-		"_meteor": "meteor --exclude-archs web.browser.legacy",
+		"_meteor": "meteor --exclude-archs web.browser.legacy --no-lint",
 		"clean": "npm run _clean:unix || npm run --script-shell=pwsh _clean:windows",
 		"_clean:unix": "rm -rf `find client -name '*.js*'` && rm -rf `find public -name '*.js*'` && rm -rf `find server -name '*.js*'` && rm -rf `find imports -name '*.js*'`",
 		"_clean:windows": "Get-ChildItem -r -i client | Where{$_.Name -Match '*.\\.js*.'} | rm -r -fo && Get-ChildItem -r -i public | Where{$_.Name -Match '*.\\.js*.'} | rm -r -fo && Get-ChildItem -r -i server | Where{$_.Name -Match '*.\\.js*.'} | rm -r -fo",

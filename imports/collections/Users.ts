@@ -28,7 +28,7 @@ if (Meteor.isServer) {
 	for (const email of admins) {
 		promises.push(
 			Accounts.findUserByEmailTmp(email).then(user => {
-				return Meteor.users.updateAsync({_id: user._id}, {$set: {profile: {...user.profile, isAdmin: true}}})
+				if (user) return Meteor.users.updateAsync({_id: user._id}, {$set: {profile: {...user.profile, isAdmin: true}}})
 			}),
 		)
 	}

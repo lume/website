@@ -833,7 +833,7 @@ export class AppRoot extends Element {
 								(this.wordmarkContainer?.calculatedSize?.x ?? 1) / this.wordmarkAspectRatio(),
 							]}"
 							mount-point="0 0.5"
-							opacity="0.99"
+							opacity="0.9999"
 							todo="update to lume texture handling is needed for SVGs to work properly cross-platform (https://discourse.threejs.org/t/any-ideas-why-svg-texture-does-not-show-in-firefox/33361)."
 							Xtexture=${wordmarkUrl}
 							color="cyan"

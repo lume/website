@@ -158,13 +158,16 @@ export function fitContent(el3d: Element3D, el: Element, width = true, height = 
 }
 
 export function fadePageOnNav(links: HTMLAnchorElement[]) {
-	const aborter = new AbortController()
-	const signal = aborter.signal
+	let clicked = false
 	for (const link of links) {
 		link.addEventListener('click', event => {
+			if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return
+
 			event.preventDefault()
-			if (signal.aborted) return
-			aborter.abort()
+
+			// Only do the face animation on first click (keep preventing default so that clicking during animation does nothing).
+			if (clicked) return
+			clicked = true
 			document.body.classList.add('fadePageOut')
 			document.body.addEventListener('transitionend', () => (location.href = link.href))
 		})
