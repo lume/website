@@ -44,19 +44,14 @@ WebApp.rawConnectHandlers.use(
 		//
 		// If there is no origin header, it means its a same-origin request GET
 		// or HEAD request, otherwise it is another type of same-origin request,
-		// or a cross-origin request.
+		// or a cross-origin request (cross-origin requests from non-hacked
+		// browsers always have the origin header). Setting access control is
+		// not a security feature, but more of a convenience for the browser to
+		// block resources from being usable on other origins, always use
+		// authentication.
 		// (https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Origin#description)
 		if (!req.headers.origin || allowedOrigins.includes(req.headers.origin)) {
-			res.setHeader(
-				'Access-Control-Allow-Origin',
-				req.headers.origin
-					? req.headers.origin
-					: req.headers.host
-						? (req as any).protocol
-							? (req as any).protocol + '://' + req.headers.host
-							: 'https://' + req.headers.host
-						: '*',
-			)
+			res.setHeader('Access-Control-Allow-Origin', req.headers.origin ? req.headers.origin : '*')
 			res.setHeader('Vary', 'Origin')
 		}
 
