@@ -40,12 +40,49 @@
 </head>
 
 <body>
+	<!-- TODO Replace this client-side redirect with a server-side redirect. -->
 	<script>
 		if (globalThis.location.pathname.startsWith('/docs')) {
 			let path = location.href.split('/docs')[1]
 			path = path.replace('/#/', '/')
 			globalThis.location = 'https://docs.lume.io' + path
 		}
+	</script>
+
+	<script>
+		// Listen for credentials request. This is used by Lume domains that
+		// load lume.io in an iframe for authentication.
+		//
+		// Note that CORS headers are set in the server code to allow the site
+		// to be embedded only on our authorized domains, so the '*' value for
+		// `targetOrigin` is safe.
+		window.addEventListener('message', event => {
+			// This message is used by an authorized Lume domain to get login
+			// credentials.
+			if (event.data.type === 'getLoginCredentials') {
+				event.source?.postMessage(
+					{
+						type: 'loginCredentials',
+						token: localStorage.getItem('Meteor.loginToken'),
+						expires: localStorage.getItem('Meteor.loginTokenExpires'),
+						userId: localStorage.getItem('Meteor.userId'),
+					},
+					{targetOrigin: '*'},
+				)
+			}
+
+			// If someone is not logged into the primary domain where the
+			// backend is served from (lume.io) then the non-primary domain can
+			// log in an set the credentials with this message so that when the
+			// user visits the primary domain (or any other domain that uses
+			// getLoginCredentials), they will be logged in. Basically log in
+			// across all authorized domains.
+			if (event.data.type === 'setLoginCredentials') {
+				console.log('main origin received login credentials:', event.data.token)
+				localStorage.setItem('Meteor.loginToken', event.data.token)
+				event.source?.postMessage({type: 'confirmSetLoginCredentials'}, {targetOrigin: '*'})
+			}
+		})
 	</script>
 
 	<!-- Google Analytics -->
@@ -64,7 +101,24 @@
 	<div id="root"></div>
 
 	<script type="module">
-		import AppRoot from '/entry.js'
-		root.append(new AppRoot())
+		if (
+			// Run the UI only when on the primary domain (not when used for
+			// authentication in an iframe).
+			location.host === 'lume.io' &&
+			// On static HTML pages, skip loading the SPA app root (other HTML
+			// pages can still use Meteor APIs, and load their own HTML
+			// content).
+			!location.pathname.endsWith('.html')
+		) {
+			const inIframe = window.parent !== window
+
+			// Render stuff only if not in an iframe (because if we're in a
+			// iframe, it is for credentials requests by other domains and the
+			// primary domain's UI is not needed in that case).
+			if (!inIframe) {
+				const {default: AppRoot} = await import('/entry.js')
+				root.append(new AppRoot())
+			}
+		}
 	</script>
 </body>

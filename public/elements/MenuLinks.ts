@@ -1,5 +1,5 @@
-import {Element, element, booleanAttribute, html, css} from 'lume'
-import type {ElementAttributes} from '@lume/element'
+import {booleanAttribute, css, Element, element, stringAttribute, type ElementAttributes} from '@lume/element'
+import html from 'solid-js/html'
 import {signal} from 'classy-solid'
 import {fadePageOnNav} from '../utils.js'
 
@@ -9,6 +9,8 @@ const docsHost = isDev ? 'localhost:54321' : 'docs.lume.io'
 @element('menu-links')
 export class MenuLinks extends Element {
 	@booleanAttribute isMobile = false
+	@stringAttribute displayName = ''
+
 	@signal menuLinks?: HTMLElement
 
 	connectedCallback() {
@@ -36,7 +38,7 @@ export class MenuLinks extends Element {
 				id="signin"
 				onclick=${(e: PointerEvent) => (e.preventDefault(), this.dispatchEvent(new Event('signinclick')))}
 			>
-				<span>Sign in ▾</span>
+				<span>${() => (this.displayName ? this.displayName + ' ▾' : 'Sign in ▾')} </span>
 			</a>
 			<div class=${this.isMobile ? 'spacer' : ''}></div>
 		</nav>
@@ -86,14 +88,10 @@ export class MenuLinks extends Element {
 		:not(.menuLinksMobile) .menuLink:hover {
 			color: color-mix(in srgb, deeppink 80%, white 20%);
 		}
-
-		#signin {
-			display: none;
-		}
 	`
 }
 
-type MenuLinksAttributes = 'isMobile'
+type MenuLinksAttributes = 'isMobile' | 'displayName'
 
 declare module 'solid-js' {
 	namespace JSX {

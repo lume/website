@@ -17,3 +17,11 @@ declare module 'meteor/accounts-base' {
 		): Promise<Meteor.User | null | undefined>
 	}
 }
+
+// TODO remove this once Meteor has the missing types.
+declare module 'meteor/webapp' {
+	namespace WebApp {
+		var handlers: import('connect').Server
+		var rawHandlers: import('connect').Server
+	}
+}

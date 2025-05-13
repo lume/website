@@ -47,6 +47,7 @@ for (const [key, val] of Object.entries(styleVars)) {
 const meteorUser = toSolidSignal(() => Meteor.user())
 const isAdmin = createMemo(() => meteorUser()?.profile?.isAdmin)
 const studioSignups = toSolidSignal(() => StudioSignups.find({}).fetch())
+const displayName = () => Meteor.user()?.emails?.[0]?.address.split('@')[0]
 
 @element('app-root')
 export class AppRoot extends Element {
@@ -77,6 +78,18 @@ export class AppRoot extends Element {
 	closeTween: Tween<{menuPosition: number}> | null = null
 
 	@signal menuOpen = false
+
+	@signal viewWidth = 0
+	@signal viewHeight = 0
+
+	isMobile = () => this.viewWidth <= 1200
+	cubeSize = () => (this.viewIsTall() ? 0.65 * this.viewWidth : 0.5 * this.viewHeight)
+	viewIsTall = () => this.viewHeight >= this.viewWidth
+	// wordmarkAspectRatio = () => (this.viewIsTall() ? 118 / 686 : 960 / 146)
+	wordmarkAspectRatio = () => (false ? 118 / 686 : 960 / 146)
+	rotatorAlignPoint = () => (this.viewIsTall() ? [0.5, 0.38] : [0.5, 0.45])
+
+	@signal __displayName = displayName
 
 	hasShadow = false
 
@@ -134,24 +147,6 @@ export class AppRoot extends Element {
 			else return (this.tweenTask = false)
 			return
 		})
-	}
-
-	@signal viewWidth = 0
-	@signal viewHeight = 0
-
-	isMobile = () => this.viewWidth <= 1200
-	cubeSize = () => (this.viewIsTall() ? 0.65 * this.viewWidth : 0.5 * this.viewHeight)
-	viewIsTall = () => this.viewHeight >= this.viewWidth
-	wordmarkAspectRatio = () => (this.viewIsTall() ? 118 / 686 : 960 / 146)
-	rotatorAlignPoint = () => (this.viewIsTall() ? [0.5, 0.4] : [0.5, 0.45])
-
-	#memoized = false
-
-	// TODO @memo decorator in classy-solid to replace this #memoize() method.
-	#memoize() {
-		if (this.#memoized) return
-		this.#memoized = true
-		memoize(this, 'isMobile', 'cubeSize', 'viewIsTall', 'wordmarkAspectRatio', 'rotatorAlignPoint')
 	}
 
 	rotateCube() {
@@ -328,9 +323,24 @@ export class AppRoot extends Element {
 		}
 	}
 
+	#memoized = false
+
+	// TODO @memo decorator in classy-solid to replace this #memoize() method.
+	#memoize() {
+		if (this.#memoized) return
+		this.#memoized = true
+		memoize(this, 'isMobile', 'cubeSize', 'viewIsTall', 'wordmarkAspectRatio', 'rotatorAlignPoint')
+	}
+
 	connectedCallback() {
 		this.#memoize()
 		super.connectedCallback()
+
+		this.createEffect(() => (this.__displayName = toSolidSignal(displayName)))
+
+		this.createEffect(() => {
+			console.log('display name:', this.__displayName())
+		})
 
 		createEffect(() => {
 			this.style.setProperty('--isMobile', '' + (this.isMobile() ? 1 : 0))
@@ -483,7 +493,10 @@ export class AppRoot extends Element {
 
 				<div style=${() => ({display: this.isMobile() ? 'none' : 'contents'})}>
 					<div class="headerSpace"></div>
-					<menu-links onsigninclick=${() => (this.loginButtonsOpen = !this.loginButtonsOpen)}></menu-links>
+					<menu-links
+						onsigninclick=${() => (this.loginButtonsOpen = !this.loginButtonsOpen)}
+						display-name=${() => this.__displayName()}
+					></menu-links>
 				</div>
 			</div>
 		</lume-element3d>
@@ -512,10 +525,21 @@ export class AppRoot extends Element {
 					&#x20;
 					<span>for any website.</span>
 				</span>
+
 				<span id="signupCall" style=${() => ``}>
-					<span>Get access to Lume's AI-powered visual</span>
-					&#x20;
-					<span>programming and design studio.</span>
+					<span class="small">
+						<span>Get access to Lume's AI-</span>
+						&#x20;
+						<span>powered visual programming</span>
+						&#x20;
+						<span>and design studio.</span>
+					</span>
+
+					<span class="medium" aria-hidden="true">
+						<span>Get access to Lume's AI-powered visual</span>
+						&#x20;
+						<span>programming and design studio.</span>
+					</span>
 				</span>
 				<form id="signupForm" onsubmit=${this.onSubmitStudioSignup}>
 					<input
@@ -524,6 +548,7 @@ export class AppRoot extends Element {
 						placeholder="Enter your email"
 						id="signupInput"
 					/>
+
 					<button id="signupButton">${this.SvgAirplane()}</button>
 				</form>
 			</div>
@@ -539,7 +564,7 @@ export class AppRoot extends Element {
 				comment="start closed position"
 				opacity="1"
 			>
-				<menu-links is-mobile="${true}"></menu-links>
+				<menu-links is-mobile="${true}" display-name=${() => this.__displayName()}></menu-links>
 			</lume-element3d>
 
 			<lume-element3d
@@ -632,10 +657,27 @@ export class AppRoot extends Element {
 			font-size: 0.8em;
 			padding-bottom: 10px;
 
-			span {
+			& > span {
+				display: none;
+			}
+
+			span > span {
 				display: inline-block;
 				white-space: nowrap;
 				width: auto;
+			}
+
+			/* @media (min-width: 744px) {} */
+			@media (max-width: 434px) {
+				.small {
+					display: inline;
+				}
+			}
+
+			@media (min-width: 435px) {
+				.medium {
+					display: inline;
+				}
 			}
 		}
 
@@ -785,6 +827,7 @@ export class AppRoot extends Element {
 			swap-layers
 		>
 			<lume-ambient-light color="white" intensity="2"></lume-ambient-light>
+
 			<lume-point-light
 				ref=${(e: Element3D) => (this.light = e)}
 				color="pink"
@@ -804,6 +847,7 @@ export class AppRoot extends Element {
 			</lume-point-light>
 
 			<lume-element3d size-mode="proportional proportional" size="1 1 0">
+				<!-- LUME wordmark rotator ------------------ -->
 				<lume-element3d
 					ref="${(e: Element3D) => (this.rotator = e)}"
 					class="rotator"
@@ -815,10 +859,13 @@ export class AppRoot extends Element {
 					<lume-element3d
 						ref="${(e: Element3D) => (this.wordmarkContainer = e)}"
 						size-mode="proportional proportional"
-						size="${() => (this.viewIsTall() ? '0 0.5 0' : '0.5 0 0')}"
+						xsize="${() => (this.viewIsTall() ? '0 0.5 0' : '0.5 0 0')}"
+						size="0.7 0 0"
 						mount-point="0.5 0.5"
 						align-point="0.5 0.5"
 					>
+						<!-- horizontal "LUME" --------------------- -->
+
 						<!-- <lume-element3d -->
 						<lume-plane
 							ref=${(e: Plane) => (this.wordMarkHorizontal = e)}
@@ -826,7 +873,8 @@ export class AppRoot extends Element {
 							role="img"
 							xaria-label="The 'LUME' wordmark with letters flowing horizontally, positioned to be floating in front of a 3D cube in the background, visible to people who have a screen that is wider than tall (f.e. desktop or tablets in landscape orientation)."
 							aria-labelledby="wordmarkHorizontalLabel"
-							visible="${() => !this.viewIsTall()}"
+							xvisible="${() => !this.viewIsTall()}"
+							visible="${() => true}"
 							TODO="relative size based on parent size, but not necessarily the same axis (f.e. map child Y size to proportion of parent X size)"
 							size="${() => [
 								this.wordmarkContainer?.calculatedSize?.x ?? 1,
@@ -858,6 +906,8 @@ export class AppRoot extends Element {
 						</lume-plane>
 						<!-- </lume-element3d> -->
 
+						<!-- vertical "LUME" --------------------- -->
+
 						<!-- <lume-element3d -->
 						<lume-plane
 							ref=${(e: Plane) => (this.wordMarkVertical = e)}
@@ -865,7 +915,8 @@ export class AppRoot extends Element {
 							role="img"
 							xaria-label="The 'LUME' wordmark with letters flowing vertically, positioned to be floating in front of a 3D cube in the background, visible to people who have a screen that is taller than wide (f.e. phones in portrait orientation)."
 							aria-labelledby="wordmarkVerticalLabel"
-							visible="${() => this.viewIsTall()}"
+							xvisible="${() => this.viewIsTall()}"
+							visible="${() => false}"
 							size="${() => [
 								(this.wordmarkContainer?.calculatedSize?.y ?? 1) * this.wordmarkAspectRatio(),
 								this.wordmarkContainer?.calculatedSize?.y ?? 1,
