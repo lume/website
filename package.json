@@ -14,7 +14,7 @@
 		"_clean:unix": "rm -rf `find client -name '*.js*'` && rm -rf `find public -name '*.js*'` && rm -rf `find server -name '*.js*'` && rm -rf `find imports -name '*.js*'`",
 		"_clean:windows": "Get-ChildItem -r -i client | Where{$_.Name -Match '*.\\.js*.'} | rm -r -fo && Get-ChildItem -r -i public | Where{$_.Name -Match '*.\\.js*.'} | rm -r -fo && Get-ChildItem -r -i server | Where{$_.Name -Match '*.\\.js*.'} | rm -r -fo",
 		"publish": "git push && npm run build && npm run _publish:add && git commit -m tmp-publish-commit && git push -f git@github.com:lumechef/website.git && git reset HEAD~ --hard",
-		"_publish:add": "npm run _publish:add:unix || npm run --script-shell=pwsh _publish:add:windows",
+		"_publish:add": "git add -f public/imports && npm run _publish:add:unix || npm run --script-shell=pwsh _publish:add:windows",
 		"_publish:add:unix": "git add -f `find client -name '*.js*'` && git add -f `find public -name '*.js*'` && git add -f `find server -name '*.js*'` && git add -f `find imports -name '*.js*'`",
 		"_publish:add:windows": "Get-ChildItem -r -i client | Where{$_.Name -Match '*.\\.js*.'} | git add -f && Get-ChildItem -r -i public | Where{$_.Name -Match '*.\\.js*.'} | git add -f && Get-ChildItem -r -i server | Where{$_.Name -Match '*.\\.js*.'} | git add -f",
 		"// LUME Scripts below ///////////////////////////////////////": "",
