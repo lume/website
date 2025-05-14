@@ -18,8 +18,8 @@ const renderHomePage = homePageOrigins.includes(location.origin) && !location.pa
 if (renderHomePage) {
 	effect(() => (document.title = appTitle()))
 
-	await import('./promise.withResolvers.js')
 	await import('./elements/HomePage.js')
 	const root = document.getElementById('root')!
-	root.innerHTML = /*html*/ `<home-page></home-page>`
+	const html = String.raw // for syntax/formatting
+	root.innerHTML = html`<home-page></home-page>`
 }

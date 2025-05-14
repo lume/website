@@ -1,3 +1,4 @@
+import '../promise.withResolvers.js'
 import {Blaze} from 'meteor/blaze'
 import {Template} from 'meteor/templating'
 import {Element, element, stringAttribute, css, attribute, type ElementAttributes} from '@lume/element'
