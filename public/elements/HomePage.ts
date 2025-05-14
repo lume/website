@@ -49,8 +49,8 @@ const isAdmin = createMemo(() => meteorUser()?.profile?.isAdmin)
 const studioSignups = toSolidSignal(() => StudioSignups.find({}).fetch())
 const displayName = () => Meteor.user()?.emails?.[0]?.address.split('@')[0]
 
-@element('app-root')
-export class AppRoot extends Element {
+@element('home-page')
+export class HomePage extends Element {
 	// Used in AppAttributes to denote no attributes. See TODO there.
 	_____?: undefined
 
@@ -1141,13 +1141,13 @@ type AppAttributes = '_____'
 declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
-			'app-root': ElementAttributes<AppRoot, AppAttributes>
+			'app-root': ElementAttributes<HomePage, AppAttributes>
 		}
 	}
 }
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'app-root': AppRoot
+		'app-root': HomePage
 	}
 }

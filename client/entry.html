@@ -97,28 +97,9 @@
 	</script>
 
 	<script src="/importmap.js"></script>
+	<script type="module" src="/entry.js"></script>
 
-	<div id="root"></div>
-
-	<script type="module">
-		if (
-			// Run the UI only when on the primary domain (not when used for
-			// authentication in an iframe).
-			location.host === 'lume.io' &&
-			// On static HTML pages, skip loading the SPA app root (other HTML
-			// pages can still use Meteor APIs, and load their own HTML
-			// content).
-			!location.pathname.endsWith('.html')
-		) {
-			const inIframe = window.parent !== window
-
-			// Render stuff only if not in an iframe (because if we're in a
-			// iframe, it is for credentials requests by other domains and the
-			// primary domain's UI is not needed in that case).
-			if (!inIframe) {
-				const {default: AppRoot} = await import('/entry.js')
-				root.append(new AppRoot())
-			}
-		}
-	</script>
+	<div id="root">
+		<!-- app content gets rendered here -->
+	</div>
 </body>
