@@ -10,8 +10,6 @@ public/docs
 
 *.log
 
-package-lock.json
-
 public/**/*.js*
 public/imports
 client/**/*.js*
