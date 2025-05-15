@@ -199,3 +199,62 @@ export function toSolidSignal<T>(meteorGetter: () => T) {
 	if (getOwner()) onCleanup(() => comp.stop())
 	return get
 }
+
+/**
+ * Iterate all descendant elements of the given root element. Does not traverse
+ * into ShadowRoots.
+ */
+export function* elements(el: Document | ShadowRoot | Element): Generator<Element, void, void> {
+	if (el instanceof Element) yield el
+	for (const child of Array.from(el.children)) yield* elements(child)
+}
+
+const roots = new WeakMap<Element, ShadowRoot>()
+
+// TODO how do we handle Declarative Shadow Root that have been created but
+// attachShadow has not been previously called for them.
+const attachShadow = globalThis.Element.prototype.attachShadow
+globalThis.Element.prototype.attachShadow = function (init: ShadowRootInit) {
+	const root = attachShadow.call(this, init)
+	roots.set(this, root)
+	return root
+}
+
+/**
+ * Just like document.querySelector(), but it will traverse into all known ShadowRoots.
+ */
+export function querySelectorDeep(root: Document | ShadowRoot, selector: string) {
+	for (const el of elements(root)) {
+		const root = roots.get(el)
+		if (!root) continue
+
+		const result = root.querySelector(selector)
+		if (result) return result
+	}
+
+	return null
+}
+
+/** Traverse element ancestors of an node. */
+export function* ancestorElements(el: Node): Generator<Element, void, void> {
+	let parent: Node | null = el.parentElement
+
+	while (parent) {
+		yield parent as Element
+		parent = parent.parentElement ?? (parent.getRootNode() as ShadowRoot)?.host
+	}
+}
+
+type MaybeElement = Element | null | undefined
+
+/**
+ * Returns true if `b` is a descendant of `a`, including inside ShadowRoots.
+ *
+ * Note, a value of true does not mean that `b` is participating the composed
+ * (flat) tree, as `b` may not be slotted into a slot in a ShadowRoot.
+ */
+export function hasDescendant(a: MaybeElement, b: MaybeElement): boolean {
+	if (!a || !b) return false
+	for (const parent of ancestorElements(b)) if (a === parent) return true
+	return false
+}

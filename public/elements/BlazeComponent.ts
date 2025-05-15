@@ -1,7 +1,15 @@
 import '../promise.withResolvers.js'
 import {Blaze} from 'meteor/blaze'
 import {Template} from 'meteor/templating'
-import {Element, element, stringAttribute, css, attribute, type ElementAttributes} from '@lume/element'
+import {
+	Element,
+	element,
+	booleanAttribute,
+	stringAttribute,
+	css,
+	attribute,
+	type ElementAttributes,
+} from '@lume/element'
 import {html} from 'lume'
 import {createEffect, createMemo, onCleanup} from 'solid-js'
 import {ReactiveVar} from 'meteor/reactive-var'
@@ -29,6 +37,12 @@ export class BlazeComponent extends Element {
 	 * the Blaze component.
 	 */
 	@jsonAttribute data: string | object = {}
+
+	/**
+	 * If true, then the Blaze component within this element will not be created
+	 * (or will be removed and cleaned up if it was already created).
+	 */
+	@booleanAttribute disabled = false
 
 	hasShadow = false
 
@@ -88,6 +102,7 @@ export class BlazeComponent extends Element {
 		this.#handleGlobalStyle()
 
 		this.createEffect(() => {
+			if (this.disabled) return
 			const tmpl = this.#tmpl()
 			if (!tmpl) return
 			const reactive = new ReactiveVar(this.data)

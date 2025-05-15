@@ -47,7 +47,6 @@ for (const [key, val] of Object.entries(styleVars)) {
 const meteorUser = toSolidSignal(() => Meteor.user())
 const isAdmin = createMemo(() => meteorUser()?.profile?.isAdmin)
 const studioSignups = toSolidSignal(() => StudioSignups.find({}).fetch())
-const displayName = () => Meteor.user()?.emails?.[0]?.address.split('@')[0]
 
 @element('home-page')
 export class HomePage extends Element {
@@ -88,8 +87,6 @@ export class HomePage extends Element {
 	// wordmarkAspectRatio = () => (this.viewIsTall() ? 118 / 686 : 960 / 146)
 	wordmarkAspectRatio = () => (false ? 118 / 686 : 960 / 146)
 	rotatorAlignPoint = () => (this.viewIsTall() ? [0.5, 0.38] : [0.5, 0.45])
-
-	@signal __displayName = displayName
 
 	hasShadow = false
 
@@ -336,12 +333,6 @@ export class HomePage extends Element {
 		this.#memoize()
 		super.connectedCallback()
 
-		this.createEffect(() => (this.__displayName = toSolidSignal(displayName)))
-
-		this.createEffect(() => {
-			console.log('display name:', this.__displayName())
-		})
-
 		createEffect(() => {
 			this.style.setProperty('--isMobile', '' + (this.isMobile() ? 1 : 0))
 			this.style.setProperty('--notIsMobile', '' + (this.isMobile() ? 0 : 1))
@@ -495,7 +486,7 @@ export class HomePage extends Element {
 					<div class="headerSpace"></div>
 					<menu-links
 						onsigninclick=${() => (this.loginButtonsOpen = !this.loginButtonsOpen)}
-						display-name=${() => this.__displayName()}
+						disabled=${() => this.isMobile()}
 					></menu-links>
 				</div>
 			</div>
@@ -564,7 +555,7 @@ export class HomePage extends Element {
 				comment="start closed position"
 				opacity="1"
 			>
-				<menu-links is-mobile="${true}" display-name=${() => this.__displayName()}></menu-links>
+				<menu-links is-mobile="${true}" disabled=${() => !this.isMobile()}></menu-links>
 			</lume-element3d>
 
 			<lume-element3d
@@ -1037,8 +1028,6 @@ export class HomePage extends Element {
 			<h2>Studio signups: (${() => studioSignups().length - 2})</h2>
 			${() => studioSignups().map(s => html` <div>${s.email}</div> `)}
 		</div>
-
-		<blaze-component id="loginButtons" tmpl="loginButtons" data=${{align: 'right'}}></blaze-component>
 	`
 
 	css = css/*css*/ `
@@ -1089,32 +1078,6 @@ export class HomePage extends Element {
 
 		canvas {
 			display: none;
-		}
-
-		#loginButtons {
-			display: flex !important;
-			position: absolute;
-			top: calc(var(--pageTopBottomPadding) + var(--desktopMenuItemHeight));
-			right: var(--pageLeftRightPadding);
-
-			/* hide the built-in open/close links, we use our own */
-			.login-close-text,
-			#login-sign-in-link,
-			#login-name-link {
-				display: none;
-			}
-
-			#login-dropdown-list {
-				pointer-events: auto;
-			}
-		}
-
-		#login-buttons.login-buttons-dropdown-align-right #login-dropdown-list {
-			top: 0;
-			right: 0;
-			bottom: unset;
-			left: unset;
-			margin: unset;
 		}
 
 		#statsUI {
