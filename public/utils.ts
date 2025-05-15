@@ -200,6 +200,11 @@ export function toSolidSignal<T>(meteorGetter: () => T) {
 	return get
 }
 
+export function createMeteorEffect(fn: () => void) {
+	const computation = effect(fn)
+	if (getOwner()) onCleanup(() => computation.stop())
+}
+
 /**
  * Iterate all descendant elements of the given root element. Does not traverse
  * into ShadowRoots.

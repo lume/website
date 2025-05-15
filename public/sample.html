@@ -52,7 +52,7 @@
 				width: 100%;
 				height: 100%;
 				transition: all 1s;
-				z-index: 1;
+				z-index: 2;
 				pointer-events: none;
 
 				& loading-icon {
@@ -412,10 +412,33 @@
 			</div>
 		</div>
 
+		<blaze-component
+			id="loginButtons"
+			tmpl="loginButtons"
+			data='{"align": "right"}'
+			onclick="
+				if (!event.target?.classList.contains('login-link-text')) return
+				const close = document.querySelector('.login-close-text')
+				if (close) close.click()
+			"
+		></blaze-component>
+
+		<style>
+			#loginButtons {
+				pointer-events: auto;
+				display: block;
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				z-index: 1;
+			}
+		</style>
+
 		<script type="module">
 			import {Motor, Events, setBehaviors, threeToLume} from 'lume'
 			import {createEffect, untrack} from 'solid-js'
 			import {Vector3} from 'three'
+			import '/elements/BlazeComponent.js'
 
 			const scene = document.getElementById('scene')
 			const imgs = document.getElementById('deckImgs')

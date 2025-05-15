@@ -9,11 +9,8 @@ import {type LandingCube} from './Cube.js'
 import './MenuLinks.js'
 import './HamburgerButton.js'
 import './BlazeComponent.js'
-import {animateSignalTo, clamp, elementSize, memoize, svgTexture, toSolidSignal} from '../utils.js'
-import {effect} from '../meteor-signals.js'
-import {Visits, type Visit} from '../imports/collections/Visits.js'
+import {animateSignalTo, clamp, elementSize, memoize, svgTexture} from '../utils.js'
 import '../imports/collections/Users.js'
-import {StudioSignups} from '../imports/collections/StudioSignups.js'
 
 const logoUrl = new URL('../images/logo.svg', import.meta.url).href
 const wordmarkUrl = new URL('../images/logo-wordmark.svg', import.meta.url).href
@@ -43,10 +40,6 @@ for (const [key, val] of Object.entries(styleVars)) {
 	// @ts-ignore
 	styleVars[key] = typeof val === 'string' && val.endsWith('%') ? Number(val.replace('%', '')) / 100 : val
 }
-
-const meteorUser = toSolidSignal(() => Meteor.user())
-const isAdmin = createMemo(() => meteorUser()?.profile?.isAdmin)
-const studioSignups = toSolidSignal(() => StudioSignups.find({}).fetch())
 
 @element('home-page')
 export class HomePage extends Element {
@@ -428,19 +421,6 @@ export class HomePage extends Element {
 		// const mo = new MutationObserver(records => { })
 		// mo.observe
 		// elementSize()
-
-		this.meteorEffect(() => {
-			this.visits = Visits.find({}).fetch()
-		})
-	}
-
-	@signal visits: Visit[] = []
-
-	meteorEffect(fn: () => void) {
-		this.createEffect(() => {
-			const computation = effect(fn)
-			onCleanup(() => computation.stop())
-		})
 	}
 
 	@signal recede = false
@@ -1020,14 +1000,6 @@ export class HomePage extends Element {
 				)}
 			</lume-element3d>
 		</lume-scene>
-
-		<div id="statsUI" class=${() => (isAdmin() ? '' : 'hidden')}>
-			<h2>Page visits:</h2>
-			${() => this.visits.map(v => html` <div><b>${v.host ?? ''}${v.route}:</b> &#32; ${v.visits}</div> `)}
-
-			<h2>Studio signups: (${() => studioSignups().length - 2})</h2>
-			${() => studioSignups().map(s => html` <div>${s.email}</div> `)}
-		</div>
 	`
 
 	css = css/*css*/ `
