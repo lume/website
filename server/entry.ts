@@ -67,13 +67,18 @@ WebApp.rawHandlers.use(
 
 		// Check if the request is from a valid origin, and if so allow it.
 		//
-		// If there is no origin header, it means its a same-origin GET
-		// or HEAD request, otherwise it is another type of same-origin request,
-		// or a cross-origin request (cross-origin requests from non-hacked
-		// browsers always have the origin header). Setting access control is
-		// not a security feature, but more of a convenience for the browser to
-		// block resources from being usable on other origins, so always use
-		// authentication.
+		// If there is no origin header, it means its a same-origin GET or HEAD
+		// request in standard web browsers, otherwise it is another type of
+		// same-origin request, or a cross-origin request (cross-origin requests
+		// from non-hacked browsers always have the origin header). Setting
+		// access control is not a security feature, but more of a convenience
+		// for the browser to block resources from being usable on other
+		// origins, so always use authentication. For non-browser clients such
+		// as hacker servers that can easily set headers to whatever they want,
+		// this will not prevent them from accessing the site, and user 2-factor
+		// is recommended (only users savy enough to check the domain name in
+		// their non-hacked address bar before logging in will be safe
+		// otherwise).
 		// (https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Origin#description)
 		if (!req.headers.origin || allowedOrigins.includes(req.headers.origin)) {
 			res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*')
@@ -85,6 +90,11 @@ WebApp.rawHandlers.use(
 				'Content-Security-Policy',
 				`frame-ancestors 'self' ${Meteor.isDevelopment ? locals('*').join(' ') : lumeDomain('*')}`,
 			)
+		} else {
+			res.statusCode = 418
+			res.write(`You'll have to do a just a little more work (you might need some coffee) to access the site this way.`)
+			res.end()
+			return
 		}
 
 		return next()

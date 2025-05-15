@@ -4,10 +4,11 @@
 	"// we want to use type:module, but Meteor code is still CommonJS. So we set type:commonjs, then import our es modules from server/entry.js on the server": "",
 	"type": "commonjs",
 	"scripts": {
-		"start": "npm run _meteor -- -p 8765",
+		"start": "npm run dev",
 		"build": "npm run _link && tsc",
 		"build:clean": "npm run clean && npm run build",
-		"dev": "npm run clean && npm run _link && tsc --watch",
+		"xdev": "npm run clean && npm run _link && tsc --watch & npm run _meteor -- -p 8765",
+		"dev": "npm run build:clean && concurrently 'tsc --watch' 'npm run _meteor -- -p 8765'",
 		"_link": "symlink-dir imports public/imports",
 		"_meteor": "meteor --exclude-archs web.browser.legacy --no-lint",
 		"clean": "npm run _clean:unix || npm run --script-shell=pwsh _clean:windows",
@@ -40,6 +41,7 @@
 	},
 	"devDependencies": {
 		"@lume/cli": "^0.15.0",
+		"concurrently": "^9.1.2",
 		"prettier": "3.5.3"
 	},
 	"meteor": {
