@@ -64,7 +64,7 @@
 
 			document.body.append(html`
 				<div id="statsUI" class=${() => (isAdmin() ? '' : 'hidden')}>
-					<h2>Page visits:</h2>
+					<h2>Page visits (total: ${visits().reduce((n, v) => n + v.visits, 0)}):</h2>
 					${() =>
 						visits()
 							.sort((a, b) => b.visits - a.visits)
