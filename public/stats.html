@@ -63,7 +63,10 @@
 			document.body.append(html`
 				<div id="statsUI" class=${() => (isAdmin() ? '' : 'hidden')}>
 					<h2>Page visits:</h2>
-					${() => visits().map(v => html` <div><b>${v.host ?? ''}${v.route}:</b> &#32; ${v.visits}</div> `)}
+					${() =>
+						visits()
+							.sort((a, b) => b.visits - a.visits)
+							.map(v => html` <div><b>${v.host ?? ''}${v.route}:</b> &#32; ${v.visits}</div> `)}
 
 					<h2>Studio signups: (${() => studioSignups().length - 2})</h2>
 					${() => studioSignups().map(s => html` <div>${s.email}</div> `)}
