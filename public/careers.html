@@ -1,0 +1,59 @@
+<html>
+	<head>
+		<title>Careers</title>
+
+		<!-- This writes the main content from lume.io into the DOM, so that we
+		can re-use Meteor APIs, etc, and provide custom content for this page
+		while being authenticated with the backend. -->
+		<script src="./write-html.js" href="/"></script>
+	</head>
+
+	<body>
+		<style>
+			/* Hide the #root we're not using from the imported HTML. */
+			#root:first-of-type {
+				display: none;
+			}
+
+			body {
+				color: black;
+				overflow: auto;
+				pointer-events: auto;
+				box-sizing: border-box;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 20px;
+			}
+
+			#loginButtons {
+				pointer-events: auto;
+				display: block;
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				z-index: 1;
+			}
+		</style>
+
+		<blaze-component
+			id="loginButtons"
+			tmpl="loginButtons"
+			data='{"align": "right"}'
+			onclick="
+				if (!event.target?.classList.contains('login-link-text')) return
+				// close if open (make the drop down button toggle open/close).
+				const close = document.querySelector('.login-close-text')
+				if (close) close.click()
+			"
+		></blaze-component>
+
+		<h1>Careers</h1>
+		<p>Start prepping your resumes, profiles, or portfolios!</p>
+
+		<script type="module">
+			import './routes.js' // track page visits
+			import './elements/BlazeComponent.js'
+		</script>
+	</body>
+</html>
