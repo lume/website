@@ -8,7 +8,7 @@
 		"build": "npm run _link && tsc",
 		"build:clean": "npm run clean && npm run build",
 		"xdev": "npm run clean && npm run _link && tsc --watch & npm run _meteor -- -p 8765",
-		"dev": "npm run build:clean && concurrently 'tsc --watch' 'npm run _meteor -- -p 8765'",
+		"dev": "npm run build:clean && concurrently --kill-others 'tsc --watch' 'npm run _meteor -- -p 8765'",
 		"_link": "symlink-dir imports public/imports",
 		"_meteor": "meteor --exclude-archs web.browser.legacy --no-lint",
 		"clean": "npm run _clean:unix || npm run --script-shell=pwsh _clean:windows",
