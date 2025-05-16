@@ -1051,21 +1051,6 @@ export class HomePage extends Element {
 		canvas {
 			display: none;
 		}
-
-		#statsUI {
-			pointer-events: auto;
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			width: 50%;
-			height: 50%;
-			transform: translate3d(-50%, -50%, 0);
-			background: rgba(255, 255, 255, 0.2);
-			backdrop-filter: blur(14px);
-			padding: 20px;
-			color: white;
-			overflow-x: auto;
-		}
 	`
 }
 

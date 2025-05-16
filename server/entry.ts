@@ -18,6 +18,9 @@ import {Meteor} from 'meteor/meteor'
 import '../imports/collections/index.js'
 import {WebApp} from 'meteor/webapp'
 import {Accounts} from 'meteor/accounts-base'
+import * as fs from 'fs'
+import * as path from 'path'
+import type {ServerResponse} from 'http'
 
 // @ts-expect-error missing type (TODO update away from @types/meteor? Ask
 // Meteor's AI "How to set up TypeScript", there's some good docs.)
@@ -50,7 +53,12 @@ const allowedOrigins = [
 // lume.io via iframe).
 WebApp.rawHandlers.use(
 	/*'/public',*/
-	function (req, res, next) {
+	async function (req, res, next) {
+		///////////////////////////////////////////////////////////////////////////
+		// CORS handling to disallow foreign origins from embedding lume.io,
+		// hence forbidding them from using an iframe to get a user's auth
+		// credentials.
+
 		// Respond to preflight requests.
 		// TODO Do we need this (if we're only on GET)?
 		// if (req.method === 'OPTIONS') {
@@ -90,16 +98,84 @@ WebApp.rawHandlers.use(
 				'Content-Security-Policy',
 				`frame-ancestors 'self' ${Meteor.isDevelopment ? locals('*').join(' ') : lumeDomain('*')}`,
 			)
-		} else {
-			res.statusCode = 418
-			res.write(`You'll have to do a just a little more work (you might need some coffee) to access the site this way.`)
-			res.end()
-			return
+		} else return getCoffee(res)
+
+		if (req.url !== req.originalUrl)
+			console.error('url and originalUrl do not match, needs handling:', req.url, req.originalUrl)
+
+		///////////////////////////////////////////////////////////////////////////
+		// Implement custom request path handling such that a path like `/foo`
+		// will serve `/foo.html`. This makes it possible to put `app.html` in
+		// the `public/` folder, for example, and access it as `lume.io/app`
+		// without using a special backend router, only the existence of HTML
+		// files.
+
+		const url = new URL(`https://lume.io` + req.url)
+
+		// Treat '/foo/bar' and '/foo/bar/' as 'foo/bar', '/foo' and '/foo/' as 'foo', and '/' as ''.
+		let pathname = url.pathname
+		pathname = pathname.replace(/^\//g, '')
+		pathname = pathname.replace(/\/$/g, '')
+		const pathParts = pathname.split('/')
+
+		// if (
+		// 	// if root (/) continue as usual
+		// 	pathname === '' ||
+		// 	// If the last part of a path is a file, f.e. foo.txt, serve it like
+		// 	// normal (files without extensions have no mime type, and we don't
+		// 	// support that use case in our app).
+		// 	[...pathParts].pop()?.includes('.')
+		// ) {
+		// 	return next()
+		// }
+
+		// Location in the Meteor-specific build output (not relative to the
+		// entry file's location in source code, but relative to
+		// ./.meteor/local/build/programs/server/ from the project root.).
+		const publicDir = path.resolve('..', 'web.browser', 'app')
+
+		let searchPath = []
+		for (const part of pathParts) {
+			searchPath.push(part)
+
+			const filePath = path.resolve(publicDir, ...searchPath) + '.html'
+			let exists = false
+
+			try {
+				exists = (await fs.promises.stat(filePath)).isFile()
+			} catch (e) {}
+
+			if (exists) {
+				try {
+					return sendOk(res, await fs.promises.readFile(filePath))
+				} catch (e) {
+					return failure(res, 'Failed to read and serve file: ', filePath)
+				}
+			}
 		}
 
 		return next()
 	},
 )
+
+function getCoffee(res: ServerResponse) {
+	res.statusCode = 418 // see https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/418
+	res.write('go get some coffee')
+	res.end()
+}
+
+function failure(res: ServerResponse, ...msg: any[]) {
+	console.error('Failure: ', ...msg)
+	res.statusCode = 500
+	res.write('Failure.')
+	res.end()
+}
+
+function sendOk(res: ServerResponse, body: any) {
+	res.statusCode = 200
+	res.write(body)
+	res.end()
+}
 
 //// Set up admins. ////////////////////////////////
 // This is in server code only so that people won't see the list of emails on
