@@ -112,22 +112,21 @@ WebApp.rawHandlers.use(
 
 		const url = new URL(`https://lume.io` + req.url)
 
+		// Continue as usual for / (Meteor serves that after building client/entry.html).
+		if (url.pathname === '/') return next()
+
+		// Redirect /foo/ to /foo (and /foo will render /foo.html or /foo/index.html if one of those exists)
+		if (url.pathname.endsWith('/')) return permRedirect(res, url.pathname.replace(/\/$/g, ''))
+
 		// Treat '/foo/bar' and '/foo/bar/' as 'foo/bar', '/foo' and '/foo/' as 'foo', and '/' as ''.
 		let pathname = url.pathname
 		pathname = pathname.replace(/^\//g, '')
 		pathname = pathname.replace(/\/$/g, '')
 		const pathParts = pathname.split('/')
 
-		// if (
-		// 	// if root (/) continue as usual
-		// 	pathname === '' ||
-		// 	// If the last part of a path is a file, f.e. foo.txt, serve it like
-		// 	// normal (files without extensions have no mime type, and we don't
-		// 	// support that use case in our app).
-		// 	[...pathParts].pop()?.includes('.')
-		// ) {
-		// 	return next()
-		// }
+		// Continue as usual for files with extensions (Meteor serves those). We're only checking
+		// extensionless extensionless paths like /foo
+		if (pathParts[pathParts.length - 1].includes('.')) return next()
 
 		// Location in the Meteor-specific build output (not relative to the
 		// entry file's location in source code, but relative to
@@ -138,22 +137,27 @@ WebApp.rawHandlers.use(
 		for (const part of pathParts) {
 			searchPath.push(part)
 
-			const filePath = path.resolve(publicDir, ...searchPath) + '.html'
-			let exists = false
+			const fullPath = path.resolve(publicDir, ...searchPath)
+			const filePaths = [fullPath + '.html', fullPath + '/index.html']
 
-			try {
-				exists = (await fs.promises.stat(filePath)).isFile()
-			} catch (e) {}
+			for (const filePath of filePaths) {
+				let exists = false
 
-			if (exists) {
 				try {
-					return sendOk(res, await fs.promises.readFile(filePath))
-				} catch (e) {
-					return failure(res, 'Failed to read and serve file: ', filePath)
+					exists = (await fs.promises.stat(filePath)).isFile()
+				} catch (e) {}
+
+				if (exists) {
+					try {
+						return sendOk(res, await fs.promises.readFile(filePath))
+					} catch (e) {
+						return failure(res, 'Failed to read and serve file: ', filePath)
+					}
 				}
 			}
 		}
 
+		// Continue as usual if for /foo we didn't find /foo.html or /foo/index.html
 		return next()
 	},
 )
@@ -174,6 +178,12 @@ function failure(res: ServerResponse, ...msg: any[]) {
 function sendOk(res: ServerResponse, body: any) {
 	res.statusCode = 200
 	res.write(body)
+	res.end()
+}
+
+function permRedirect(res: ServerResponse, newPath: string) {
+	res.statusCode = 301
+	res.writeHead(301, {location: newPath})
 	res.end()
 }
 
