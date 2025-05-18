@@ -17,7 +17,16 @@ export class LumeCreate extends Element {
 
 	css = css`
 		:host {
-			display: contents;
+			width: 400px;
+			height: 300px;
+
+			overflow: auto;
+			pointer-events: auto;
+			box-sizing: border-box;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 20px;
 		}
 	`
 }

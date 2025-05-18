@@ -1,32 +1,124 @@
 <html>
 	<head>
-		<!-- override -->
 		<title>Lume Create</title>
 
-		<!-- This writes the main content from lume.io into the DOM, so that we
-		can re-use Meteor APIs, etc, and provide custom content for this page
-		while being authenticated with the backend. -->
-		<script src="./write-html.js" href="/"></script>
-	</head>
+		<!-- This has to be an old-style synchronous global script, not an async
+		ES Module, so that we can guarantee the correct light or dark mode is
+		displayed upon initial load of the page, otherwise there could be a
+		flicker from one mode to the other. -->
+		<!-- <script src="https://cdn.jsdelivr.net/npm/@mahozad/theme-switch@1.5.2"></script> -->
+		<script src="/elements/theme-switch.js"></script>
 
-	<body>
 		<style>
 			/* Hide the #root we're not using from the imported HTML. */
 			#root:first-of-type {
 				display: none;
 			}
 
-			body {
-				color: black;
-				overflow: auto;
-				pointer-events: auto;
-				box-sizing: border-box;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				padding: 20px;
+			html {
+				background: #fcfcfc;
+				/* background-image:
+					radial-gradient(ellipse at top left, #ddfd0d80, transparent 50%),
+					radial-gradient(ellipse at center left, #d6338480, transparent 50%); */
+				transition: background 300ms ease;
+
+				--theme-switch-icon-color: rgb(29, 29, 29);
+
+				body {
+					color: black;
+				}
 			}
 
+			html[data-theme='dark'] {
+				background: #191919;
+				/* background-image:
+					radial-gradient(ellipse at top left, #0d6efd80, transparent 100%),
+					radial-gradient(ellipse at center left, #d6338480, transparent 100%); */
+
+				--theme-switch-icon-color: rgb(219, 219, 219);
+
+				body {
+					color: white;
+				}
+			}
+		</style>
+	</head>
+
+	<body>
+		<!-- ------------------------------------------------------------------------------->
+		<!-- ---- dark/light/auto theme switch --------------------------------------------->
+		<!-- ------------------------------------------------------------------------------->
+		<style>
+			theme-switch {
+				position: absolute;
+				width: 20px;
+				pointer-events: auto;
+				z-index: 1;
+			}
+		</style>
+
+		<theme-switch></theme-switch>
+
+		<!-- ------------------------------------------------------------------------------->
+		<!-- ---- Gradient background ------------------------------------------------------>
+		<!-- ------------------------------------------------------------------------------->
+		<!-- (created with https://www.learnui.design/tools/mesh-gradient-generator.html) -->
+
+		<style>
+			#darkBg,
+			#lightBg {
+				width: 100%;
+				height: 100%;
+				position: absolute;
+				top: 0;
+				left: 0;
+				object-fit: cover;
+				opacity: 0;
+			}
+
+			html {
+				#darkBg {
+					opacity: 0;
+				}
+				#lightBg {
+					opacity: 1;
+				}
+			}
+
+			html[data-theme='dark'] {
+				#darkBg {
+					opacity: 1;
+				}
+				#lightBg {
+					opacity: 0;
+				}
+			}
+		</style>
+
+		<!-- prettier-ignore -->
+		<!-- <svg id="darkBg" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1000 500" > <defs> <filter id="blur" filterUnits="userSpaceOnUse" x="0" y="0" width="1000" height="500"> <feGaussianBlur stdDeviation="90" /> </filter> <filter id="noise" x="0" y="0" width="100%" height="100%"> <feTurbulence type="fractalNoise" baseFrequency="1" octaves="3" result="turbulence" stitchTiles="stitch" /> <feBlend in="SourceGraphic" in2="turbulence" mode="overlay" /> </filter> </defs> <rect id="background" width="100%" height="100%" fill="#191919" /> <g id="swatches" width="1000" height="500" filter="url(#blur)"><rect x="20.994951966592794" y="123.93107601068206" width="324.68997105498784" height="357.4570564845562" fill="#1E1E5A" /><rect x="125.47777739485235" y="170.88344788605667" width="535.7450399790235" height="368.03889068357216" fill="#4e93a7" /><rect x="118.87502806851074" y="-163.913995583366" width="517.4526555999452" height="504.69561438892225" fill="#74566E" /><rect x="253.17715214151167" y="46.80714420097411" width="424.5756489651711" height="418.76093258537423" fill="#5F697F" /></g> <rect x="0" y="0" width="1000" height="500" style="mix-blend-mode: luminosity; filter: url(#noise); opacity: 20%"></rect> </svg> -->
+		<!-- prettier-ignore -->
+		<!-- <svg id="darkBg" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1000 500" > <defs> <filter id="blur" filterUnits="userSpaceOnUse" x="0" y="0" width="1000" height="500"> <feGaussianBlur stdDeviation="90" /> </filter> <filter id="noise" x="0" y="0" width="100%" height="100%"> <feTurbulence type="fractalNoise" baseFrequency="1" octaves="3" result="turbulence" stitchTiles="stitch" /> <feBlend in="SourceGraphic" in2="turbulence" mode="overlay" /> </filter> </defs> <rect id="background" width="100%" height="100%" fill="#191919" /> <g id="swatches" width="1000" height="500" filter="url(#blur)"><rect x="432.64081602170165" y="128.14362453982375" width="497.3054658634178" height="449.2141981939875" fill="#1E1E5A" /><rect x="558.1818234100232" y="221.73641064091098" width="340.93971325082197" height="317.99804931836235" fill="#4e93a7" /><rect x="192.4895515820295" y="-270.82408945191395" width="353.9976758109607" height="557.1434126984622" fill="#74566E" /><rect x="593.6570450158401" y="-109.16355057149082" width="356.5873447650738" height="351.94549237135635" fill="#5F697F" /></g> <rect x="0" y="0" width="1000" height="500" style="mix-blend-mode: luminosity; filter: url(#noise); opacity: 20%"></rect> </svg> -->
+		<!-- prettier-ignore -->
+		<svg id="darkBg" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1000 500" > <defs> <filter id="blur" filterUnits="userSpaceOnUse" x="0" y="0" width="1000" height="500"> <feGaussianBlur stdDeviation="90" /> </filter> <filter id="noise" x="0" y="0" width="100%" height="100%"> <feTurbulence type="fractalNoise" baseFrequency="1" octaves="3" result="turbulence" stitchTiles="stitch" /> <feBlend in="SourceGraphic" in2="turbulence" mode="overlay" /> </filter> </defs> <rect id="background" width="100%" height="100%" fill="#191919" /> <g id="swatches" width="1000" height="500" filter="url(#blur)"><rect x="536.0186208927432" y="-0.20388951402017597" width="437.01660097355136" height="423.83699805521036" fill="#1E1E5A" /><rect x="202.55345758586418" y="78.4631790887372" width="382.2727685590654" height="326.6561568641498" fill="#4e93a7" /><rect x="607.3964091521735" y="-80.28262967230266" width="484.59313067529166" height="366.23988994138347" fill="#74566E" /><rect x="114.38671140335958" y="188.3709872957814" width="518.3491363689158" height="350.82883247744337" fill="#5F697F" /></g> <rect x="0" y="0" width="1000" height="500" style="mix-blend-mode: luminosity; filter: url(#noise); opacity: 20%"></rect> </svg>
+
+		<!-- prettier-ignore -->
+		<svg id="lightBg" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1000 500" > <defs> <filter id="blur" filterUnits="userSpaceOnUse" x="0" y="0" width="1000" height="500"> <feGaussianBlur stdDeviation="90" /> </filter> <filter id="noise" x="0" y="0" width="100%" height="100%"> <feTurbulence type="fractalNoise" baseFrequency="1" octaves="3" result="turbulence" stitchTiles="stitch" /> <feBlend in="SourceGraphic" in2="turbulence" mode="overlay" /> </filter> </defs> <rect id="background" width="100%" height="100%" fill="#FCFCFC" /> <g id="swatches" width="1000" height="500" filter="url(#blur)"><rect x="533.1093201198585" y="267.1989809247069" width="316.7793754916304" height="368.33963958992234" fill="#C1F0F2" /><rect x="19.705367663755737" y="-2.443105803900835" width="339.115383358813" height="463.59250092593174" fill="#ECC1EB" /><rect x="432.76209303095084" y="134.7869782787139" width="553.0984937643452" height="443.6544338208091" fill="#B1E8FF" /><rect x="426.7562488264683" y="-103.04274578065409" width="319.90341070411347" height="415.5913095891416" fill="#EEDFC0" /></g> <rect x="0" y="0" width="1000" height="500" style="mix-blend-mode: luminosity; filter: url(#noise); opacity: 20%"></rect> </svg>
+
+		<!-- ------------------------------------------------------------------------------->
+		<!-- ---- Import home page HTML ---------------------------------------------------->
+		<!-- ------------------------------------------------------------------------------->
+
+		<!-- This writes the main content from lume.io into the DOM, so that we
+		can re-use Meteor APIs, etc, and provide custom content for this page
+		while being authenticated with the backend. -->
+		<script src="./write-html.js" href="/"></script>
+
+		<!-- ------------------------------------------------------------------------------->
+		<!-- ---- Login UI ----------------------------------------------------------------->
+		<!-- ------------------------------------------------------------------------------->
+
+		<style>
 			#loginButtons {
 				pointer-events: auto;
 				display: block;
@@ -49,10 +141,29 @@
 			"
 		></blaze-component>
 
-		<lume-create></lume-create>
+		<!-- ------------------------------------------------------------------------------->
+		<!-- ---- Lume Create -------------------------------------------------------------->
+		<!-- ------------------------------------------------------------------------------->
 
-		<script type="module">
-			import './create/create.js'
-		</script>
+		<style>
+			/*
+			The :nth-child(n) here is a no-op for the targetting of the
+			selector, but increases its specificity so we can override
+			lume-create's default style when it doesn't have a shadow root (the
+			attribute-based scoping introduces higher specificity than the tag
+			selector which would otherwise have higher specificity than the
+			:host selector)
+			*/
+			lume-create:nth-child(n) {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				top: 0;
+				left: 0;
+			}
+		</style>
+
+		<script type="module" src="./create/create.js"></script>
+		<lume-create></lume-create>
 	</body>
 </html>

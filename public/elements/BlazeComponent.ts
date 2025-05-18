@@ -70,7 +70,7 @@ export class BlazeComponent extends Element {
 			const {promise, resolve} = Promise.withResolvers<CSSStyleSheet>()
 			globalSheetPromise = promise
 
-			const link = document.head.querySelector('link[href*="accounts-ui"]') as HTMLLinkElement
+			const link = document.querySelector('link[href*="accounts-ui"]') as HTMLLinkElement
 			const onStyleLoad = () => resolve(cloneCSSStyleSheet(link.sheet!))
 			const styleLoaded = link.sheet?.cssRules.length
 
