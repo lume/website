@@ -121,6 +121,7 @@ export class LoginUI extends LumeElement {
 			data=${() => this.data}
 			ref=${this.#handleLoginUI}
 		></blaze-component>
+
 		<style prop:textContent=${() => this.customStyle}></style>
 	`
 
