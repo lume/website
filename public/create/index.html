@@ -79,6 +79,7 @@
 				left: 0;
 				object-fit: cover;
 				opacity: 0;
+				transition: opacity 300ms;
 			}
 
 			html {
@@ -150,6 +151,8 @@
 		<!-- ---- Lume Create -------------------------------------------------------------->
 		<!-- ------------------------------------------------------------------------------->
 
+		<script type="module" src="./create.js"></script>
+
 		<style>
 			/*
 			The :nth-child(n) here is a no-op for the targetting of the
@@ -168,7 +171,6 @@
 			}
 		</style>
 
-		<script type="module" src="./create.js"></script>
 		<lume-create></lume-create>
 	</body>
 </html>
