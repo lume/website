@@ -1,4 +1,4 @@
-// Adapted from https://github.com/mahozad/theme-switch/blob/main/src/styles.css
+// Adapted from https://github.com/mahozad/theme-switch
 // (Apache 2.0)
 
 const ELEMENT_NAME = 'theme-switch'
@@ -19,7 +19,6 @@ const ICON_INITIAL_STATE_FOR_AUTO = [10, 0, 33, 0] as const
 const ICON_INITIAL_STATE_FOR_DARK = [10, 0, 20, 1] as const
 const ICON_INITIAL_STATE_FOR_LIGHT = [5, 1, 33, 1] as const
 
-console.log('define switch')
 class ThemeSwitchElement extends HTMLElement {
 	shadowRoot
 	static counter = 0
@@ -125,6 +124,10 @@ class ThemeSwitchElement extends HTMLElement {
 		this.getAnimEl('eclipse-anim-come').beginElement()
 	}
 }
+
+updateTheme()
+window.customElements.define(ELEMENT_NAME, ThemeSwitchElement)
+window.matchMedia(COLOR_SCHEME_DARK).addEventListener('change', updateTheme)
 
 function generateIcon(...args: number[]) {
 	const [circleRadius, raysOpacity, eclipseCenterX, letterOffset] = args as [number, number, number, number]
@@ -310,10 +313,6 @@ function generateStyle() {
 		}
 	`
 }
-
-updateTheme()
-window.customElements.define(ELEMENT_NAME, ThemeSwitchElement)
-window.matchMedia(COLOR_SCHEME_DARK).addEventListener('change', updateTheme)
 
 function updateTheme() {
 	let theme: THEME_VALUE = getUserThemeSelection()

@@ -13,7 +13,9 @@
 		flicker from one mode to the other. -->
 		<!-- <script src="https://cdn.jsdelivr.net/npm/@mahozad/theme-switch@1.5.2"></script> -->
 		<script src="../elements/theme-switch.js"></script>
+	</head>
 
+	<body>
 		<style>
 			/* Hide the #root we're not using from the imported HTML. */
 			#root:first-of-type {
@@ -21,20 +23,22 @@
 			}
 
 			html {
-				background: #fcfcfc;
+				background: #bbbbbb;
 				/* background-image:
 					radial-gradient(ellipse at top left, #ddfd0d80, transparent 50%),
 					radial-gradient(ellipse at center left, #d6338480, transparent 50%); */
 				transition: background 300ms ease;
 
 				--theme-switch-icon-color: rgb(29, 29, 29);
-
-				body {
-					color: black;
-				}
 			}
 
-			html[data-theme='dark'] {
+			body {
+				--page-padding: 6px;
+				color: black;
+				padding: var(--page-padding);
+			}
+
+			[data-theme='dark'] {
 				background: #191919;
 				/* background-image:
 					radial-gradient(ellipse at top left, #0d6efd80, transparent 100%),
@@ -47,22 +51,6 @@
 				}
 			}
 		</style>
-	</head>
-
-	<body>
-		<!-- ------------------------------------------------------------------------------->
-		<!-- ---- dark/light/auto theme switch --------------------------------------------->
-		<!-- ------------------------------------------------------------------------------->
-		<style>
-			theme-switch {
-				position: absolute;
-				width: 20px;
-				pointer-events: auto;
-				z-index: 1;
-			}
-		</style>
-
-		<theme-switch></theme-switch>
 
 		<!-- ------------------------------------------------------------------------------->
 		<!-- ---- Gradient background ------------------------------------------------------>
@@ -78,20 +66,17 @@
 				top: 0;
 				left: 0;
 				object-fit: cover;
-				opacity: 0;
 				transition: opacity 300ms;
 			}
 
-			html {
-				#darkBg {
-					opacity: 0;
-				}
-				#lightBg {
-					opacity: 1;
-				}
+			#darkBg {
+				opacity: 0;
+			}
+			#lightBg {
+				opacity: 1;
 			}
 
-			html[data-theme='dark'] {
+			[data-theme='dark'] {
 				#darkBg {
 					opacity: 1;
 				}
@@ -109,7 +94,7 @@
 		<svg id="darkBg" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1000 500" > <defs> <filter id="blur" filterUnits="userSpaceOnUse" x="0" y="0" width="1000" height="500"> <feGaussianBlur stdDeviation="90" /> </filter> <filter id="noise" x="0" y="0" width="100%" height="100%"> <feTurbulence type="fractalNoise" baseFrequency="1" octaves="3" result="turbulence" stitchTiles="stitch" /> <feBlend in="SourceGraphic" in2="turbulence" mode="overlay" /> </filter> </defs> <rect id="background" width="100%" height="100%" fill="#191919" /> <g id="swatches" width="1000" height="500" filter="url(#blur)"><rect x="536.0186208927432" y="-0.20388951402017597" width="437.01660097355136" height="423.83699805521036" fill="#1E1E5A" /><rect x="202.55345758586418" y="78.4631790887372" width="382.2727685590654" height="326.6561568641498" fill="#4e93a7" /><rect x="607.3964091521735" y="-80.28262967230266" width="484.59313067529166" height="366.23988994138347" fill="#74566E" /><rect x="114.38671140335958" y="188.3709872957814" width="518.3491363689158" height="350.82883247744337" fill="#5F697F" /></g> <rect x="0" y="0" width="1000" height="500" style="mix-blend-mode: luminosity; filter: url(#noise); opacity: 20%"></rect> </svg>
 
 		<!-- prettier-ignore -->
-		<svg id="lightBg" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1000 500" > <defs> <filter id="blur" filterUnits="userSpaceOnUse" x="0" y="0" width="1000" height="500"> <feGaussianBlur stdDeviation="90" /> </filter> <filter id="noise" x="0" y="0" width="100%" height="100%"> <feTurbulence type="fractalNoise" baseFrequency="1" octaves="3" result="turbulence" stitchTiles="stitch" /> <feBlend in="SourceGraphic" in2="turbulence" mode="overlay" /> </filter> </defs> <rect id="background" width="100%" height="100%" fill="#FCFCFC" /> <g id="swatches" width="1000" height="500" filter="url(#blur)"><rect x="533.1093201198585" y="267.1989809247069" width="316.7793754916304" height="368.33963958992234" fill="#C1F0F2" /><rect x="19.705367663755737" y="-2.443105803900835" width="339.115383358813" height="463.59250092593174" fill="#ECC1EB" /><rect x="432.76209303095084" y="134.7869782787139" width="553.0984937643452" height="443.6544338208091" fill="#B1E8FF" /><rect x="426.7562488264683" y="-103.04274578065409" width="319.90341070411347" height="415.5913095891416" fill="#EEDFC0" /></g> <rect x="0" y="0" width="1000" height="500" style="mix-blend-mode: luminosity; filter: url(#noise); opacity: 20%"></rect> </svg>
+		<svg id="lightBg" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1000 500" > <defs> <filter id="blur" filterUnits="userSpaceOnUse" x="0" y="0" width="1000" height="500"> <feGaussianBlur stdDeviation="90" /> </filter> <filter id="noise" x="0" y="0" width="100%" height="100%"> <feTurbulence type="fractalNoise" baseFrequency="1" octaves="3" result="turbulence" stitchTiles="stitch" /> <feBlend in="SourceGraphic" in2="turbulence" mode="overlay" /> </filter> </defs> <rect id="background" width="100%" height="100%" fill="#bbbbbb" /> <g id="swatches" width="1000" height="500" filter="url(#blur)"><rect x="533.1093201198585" y="267.1989809247069" width="316.7793754916304" height="368.33963958992234" fill="#C1F0F2" /><rect x="19.705367663755737" y="-2.443105803900835" width="339.115383358813" height="463.59250092593174" fill="#ECC1EB" /><rect x="432.76209303095084" y="134.7869782787139" width="553.0984937643452" height="443.6544338208091" fill="#B1E8FF" /><rect x="426.7562488264683" y="-103.04274578065409" width="319.90341070411347" height="415.5913095891416" fill="#EEDFC0" /></g> <rect x="0" y="0" width="1000" height="500" style="mix-blend-mode: luminosity; filter: url(#noise); opacity: 20%"></rect> </svg>
 
 		<!-- ------------------------------------------------------------------------------->
 		<!-- ---- Import home page HTML ---------------------------------------------------->
@@ -119,33 +104,6 @@
 		can re-use Meteor APIs, etc, and provide custom content for this page
 		while being authenticated with the backend. -->
 		<script src="../write-html.js" href="/"></script>
-
-		<!-- ------------------------------------------------------------------------------->
-		<!-- ---- Login UI ----------------------------------------------------------------->
-		<!-- ------------------------------------------------------------------------------->
-
-		<style>
-			#loginButtons {
-				pointer-events: auto;
-				display: block;
-				position: absolute;
-				top: 10px;
-				right: 10px;
-				z-index: 1;
-			}
-		</style>
-
-		<blaze-component
-			id="loginButtons"
-			tmpl="loginButtons"
-			data='{"align": "right"}'
-			onclick="
-				if (!event.target?.classList.contains('login-link-text')) return
-				// close if open (make the drop down button toggle open/close).
-				const close = document.querySelector('.login-close-text')
-				if (close) close.click()
-			"
-		></blaze-component>
 
 		<!-- ------------------------------------------------------------------------------->
 		<!-- ---- Lume Create -------------------------------------------------------------->
@@ -164,10 +122,11 @@
 			*/
 			lume-create:nth-child(n) {
 				position: absolute;
-				width: 100%;
-				height: 100%;
-				top: 0;
-				left: 0;
+				width: calc(100% - 2 * var(--page-padding));
+				height: calc(100% - 2 * var(--page-padding));
+				top: var(--page-padding);
+				left: var(--page-padding);
+				border-radius: 6px;
 			}
 		</style>
 

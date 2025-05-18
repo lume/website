@@ -27,6 +27,8 @@ export function jsonAttribute(value: unknown, context: any) {
 
 let globalSheetPromise: Promise<CSSStyleSheet> | null = null
 
+type BlazeComponentAttributes = 'tmpl' | 'data' | 'disabled'
+
 @element('blaze-component')
 export class BlazeComponent extends Element {
 	/** The name of the Blaze template, or a Blaze template reference, to render. */
@@ -116,24 +118,6 @@ export class BlazeComponent extends Element {
 			// Tracker.flush()
 
 			onCleanup(() => Blaze.remove(view))
-
-			// CONTINUE move this login-button-specific handling to separate element.
-			// const ctrl = new AbortController()
-			// const signal = ctrl.signal
-
-			// this.addEventListener(
-			// 	'click',
-			// 	event => {
-			// 		const a = this.#container.querySelector('#login-sign-in-link') as HTMLAnchorElement | null
-			// 		if (!a) return
-			// 		if (event.target === a) return
-			// 		console.log('fake click on sign in link')
-			// 		a.click()
-			// 	},
-			// 	{signal},
-			// )
-
-			// onCleanup(() => ctrl.abort())
 		})
 	}
 
@@ -152,12 +136,10 @@ export class BlazeComponent extends Element {
 	`
 }
 
-type BlazeComponentAttribute = 'tmpl'
-
 declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
-			'blaze-component': ElementAttributes<BlazeComponent, BlazeComponentAttribute>
+			'blaze-component': ElementAttributes<BlazeComponent, BlazeComponentAttributes>
 		}
 	}
 }

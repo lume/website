@@ -209,9 +209,33 @@ export function createMeteorEffect(fn: () => void) {
  * Iterate all descendant elements of the given root element. Does not traverse
  * into ShadowRoots.
  */
-export function* elements(el: Document | ShadowRoot | Element): Generator<Element, void, void> {
-	if (el instanceof Element) yield el
-	for (const child of Array.from(el.children)) yield* elements(child)
+export function* elements(node: Document | ShadowRoot | Element): Generator<Element, void, void> {
+	if (node instanceof Element) yield node
+	for (const child of Array.from(node.children)) yield* elements(child)
+}
+
+/**
+ * Iterate all descendant elements of the given root element, including downward
+ * in too ShadowRoots in 'shadow-including tree order' meaning an element, then
+ * children of an element's shadowroot, then the element's children
+ * (https://chromium.googlesource.com/chromium/src/+/HEAD/third_party/blink/renderer/core/dom/README.md).
+ *
+ * This is not the same as traversing the flat tree, i.e. the tree that is
+ * rendered on screen after slotting nodes into destination shadow root slots
+ * and ignoring any nodes that are not slotted (TODO: elementsFlat for that).
+ */
+export function* elementsDeep(node: Document | ShadowRoot | Element): Generator<Element, void, void> {
+	// first visit the starting element
+	if (node instanceof Element) yield node
+
+	// then all of an element's shadowroot children
+	if (node instanceof Element) {
+		const root = roots.get(node)
+		if (root) yield* elementsDeep(root)
+	}
+
+	// then all of the element's children
+	for (const child of Array.from(node.children)) yield* elementsDeep(child)
 }
 
 const roots = new WeakMap<Element, ShadowRoot>()
@@ -227,13 +251,12 @@ globalThis.Element.prototype.attachShadow = function (init: ShadowRootInit) {
 
 /**
  * Just like document.querySelector(), but it will traverse into all known ShadowRoots.
+ *
+ * This does a shadow-including tree traversal. TODO: a flat-tree search, querySelectorFlat.
  */
-export function querySelectorDeep(root: Document | ShadowRoot, selector: string) {
-	for (const el of elements(root)) {
-		const root = roots.get(el)
-		if (!root) continue
-
-		const result = root.querySelector(selector)
+export function querySelectorDeep(root: Document | ShadowRoot, selector: string): Element | null {
+	for (const el of elementsDeep(root)) {
+		const result = roots.get(el)?.querySelector(selector)
 		if (result) return result
 	}
 

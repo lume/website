@@ -8,7 +8,6 @@ import {signal} from 'classy-solid'
 import {type LandingCube} from './Cube.js'
 import './MenuLinks.js'
 import './HamburgerButton.js'
-import './BlazeComponent.js'
 import {animateSignalTo, clamp, elementSize, memoize, svgTexture} from '../utils.js'
 import '../imports/collections/Users.js'
 
@@ -41,9 +40,13 @@ for (const [key, val] of Object.entries(styleVars)) {
 	styleVars[key] = typeof val === 'string' && val.endsWith('%') ? Number(val.replace('%', '')) / 100 : val
 }
 
+// "_____" used to denote empty (no attributes) for now.
+type HomePageAttributes = '_____'
+
 @element('home-page')
 export class HomePage extends Element {
-	// Used in AppAttributes to denote no attributes. See TODO there.
+	// Used in HomePageAttributes to denote no attributes.
+	// TODO allow to specify no attributes with the ElementAttributes type helper.
 	_____?: undefined
 
 	@signal cube!: LandingCube
@@ -1054,20 +1057,16 @@ export class HomePage extends Element {
 	`
 }
 
-// "_____" used to denote empty (no attributes).
-// TODO allow to specify no attributes with the ElementAttributes type somehow.
-type AppAttributes = '_____'
-
 declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
-			'app-root': ElementAttributes<HomePage, AppAttributes>
+			'home-page': ElementAttributes<HomePage, HomePageAttributes>
 		}
 	}
 }
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'app-root': HomePage
+		'home-page': HomePage
 	}
 }

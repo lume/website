@@ -2,6 +2,11 @@
 	/* root vars set in AppRoot.ts using the styleVars object */
 }
 
+html {
+	font-size: 1em;
+	line-height: 1.4;
+}
+
 html,
 body,
 #root {
@@ -11,6 +16,7 @@ body,
 	margin: 0;
 	color: white;
 	pointer-events: none;
+	box-sizing: border-box;
 }
 
 /* prettier-ignore */
@@ -40,19 +46,6 @@ a:active {
 a:hover {
 	color: rgba(255, 255, 255, 1);
 	text-decoration: none;
-}
-
-html {
-	font-size: 1em;
-	line-height: 1.4;
-}
-
-html,
-body {
-	width: 100%;
-	height: 100%;
-	margin: 0px;
-	padding: 0px;
 }
 
 @font-face {
