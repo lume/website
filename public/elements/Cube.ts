@@ -15,8 +15,10 @@ const bottomUrl = new URL('../images/cube/bottom.svg', import.meta.url).href
  * webgl rendering we'll see a WebGL cube for debugging purposes (to ensure DOM
  * aligns with WebGL).
  */
-@element('landing-cube')
+@element
 export class LandingCube extends Element3D {
+	static readonly elementName = 'landing-cube'
+
 	hasShadow = true
 
 	constructor() {
@@ -56,13 +58,13 @@ type LandingCubeAttributes = Element3DAttributes
 declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
-			'landing-cube': ElementAttributes<LandingCube, LandingCubeAttributes>
+			[LandingCube.elementName]: ElementAttributes<LandingCube, LandingCubeAttributes>
 		}
 	}
 }
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'landing-cube': LandingCube
+		[LandingCube.elementName]: LandingCube
 	}
 }

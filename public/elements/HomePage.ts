@@ -43,8 +43,10 @@ for (const [key, val] of Object.entries(styleVars)) {
 // "_____" used to denote empty (no attributes) for now.
 type HomePageAttributes = '_____'
 
-@element('home-page')
+@element
 export class HomePage extends Element {
+	static readonly elementName = 'home-page'
+
 	// Used in HomePageAttributes to denote no attributes.
 	// TODO allow to specify no attributes with the ElementAttributes type helper.
 	_____?: undefined
@@ -1060,13 +1062,13 @@ export class HomePage extends Element {
 declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
-			'home-page': ElementAttributes<HomePage, HomePageAttributes>
+			[HomePage.elementName]: ElementAttributes<HomePage, HomePageAttributes>
 		}
 	}
 }
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'home-page': HomePage
+		[HomePage.elementName]: HomePage
 	}
 }

@@ -29,8 +29,10 @@ let globalSheetPromise: Promise<CSSStyleSheet> | null = null
 
 type BlazeComponentAttributes = 'tmpl' | 'data' | 'disabled'
 
-@element('blaze-component')
+@element
 export class BlazeComponent extends Element {
+	static readonly elementName = 'blaze-component'
+
 	/** The name of the Blaze template, or a Blaze template reference, to render. */
 	@stringAttribute tmpl: string | Blaze.Template = ''
 
@@ -139,13 +141,13 @@ export class BlazeComponent extends Element {
 declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
-			'blaze-component': ElementAttributes<BlazeComponent, BlazeComponentAttributes>
+			[BlazeComponent.elementName]: ElementAttributes<BlazeComponent, BlazeComponentAttributes>
 		}
 	}
 }
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'blaze-component': BlazeComponent
+		[BlazeComponent.elementName]: BlazeComponent
 	}
 }

@@ -1,6 +1,8 @@
 // Adapted from https://github.com/mahozad/theme-switch
 // (Apache 2.0)
 
+import type {ElementAttributes} from '@lume/element'
+
 const ELEMENT_NAME = 'theme-switch'
 const ICON_SIZE = 24 /* px */
 const ICON_COLOR = '#000'
@@ -19,10 +21,12 @@ const ICON_INITIAL_STATE_FOR_AUTO = [10, 0, 33, 0] as const
 const ICON_INITIAL_STATE_FOR_DARK = [10, 0, 20, 1] as const
 const ICON_INITIAL_STATE_FOR_LIGHT = [5, 1, 33, 1] as const
 
-class ThemeSwitchElement extends HTMLElement {
+class ThemeSwitch extends HTMLElement {
+	static readonly elementName = 'theme-switch'
+
 	shadowRoot
 	static counter = 0
-	identifier = ThemeSwitchElement.counter++
+	identifier = ThemeSwitch.counter++
 
 	constructor() {
 		super()
@@ -126,7 +130,7 @@ class ThemeSwitchElement extends HTMLElement {
 }
 
 updateTheme()
-window.customElements.define(ELEMENT_NAME, ThemeSwitchElement)
+window.customElements.define(ELEMENT_NAME, ThemeSwitch)
 window.matchMedia(COLOR_SCHEME_DARK).addEventListener('change', updateTheme)
 
 function generateIcon(...args: number[]) {
@@ -341,10 +345,29 @@ function getInitialStateForIcon() {
 	}
 }
 
-interface GlobalEventHandlersEventMap {
-	[CUSTOM_EVENT_NAME]: CustomEvent<{
-		originId: number
-		oldState: THEME_VALUE
-		newState: THEME_VALUE
-	}>
+declare global {
+	interface GlobalEventHandlersEventMap {
+		[CUSTOM_EVENT_NAME]: CustomEvent<{
+			originId: number
+			oldState: THEME_VALUE
+			newState: THEME_VALUE
+		}>
+	}
+}
+
+// Small hack. TODO make attributes optional, f.e. ElementAttributes<MyEl> without a second arg.
+type HTMLElementAttributes = ElementAttributes<{____?: undefined} & HTMLElement, '____'>
+
+declare module 'solid-js' {
+	namespace JSX {
+		interface IntrinsicElements {
+			[ThemeSwitch.elementName]: HTMLElementAttributes
+		}
+	}
+}
+
+declare global {
+	interface HTMLElementTagNameMap {
+		[ThemeSwitch.elementName]: ThemeSwitch
+	}
 }

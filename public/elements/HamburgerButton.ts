@@ -1,8 +1,10 @@
 import {element, booleanAttribute, numberAttribute, html, css, Element3D, type Element3DAttributes} from 'lume'
 import type {ElementAttributes} from '@lume/element'
 
-@element('hamburger-button')
+@element
 export class HamburgerButton extends Element3D {
+	static readonly elementName = 'hamburger-button'
+
 	hasShadow = true
 
 	@numberAttribute lineThickness = 2
@@ -52,13 +54,13 @@ type HamburgerButtonAttributes = Element3DAttributes | 'lineThickness' | 'lineLe
 declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
-			'hamburger-button': ElementAttributes<HamburgerButton, HamburgerButtonAttributes>
+			[HamburgerButton.elementName]: ElementAttributes<HamburgerButton, HamburgerButtonAttributes>
 		}
 	}
 }
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'hamburger-button': HamburgerButton
+		[HamburgerButton.elementName]: HamburgerButton
 	}
 }

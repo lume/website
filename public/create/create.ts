@@ -13,8 +13,10 @@ const state = ((window as any).state = createMutable({route: 'dash' as 'dash' | 
 
 export type LumeCreateAttributes = '_' // no attributes yet
 
-@element('lume-create')
+@element
 export class LumeCreate extends Element {
+	static readonly elementName = 'lume-create'
+
 	_?: undefined // no attributes yet
 
 	template = () => html`
@@ -159,13 +161,13 @@ export class LumeCreate extends Element {
 declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
-			'lume-create': ElementAttributes<LumeCreate, LumeCreateAttributes>
+			[LumeCreate.elementName]: ElementAttributes<LumeCreate, LumeCreateAttributes>
 		}
 	}
 }
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'lume-create': LumeCreate
+		[LumeCreate.elementName]: LumeCreate
 	}
 }
