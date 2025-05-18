@@ -2,12 +2,17 @@
 	<head>
 		<title>Lume Create</title>
 
+		<!-- This is so that URLs are relative to this file regardless of the
+		path in the address bar (f.e. /create in the browser vs this file at
+		/create/index.html. -->
+		<base href="/create/index.html" />
+
 		<!-- This has to be an old-style synchronous global script, not an async
 		ES Module, so that we can guarantee the correct light or dark mode is
 		displayed upon initial load of the page, otherwise there could be a
 		flicker from one mode to the other. -->
 		<!-- <script src="https://cdn.jsdelivr.net/npm/@mahozad/theme-switch@1.5.2"></script> -->
-		<script src="/elements/theme-switch.js"></script>
+		<script src="../elements/theme-switch.js"></script>
 
 		<style>
 			/* Hide the #root we're not using from the imported HTML. */
@@ -112,7 +117,7 @@
 		<!-- This writes the main content from lume.io into the DOM, so that we
 		can re-use Meteor APIs, etc, and provide custom content for this page
 		while being authenticated with the backend. -->
-		<script src="./write-html.js" href="/"></script>
+		<script src="../write-html.js" href="/"></script>
 
 		<!-- ------------------------------------------------------------------------------->
 		<!-- ---- Login UI ----------------------------------------------------------------->
@@ -163,7 +168,7 @@
 			}
 		</style>
 
-		<script type="module" src="./create/create.js"></script>
+		<script type="module" src="./create.js"></script>
 		<lume-create></lume-create>
 	</body>
 </html>
