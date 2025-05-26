@@ -8,8 +8,8 @@
 				"imports": {
 					"@tweenjs/tween.js": "https://cdn.jsdelivr.net/npm/@tweenjs/tween.js@25.0.0/dist/tween.esm.js",
 					"classy-solid": "https://cdn.jsdelivr.net/npm/classy-solid@0.4.3/dist/index.js",
-					"lume": "https://cdn.jsdelivr.net/npm/lume@0.3.0-alpha.44/dist/index.js",
-					"lume/": "https://cdn.jsdelivr.net/npm/lume@0.3.0-alpha.44/",
+					"lume": "https://cdn.jsdelivr.net/npm/lume@0.3.0-alpha.45/dist/index.js",
+					"lume/": "https://cdn.jsdelivr.net/npm/lume@0.3.0-alpha.45/",
 					"solid-js": "https://cdn.jsdelivr.net/npm/solid-js@1.9.5/dist/solid.js",
 					"solid-js/html": "https://cdn.jsdelivr.net/npm/solid-js@1.9.5/html/dist/html.js",
 					"solid-js/store": "https://cdn.jsdelivr.net/npm/solid-js@1.9.5/store/dist/store.js",
@@ -17,7 +17,7 @@
 
 					"@lume/autolayout": "https://cdn.jsdelivr.net/npm/@lume/autolayout@0.10.2/dist/AutoLayout.js",
 					"@lume/custom-attributes/dist/index.js": "https://cdn.jsdelivr.net/npm/@lume/custom-attributes@0.2.4/dist/index.js",
-					"@lume/element": "https://cdn.jsdelivr.net/npm/@lume/element@0.13.1/dist/index.js",
+					"@lume/element": "https://cdn.jsdelivr.net/npm/@lume/element@0.16.0/dist/index.js",
 					"@lume/eventful": "https://cdn.jsdelivr.net/npm/@lume/eventful@0.3.3/dist/index.js",
 					"@lume/kiwi": "https://cdn.jsdelivr.net/npm/@lume/kiwi@0.4.4/dist/kiwi.js",
 					"@lume/three-projected-material/dist/ProjectedMaterial.js": "https://cdn.jsdelivr.net/npm/@lume/three-projected-material@0.3.1/dist/ProjectedMaterial.js",
