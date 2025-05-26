@@ -5,12 +5,12 @@ import {
 	type ElementAttributes,
 	booleanAttribute,
 	stringAttribute,
+	jsonAttribute,
 } from '@lume/element'
 import {onCleanup} from 'solid-js'
 import html from 'solid-js/html'
 import {hasDescendant, querySelectorDeep} from '../utils.js'
 import './BlazeComponent.js'
-import {jsonAttribute} from './BlazeComponent.js'
 
 // Props that the Blaze loginButtons template accepts.
 type LoginButtonProps = {align: 'left' | 'right'}

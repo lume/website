@@ -6,24 +6,14 @@ import {
 	element,
 	booleanAttribute,
 	stringAttribute,
+	jsonAttribute,
 	css,
-	attribute,
 	type ElementAttributes,
 } from '@lume/element'
 import {html} from 'lume'
 import {createEffect, createMemo, onCleanup} from 'solid-js'
 import {ReactiveVar} from 'meteor/reactive-var'
 import {cloneCSSStyleSheet} from '../utils.js'
-
-// This is how to define a new attribute decorator. In this case, for accepting JSON values.
-// TODO move this jsonAttribute decorator into @lume/element
-const toJS = (str: string) => JSON.parse(str)
-// @ts-ignore
-attribute.json = () => ({from: toJS})
-export function jsonAttribute(value: unknown, context: any) {
-	// @ts-ignore
-	return attribute(attribute.json())(value, context)
-}
 
 let globalSheetPromise: Promise<CSSStyleSheet> | null = null
 
