@@ -8,8 +8,8 @@
 				"imports": {
 					"@tweenjs/tween.js": "https://cdn.jsdelivr.net/npm/@tweenjs/tween.js@25.0.0/dist/tween.esm.js",
 					"classy-solid": "https://cdn.jsdelivr.net/npm/classy-solid@0.4.3/dist/index.js",
-					"lume": "https://cdn.jsdelivr.net/npm/lume@0.3.0-alpha.45/dist/index.js",
-					"lume/": "https://cdn.jsdelivr.net/npm/lume@0.3.0-alpha.45/",
+					"lume": "https://cdn.jsdelivr.net/npm/lume@0.3.0-alpha.46/dist/index.js",
+					"lume/": "https://cdn.jsdelivr.net/npm/lume@0.3.0-alpha.46/",
 					"solid-js": "https://cdn.jsdelivr.net/npm/solid-js@1.9.5/dist/solid.js",
 					"solid-js/html": "https://cdn.jsdelivr.net/npm/solid-js@1.9.5/html/dist/html.js",
 					"solid-js/store": "https://cdn.jsdelivr.net/npm/solid-js@1.9.5/store/dist/store.js",

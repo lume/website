@@ -172,10 +172,29 @@ body.fadePageOut {
 	display: none;
 }
 
+.invisible {
+	opacity: 0 !important;
+}
+
+#loadingCover {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgb(13, 9, 98);
+	transition: opacity 0.5s;
+
+	loading-icon {
+		--loading-icon-color: 76, 169, 195;
+		--loading-icon-outer-radius: 60px;
+		--loading-icon-inner-radius: 30px;
+	}
+}
+
 _ {
-	color: #224dd9;
-	color: #0e4fe6;
-	color: #0c47d1;
-	color: #0636a6;
-	color: #0729d7;
+	color: rgb(76, 169, 195);
 }

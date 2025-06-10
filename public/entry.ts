@@ -6,6 +6,10 @@
 const renderHomePage = location.pathname === '/'
 
 if (renderHomePage) {
+	// Load the loading icon as soon as possible so that we have a loading
+	// experience as soon as possible before loading anything else.
+	await import('lume/dist/examples/LoadingIcon.js')
+
 	// import './await-startup.js'
 	await import('./imports/collections/Visits.js')
 	const {appTitle} = await import('./routes.js')
@@ -17,6 +21,12 @@ if (renderHomePage) {
 	const root = document.getElementById('root')!
 	const html = String.raw // for syntax/formatting
 	root.innerHTML = html`<home-page></home-page>`
+
+	setTimeout(() => {
+		const loadingCover = document.getElementById('loadingCover')!
+		loadingCover.classList.add('invisible')
+		loadingCover.addEventListener('animationend', () => loadingCover.remove())
+	}, 1000)
 }
 
 export {} // merely so that TS treats the file as a module
