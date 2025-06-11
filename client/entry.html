@@ -103,6 +103,13 @@
 		<!-- app content gets rendered here -->
 	</div>
 
+	<!-- Load the loading icon module as soon as possible so that we have a
+	loading experience as soon as possible before loading anything else
+	(see the modulepreload in importmap.js) -->
+	<script type="module" async>
+		import 'lume/dist/examples/LoadingIcon.js'
+	</script>
+
 	<div id="loadingCover">
 		<loading-icon></loading-icon>
 	</div>
