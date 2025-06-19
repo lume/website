@@ -1,0 +1,157 @@
+<html>
+	<head>
+		<title>Test</title>
+
+		<!-- This is so that URLs are relative to this file regardless of the
+		path in the address bar (f.e. /create in the browser vs this file at
+		/create/index.html. -->
+		<base href="/test/index.html" />
+
+		<!-- This has to be an old-style synchronous global script, not an async
+		ES Module, so that we can guarantee the correct light or dark mode is
+		displayed upon initial load of the page, otherwise there could be a
+		flicker from one mode to the other. -->
+		<!-- <script src="https://cdn.jsdelivr.net/npm/@mahozad/theme-switch@1.5.2"></script> -->
+		<script src="../elements/theme-switch.js"></script>
+	</head>
+
+	<body>
+		<script src="../write-html.js" href="/"></script>
+
+		<script type="module" src="./test.js"></script>
+
+		<style>
+			/* Hide the #root we're not using from the imported HTML. */
+			#root:first-of-type {
+				display: none;
+			}
+
+			html {
+				background: #bbbbbb;
+				/* background-image:
+					radial-gradient(ellipse at top left, #ddfd0d80, transparent 50%),
+					radial-gradient(ellipse at center left, #d6338480, transparent 50%); */
+				transition: background 300ms ease;
+
+				--theme-switch-icon-color: rgb(29, 29, 29);
+			}
+
+			body {
+				--page-padding: 6px;
+				color: black;
+				padding: var(--page-padding);
+			}
+
+			[data-theme='dark'] {
+				background: #191919;
+				/* background-image:
+					radial-gradient(ellipse at top left, #0d6efd80, transparent 100%),
+					radial-gradient(ellipse at center left, #d6338480, transparent 100%); */
+
+				--theme-switch-icon-color: rgb(219, 219, 219);
+
+				body {
+					color: white;
+				}
+			}
+		</style>
+
+		<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+		<script type="module">
+			/* const tsCode = `
+			         import {Element, element} from '@lume/element'
+
+			         @element
+			         class MyEl extends Element {
+			            constructor() {
+			                         super()
+			                         console.log('constructor')
+			                     }
+
+			                     connectedCallback() {
+			                 super.connectedCallback();
+
+			                 console.log('this is connectedCallback :)');
+			             }
+			         }
+			         ` */
+			import {createClassDefinition} from './test.js'
+			const tsCode = createClassDefinition({
+				name: 'MyElement',
+				tagName: 'my-element',
+				members: [{name: 'someMember', defaultValue: 123, type: 'number'}],
+				templateElements: [{tagName: 'my-element-2', attributes: [{name: 'val', initialValue: {foo: 123}}]}],
+			})
+
+			const jsCode = Babel.transform(tsCode, {
+				presets: ['typescript'],
+				plugins: [
+					['proposal-decorators', {version: '2023-05', decoratorsBeforeExport: true}],
+					['proposal-class-properties', {loose: true}],
+					'transform-class-static-block',
+				],
+                // Necessary only for the file extension for some reason, something to do with .ts
+                // and .tsx
+				filename: 'file.ts',
+			}).code
+
+			// Have to do this for some reason
+			const blob = new Blob([jsCode], {type: 'text/javascript'})
+			const url = URL.createObjectURL(blob)
+
+			const script = document.createElement('script')
+			script.type = 'module'
+			script.src = url
+			document.body.appendChild(script)
+
+			// Actually add the element now
+			document.body.appendChild(document.createElement('my-el'))
+		</script>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/typescript/5.3.3/typescript.min.js"></script>
+
+		<!-- This is a hack to get around some module error or something -->
+		<!-- <script>
+			var exports = {}
+		</script> -->
+
+		<!-- <script type="module">
+			import {css, Element, element} from '@lume/element'
+			import {createClassDefinition} from './test.js'
+
+			const script = document.createElement('script')
+			script.textContent = ts.transpile(
+				createClassDefinition({
+					name: 'MyElement',
+					tagName: 'my-element',
+					members: [{name: 'someMember', defaultValue: 123, type: 'number'}],
+					templateElements: [{tagName: 'my-element-2', attributes: [{name: 'val', initialValue: 'asdf1234'}]}],
+				}),
+			)
+			document.body.appendChild(script)
+		</script> -->
+
+		<my-element></my-element>
+
+		<script>
+			/* const script = document.createElement('script')
+			script.textContent = ts.transpile(`
+            import {css, Element, element} from '@lume/element'
+			import {createClassDefinition} from './test.js'
+                export class MyEl {
+                }
+            `) 
+            ts.transpile(
+				createClassDefinition({
+					name: 'MyElement',
+					tagName: 'my-element',
+					members: [{name: 'someMember', defaultValue: 123, type: 'number'}],
+					templateElements: [{tagName: 'my-element-2', attributes: [{name: 'val', initialValue: 'asdf1234'}]}],
+				}),
+			)
+			document.body.appendChild(script) */
+		</script>
+
+		<h2>test</h2>
+	</body>
+</html>
