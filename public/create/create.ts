@@ -6,18 +6,81 @@ import '../routes.js' // track page visits
 import '../elements/login-ui.js'
 import '../elements/for-each.js'
 import '../elements/show-when.js'
+import './studio/LumeStudio.js'
 import {toSolidSignal} from '../utils.js'
+import {signal} from 'lume'
+import type {SceneElementNode} from './studio/SceneManager.js'
 
 const username = toSolidSignal(() => Meteor.user()?.username ?? Meteor.user()?.emails?.[0].address ?? '')
 const state = ((window as any).state = createMutable({route: 'dash' as 'dash' | 'element'}))
 
 export type LumeCreateAttributes = '_' // no attributes yet
 
+// Having `nodes` as a property is just to be able to pass as JSON
+const exampleScene: {nodes: SceneElementNode[]} = {
+	nodes: [
+		{
+			tagName: 'lume-camera-rig',
+			attributes: [
+				{name: 'alignPoint', val: '0.5 0.5 0.5'},
+				{name: 'mountPoint', val: '0.5 0.5 0.5'},
+				{name: 'distance', val: '50'},
+				{name: 'minDistance', val: '5'},
+				{name: 'maxDistance', val: '5000'},
+			],
+		},
+		{
+			tagName: 'lume-point-light',
+			attributes: [
+				{name: 'intensity', val: '750'},
+				{name: 'alignPoint', val: '0.5 0.5 0.5'},
+				{name: 'mountPoint', val: '0.5 0.5 0.5'},
+				{name: 'position', val: '100 -100 100'},
+				{name: 'color', val: 'pink'},
+			],
+		},
+		{
+			tagName: 'lume-ambient-light',
+			attributes: [{name: 'intensity', val: '0.4'}],
+		},
+		{
+			tagName: 'lume-box',
+			attributes: [
+				{name: 'alignPoint', val: '0.5 0.5 0.5'},
+				{name: 'mountPoint', val: '0.5 0.5 0.5'},
+				{name: 'position', val: '0 0 0'},
+				{name: 'color', val: 'blue'},
+				{name: 'size', val: '5 5 5'},
+			],
+			children: [
+				{
+					tagName: 'lume-box',
+					attributes: [
+						{name: 'alignPoint', val: '0.5 0.5 0.5'},
+						{name: 'mountPoint', val: '0.5 0.5 0.5'},
+						{name: 'position', val: '0 0 0'},
+						{name: 'color', val: 'red'},
+						{name: 'size', val: '5 5 5'},
+						{name: 'opacity', val: '0.5'},
+					],
+				},
+			],
+		},
+	],
+}
+
 @element
 export class LumeCreate extends Element {
 	static readonly elementName = 'lume-create'
 
 	_?: undefined // no attributes yet
+
+	@signal sceneNodes = ''
+
+	connectedCallback() {
+		super.connectedCallback()
+		// Get the scene's node representation from somewhere here and set `sceneNodes`.
+	}
 
 	template = () => html`
 		<link rel="stylesheet" href="../entry.css" />
@@ -67,14 +130,7 @@ export class LumeCreate extends Element {
 
 					<show-when
 						condition=${() => state.route === 'element'}
-						content=${() => () => html`
-							<div>
-								<h1>
-									scene
-									<a onclick=${() => (state.route = 'dash')}>⮜ Back</a>
-								</h1>
-							</div>
-						`}
+						content=${() => () => html`<lume-studio scene-nodes="${exampleScene}"></lume-studio>`}
 					></show-when>
 				`}
 				fallback=${() => () => html` <p>Login <span style="rotate: 70deg; display: inline-block;">👆</span></p> `}
