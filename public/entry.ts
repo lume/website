@@ -17,6 +17,12 @@ if (renderHomePage) {
 	const root = document.getElementById('root')!
 	const html = String.raw // for syntax/formatting
 	root.innerHTML = html`<home-page></home-page>`
+
+	setTimeout(() => {
+		const loadingCover = document.getElementById('loadingCover')!
+		loadingCover.classList.add('invisible')
+		loadingCover.addEventListener('animationend', () => loadingCover.remove())
+	}, 1000)
 }
 
 export {} // merely so that TS treats the file as a module

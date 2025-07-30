@@ -32,7 +32,7 @@
 		"@types/meteor": "^2.9.8",
 		"@types/three": "^0.174.0",
 		"jquery": "^3.7.1",
-		"lume": "^0.3.0-alpha.45",
+		"lume": "^0.3.0-alpha.46",
 		"meteor-node-stubs": "^1.0.0",
 		"solid-js": "^1.9.0",
 		"symlink-dir": "^6.0.5",
