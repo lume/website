@@ -28,6 +28,11 @@ export class LumeUserProfile extends Element {
 
 			this.username = user.username ?? ''
 		})
+
+		// Hide the loading cover
+		const loadingCover = document.getElementById('loadingCover')
+		loadingCover?.classList.add('invisible')
+		loadingCover?.addEventListener('transitionend', () => loadingCover.remove())
 	}
 
 	#saveChanges() {
