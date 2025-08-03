@@ -395,9 +395,11 @@
 
 		<login-ui
 			custom-style="
-				#loginButtons {
-					a.login-link-text {
-						color: light-dark(black, white);
+				#loginButtons a.login-link-text {
+					color: black;
+
+					:host-context([data-theme='dark']) & {
+						color: white;
 					}
 				}
 			"
@@ -418,7 +420,8 @@
 			import {Motor, Events, setBehaviors, threeToLume} from 'lume'
 			import {createEffect, untrack} from 'solid-js'
 			import {Vector3} from 'three'
-			import '/elements/login-ui.js'
+			import './routes.js' // track page visits
+			import './elements/login-ui.js'
 
 			const scene = document.getElementById('scene')
 			const imgs = document.getElementById('deckImgs')

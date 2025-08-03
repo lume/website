@@ -1,11 +1,12 @@
 import {html} from 'lume'
 import {createMemo} from 'solid-js'
+import {Meteor} from 'meteor/meteor'
 import {Visits} from '../imports/collections/Visits.js'
 import {StudioSignups} from '../imports/collections/StudioSignups.js'
 import {toSolidSignal} from '../utils.js'
 import '../routes.js' // track page visits
 import '../elements/login-ui.js'
-import {Meteor} from 'meteor/meteor'
+import '../elements/theme-switch.js'
 
 Meteor.subscribe('usersCount')
 

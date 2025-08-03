@@ -26,16 +26,10 @@
 				display: none;
 			}
 
-			html {
-				transition: background 300ms ease;
-
-				--theme-switch-icon-color: rgb(29, 29, 29);
-			}
-
 			body {
 				--page-padding: 6px;
-				color: black;
 				padding: var(--page-padding);
+				transition: background 300ms ease;
 			}
 
 			[data-theme='dark'] {
@@ -44,10 +38,25 @@
 					radial-gradient(ellipse at top left, #0d6efd80, transparent 100%),
 					radial-gradient(ellipse at center left, #d6338480, transparent 100%); */
 
-				--theme-switch-icon-color: rgb(219, 219, 219);
-
 				body {
 					color: white;
+				}
+			}
+		</style>
+
+		<theme-switch></theme-switch>
+		<style>
+			theme-switch {
+				position: absolute;
+				top: 30px;
+				right: 10px;
+				z-index: 1;
+				pointer-events: auto;
+
+				--theme-switch-icon-color: rgb(29, 29, 29);
+
+				[data-theme='dark'] & {
+					--theme-switch-icon-color: rgb(219, 219, 219);
 				}
 			}
 		</style>

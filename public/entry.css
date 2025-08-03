@@ -3,7 +3,7 @@
 	 * All :root vars are defined in styleVars.ts using the styleVars object, so
 	 * that they are also available in JS.
 	 */
-	--: ;
+	--: initial;
 }
 
 html {
@@ -18,10 +18,20 @@ body,
 	height: 100%;
 	padding: 0;
 	margin: 0;
-	color: light-dark(black, white);
-	background: var(--appBackground);
 	pointer-events: none;
 	box-sizing: border-box;
+
+	color: black;
+	background: var(--appBackground);
+}
+
+[data-theme='dark'] {
+	html,
+	body,
+	#root {
+		color: white;
+		background: var(--appBackgroundDark);
+	}
 }
 
 /* prettier-ignore */
@@ -200,5 +210,11 @@ body.fadePageOut {
 		--loading-icon-color: 76, 169, 195;
 		--loading-icon-outer-radius: 60px;
 		--loading-icon-inner-radius: 30px;
+	}
+}
+
+[data-theme='dark'] {
+	#loadingCover {
+		background: var(--appBackgroundDark);
 	}
 }

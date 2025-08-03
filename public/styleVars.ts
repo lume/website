@@ -1,6 +1,8 @@
 const styleVars = {
 	// Soft blue in light mode, and dark blue in dark mode.
-	appBackground: 'light-dark(#f0f4ff, #1a1a2e)',
+	appBackground: '#f0f4ff',
+	appBackgroundDark: '#1a1a2e',
+
 	// This will be 0.8 in JS and "80%" in CSS.
 	menuWidth: '80%' as any as number,
 	desktopMenuItemHeight: 50,

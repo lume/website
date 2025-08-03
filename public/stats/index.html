@@ -36,13 +36,31 @@
 
 		<login-ui
 			custom-style="
-				#loginButtons {
-					a.login-link-text {
-						color: light-dark(black, white);
+				#loginButtons a.login-link-text {
+					color: black;
+
+					:host-context([data-theme='dark']) & {
+						color: white;
 					}
 				}
 			"
 		></login-ui>
+
+		<theme-switch></theme-switch>
+		<style>
+			theme-switch {
+				position: absolute;
+				top: 30px;
+				right: 10px;
+				z-index: 1;
+
+				--theme-switch-icon-color: rgb(29, 29, 29);
+
+				[data-theme='dark'] & {
+					--theme-switch-icon-color: rgb(219, 219, 219);
+				}
+			}
+		</style>
 
 		<script type="module" src="./stats.js"></script>
 	</body>

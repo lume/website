@@ -1,6 +1,8 @@
 // Ported from https://github.com/mahozad/theme-switch
 // (Apache 2.0)
 
+// TODO update this to support CSS `color-scheme` and `light-dark()` CSS functions.
+
 const ELEMENT_NAME = 'theme-switch'
 const ICON_SIZE = 24 /* px */
 const ICON_COLOR = '#000'
