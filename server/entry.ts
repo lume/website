@@ -26,36 +26,36 @@ import type {ServerResponse} from 'http'
 // Meteor's AI "How to set up TypeScript", there's some good docs.)
 WebApp.addHtmlAttributeHook(() => ({lang: 'en', prefix: 'og: http://ogp.me/ns#'}))
 
-const lumeDomain = (sub?: string) => `https://${sub ? sub + '.' : ''}lume.io`
+// Top level domain (TLD) for the app.
+const TLD = 'lume.io'
 
-const locals = (port: string | number) => [
+const appOrigin = (sub?: string) => `https://${sub ? sub + '.' : ''}${TLD}`
+
+const localhost = (port: string | number) => [
 	`http://localhost:${port}`,
 	`http://127.0.0.1:${port}`,
 	`http://0.0.0.0:${port}`,
 ]
 
 const allowedOrigins = [
-	lumeDomain(),
-	lumeDomain('docs'),
+	appOrigin(),
+	appOrigin('docs'),
 
 	// TODO authentication into the forum using Lume login.
 	// "https://lume.community",
 
-	// lume.io on localhost
-	...locals(8765),
-
-	// docs.lume.io on localhost
-	...locals(54321),
+	// the app on localhost
+	...localhost(8765),
 ]
 
 // Allow only certain domains to access content from the server (for example
 // domains that we have not authorized will not be able to authenticate using
-// lume.io via iframe).
+// the app domain via iframe).
 WebApp.rawHandlers.use(
 	/*'/public',*/
 	async function (req, res, next) {
 		///////////////////////////////////////////////////////////////////////////
-		// CORS handling to disallow foreign origins from embedding lume.io,
+		// CORS handling to disallow foreign origins from embedding the app domain,
 		// hence forbidding them from using an iframe to get a user's auth
 		// credentials.
 
@@ -96,7 +96,7 @@ WebApp.rawHandlers.use(
 			// images, etc).
 			res.setHeader(
 				'Content-Security-Policy',
-				`frame-ancestors 'self' ${Meteor.isDevelopment ? locals('*').join(' ') : lumeDomain('*')}`,
+				`frame-ancestors 'self' ${Meteor.isDevelopment ? localhost('*').join(' ') : appOrigin('*')}`,
 			)
 		} else return getCoffee(res)
 
@@ -106,11 +106,11 @@ WebApp.rawHandlers.use(
 		///////////////////////////////////////////////////////////////////////////
 		// Implement custom request path handling such that a path like `/foo`
 		// will serve `/foo.html`. This makes it possible to put `app.html` in
-		// the `public/` folder, for example, and access it as `lume.io/app`
+		// the `public/` folder, for example, and access it as `<appOrigin>/app`
 		// without using a special backend router, only the existence of HTML
 		// files.
 
-		const url = new URL(`https://lume.io` + req.url)
+		const url = new URL(appOrigin() + req.url)
 
 		// Continue as usual for / (Meteor serves that after building client/entry.html).
 		if (url.pathname === '/') return next()

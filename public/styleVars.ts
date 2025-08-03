@@ -6,6 +6,8 @@ const styleVars = {
 	headerHeight: 100,
 	pageTopBottomPadding: 25,
 	pageLeftRightPadding: 60,
+
+	// TODO improve type defs for this without requiring error-prone manual type casting.
 }
 
 interface Window {

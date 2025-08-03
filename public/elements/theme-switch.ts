@@ -352,8 +352,8 @@ interface GlobalEventHandlersEventMap {
 }
 
 // FIXME TypeScript bug: this causes the solid-js package to be fully overriden
-// by this small definition, making type errors in all other files that import
-// solid-js.
+// by this small definition, instead of augmented, making type errors in all
+// other files that import solid-js.
 //
 // declare module 'solid-js' {
 // 	namespace JSX {
