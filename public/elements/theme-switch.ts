@@ -1,7 +1,5 @@
-// Adapted from https://github.com/mahozad/theme-switch
+// Ported from https://github.com/mahozad/theme-switch
 // (Apache 2.0)
-
-import type {ElementAttributes} from '@lume/element'
 
 const ELEMENT_NAME = 'theme-switch'
 const ICON_SIZE = 24 /* px */
@@ -345,26 +343,26 @@ function getInitialStateForIcon() {
 	}
 }
 
-declare global {
-	interface GlobalEventHandlersEventMap {
-		[CUSTOM_EVENT_NAME]: CustomEvent<{
-			originId: number
-			oldState: THEME_VALUE
-			newState: THEME_VALUE
-		}>
-	}
+interface GlobalEventHandlersEventMap {
+	[CUSTOM_EVENT_NAME]: CustomEvent<{
+		originId: number
+		oldState: THEME_VALUE
+		newState: THEME_VALUE
+	}>
 }
 
-declare module 'solid-js' {
-	namespace JSX {
-		interface IntrinsicElements {
-			[ThemeSwitch.elementName]: ElementAttributes<ThemeSwitch>
-		}
-	}
-}
+// FIXME TypeScript bug: this causes the solid-js package to be fully overriden
+// by this small definition, making type errors in all other files that import
+// solid-js.
+//
+// declare module 'solid-js' {
+// 	namespace JSX {
+// 		interface IntrinsicElements {
+// 			[ThemeSwitch.elementName]: import('@lume/element').ElementAttributes<ThemeSwitch>
+// 		}
+// 	}
+// }
 
-declare global {
-	interface HTMLElementTagNameMap {
-		[ThemeSwitch.elementName]: ThemeSwitch
-	}
+interface HTMLElementTagNameMap {
+	[ThemeSwitch.elementName]: ThemeSwitch
 }
