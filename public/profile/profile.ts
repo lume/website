@@ -1,18 +1,23 @@
 import {css, element, Element, type ElementAttributes} from '@lume/element'
 import {createEffect, html, signal} from 'lume'
 import {Meteor} from 'meteor/meteor'
+import '../routes.js' // track page visits
 import '../elements/login-ui.js'
 import '../elements/show-when.js'
 import {toSolidSignal} from '../utils.js'
 
-export type LumeUserProfileAttributes = keyof {} // no attributes yet
+export type UserProfileAttributes = keyof {} // no attributes yet
 
-const elName = 'lume-user-profile'
+const elName = 'user-profile'
 
 const currentUser = toSolidSignal(() => Meteor.user())
 
+/**
+ * A basic example of a user profile with a single input for modifying the
+ * username.
+ */
 @element
-export class LumeUserProfile extends Element {
+export class UserProfile extends Element {
 	static readonly elementName = elName
 
 	@signal editing = false
@@ -28,11 +33,6 @@ export class LumeUserProfile extends Element {
 
 			this.username = user.username ?? ''
 		})
-
-		// Hide the loading cover
-		const loadingCover = document.getElementById('loadingCover')
-		loadingCover?.classList.add('invisible')
-		loadingCover?.addEventListener('transitionend', () => loadingCover.remove())
 	}
 
 	#saveChanges() {
@@ -76,24 +76,31 @@ export class LumeUserProfile extends Element {
 			<show-when
 				condition=${() => this.editing}
 				content=${() => () => html`
-					<div><input type="text" value=${currentUser()?.username ?? ''} onchange="${(ev: any) => {
-						// TODO Verify username?
-						this.username = ev.target.value
-					}}"></input></div>
-					<div><button onclick="${() => this.#saveChanges()}">Save</button><button onclick="${() => this.#cancel()}">Cancel</button></div>
-					`}
-				fallback=${() =>
-					html`<div style="display: flex; justify-content: space-between;">
+					<div>
+						<input
+							type="text"
+							value=${currentUser()?.username ?? ''}
+							onchange="${(ev: any) => (this.username = ev.target.value)}"
+						/>
+					</div>
+					<div>
+						<button onclick="${() => this.#saveChanges()}">Save</button
+						><button onclick="${() => this.#cancel()}">Cancel</button>
+					</div>
+				`}
+				fallback=${() => html`
+					<div style="display: flex; justify-content: space-between;">
 						<div>${() => currentUser()?.username ?? ''}</div>
 						<div>
 							<button onclick="${() => (this.editing = true)}">Edit profile</button>
 						</div>
-					</div>`}
+					</div>
+				`}
 			></show-when>
 		</main>
 	`
 
-	css = css`
+	css = css/*css*/ `
 		:host {
 			width: 400px;
 			height: 300px;
@@ -166,13 +173,13 @@ export class LumeUserProfile extends Element {
 declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
-			[elName]: ElementAttributes<LumeUserProfile, LumeUserProfileAttributes>
+			[elName]: ElementAttributes<UserProfile, UserProfileAttributes>
 		}
 	}
 }
 
 declare global {
 	interface HTMLElementTagNameMap {
-		[elName]: LumeUserProfile
+		[elName]: UserProfile
 	}
 }

@@ -56,12 +56,37 @@
 	</script>
 
 	<script>
-		// Listen for credentials request. This is used by Lume domains that
-		// load lume.io in an iframe for authentication.
+		//////////// Cross-Origin Authentication /////////////////////////////////
+		// Listen for credentials requests. This is used by other origins that
+		// load the main origin in an iframe for authentication.
+		//
+		// A main origin (the one running the Meteor server) runs this code. A
+		// trusted non-main origin (the one loading the main origin with this
+		// code in an iframe) can then request the login credentials from the
+		// main origin by sending a message with the type 'getLoginCredentials'.
+		// The main origin will then respond with the login credentials for user
+		// and Meteor code running on the non-main origin can work with the main
+		// origin's Meteor server. If the user is not logged in on the main
+		// origin, the non-main origin can log in the user, and share the login
+		// credentials with the main origin by sending a message with the type
+		// 'setLoginCredentials', so that when the user visits the main origin
+		// later, they will be logged in there as well.
+		//
+		// For an example of a non-main origin that loads Meteor from a main
+		// origin and authenticates with the main origin's Meteor server, see
+		// how https://docs.lume.io (a non-main origin) calls to https://lume.io
+		// (the main origin running this code) to get the login credentials
+		// here:
+		//
+		// - https://github.com/lume/lume.github.io/blob/main/index.html#L63
+		// - https://github.com/lume/lume.github.io/blob/main/load-meteor.js#L115
+		// - https://github.com/lume/lume.github.io/blob/main/load-meteor-auth.js
 		//
 		// Note that CORS headers are set in the server code to allow the site
 		// to be embedded only on our authorized domains, so the '*' value for
 		// `targetOrigin` is safe.
+		//
+		// TODO: Put this in a re-usable package we can share with the Meteor community.
 		window.addEventListener('message', event => {
 			// This message is used by an authorized Lume domain to get login
 			// credentials.

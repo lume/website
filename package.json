@@ -1,7 +1,7 @@
 {
 	"name": "website",
 	"private": true,
-	"// we want to use type:module, but Meteor code is still CommonJS. So we set type:commonjs, then import our es modules from server/entry.js on the server": "",
+	"// TODO: we want to use type:module, but Meteor code is still CommonJS. For now we set type:commonjs, then import our es modules from server/entry.js on the server": "",
 	"type": "commonjs",
 	"scripts": {
 		"start": "npm run dev",
