@@ -1,8 +1,9 @@
 :root {
-	/* root vars set in HomePage.ts using the styleVars object */
-
-	/* This var has to be here so that it is ready before any JS is executed, for the initial payload style during load. */
-	--dark-blue: rgb(13, 9, 98);
+	/*
+	 * All :root vars are defined in styleVars.ts using the styleVars object, so
+	 * that they are also available in JS.
+	 */
+	--: ;
 }
 
 html {
@@ -18,7 +19,7 @@ body,
 	padding: 0;
 	margin: 0;
 	color: white;
-	background: var(--dark-blue);
+	background: var(--appBackground);
 	pointer-events: none;
 	box-sizing: border-box;
 }
@@ -189,7 +190,7 @@ body.fadePageOut {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: var(--dark-blue);
+	background: var(--appBackground);
 	transition: opacity 0.5s;
 
 	loading-icon {

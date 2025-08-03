@@ -17,29 +17,6 @@ const wordmarkVerticalUrl = new URL('../images/logo-wordmark-vertical.svg', impo
 
 const IS_FIREFOX = navigator.userAgent.includes('Firefox')
 
-const styleVars = {
-	menuWidth: '80%' as any as number, // percent of viewport
-	desktopMenuItemHeight: 50,
-	headerHeight: 100,
-	pageTopBottomPadding: 25,
-	pageLeftRightPadding: 60,
-}
-
-const style = document.createElement('style')
-style.textContent = css`
-	:root {
-		${Object.entries(styleVars)
-			.map(([k, v]) => `--${k}: ${typeof v === 'number' ? v + 'px' : v};`)
-			.join('\n')}
-	}
-`
-document.head.append(style)
-
-for (const [key, val] of Object.entries(styleVars)) {
-	// @ts-ignore
-	styleVars[key] = typeof val === 'string' && val.endsWith('%') ? Number(val.replace('%', '')) / 100 : val
-}
-
 @element
 export class HomePage extends Element {
 	static readonly elementName = 'home-page'

@@ -35,6 +35,12 @@
 	<meta name="apple-mobile-web-app-status-bar-style" content="default" />
 	<meta name="msapplication-TileColor" content="#0043fa" />
 
+	<!--
+	Style variables are loaded in JS so that they can be used in both JS and CSS.
+	TODO: Instead of mapping from JS to CSS, map from CSS to JS. First we need a way to map CSS var types to TS types for type safety. Right now we don't have CSS intellisense because of the variables coming from JS, but I consider that less of a problem than the other way around.
+	-->
+	<script src="/styleVars.js"></script>
+
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Work+Sans:100,200,300,400,500,600,700" />
 	<link rel="stylesheet" href="/entry.css" />
 </head>
