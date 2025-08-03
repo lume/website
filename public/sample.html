@@ -393,19 +393,18 @@
 			</div>
 		</div>
 
-		<blaze-component
-			id="loginButtons"
-			tmpl="loginButtons"
-			data='{"align": "right"}'
-			onclick="
-				if (!event.target?.classList.contains('login-link-text')) return
-				const close = document.querySelector('.login-close-text')
-				if (close) close.click()
+		<login-ui
+			custom-style="
+				#loginButtons {
+					a.login-link-text {
+						color: light-dark(black, white);
+					}
+				}
 			"
-		></blaze-component>
+		></login-ui>
 
 		<style>
-			#loginButtons {
+			login-ui {
 				pointer-events: auto;
 				display: block;
 				position: absolute;
@@ -419,7 +418,7 @@
 			import {Motor, Events, setBehaviors, threeToLume} from 'lume'
 			import {createEffect, untrack} from 'solid-js'
 			import {Vector3} from 'three'
-			import '/elements/BlazeComponent.js'
+			import '/elements/login-ui.js'
 
 			const scene = document.getElementById('scene')
 			const imgs = document.getElementById('deckImgs')

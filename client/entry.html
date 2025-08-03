@@ -46,6 +46,22 @@
 </head>
 
 <body>
+	<script>
+		// Override: The home page only, for now, has no light-dark support
+		if (location.pathname === '/') {
+			const html = String.raw
+			document.write(html`
+				<style>
+					html,
+					body,
+					#root {
+						color: white;
+					}
+				</style>
+			`)
+		}
+	</script>
+
 	<!-- TODO Replace this client-side redirect with a server-side redirect. -->
 	<script>
 		if (globalThis.location.pathname.startsWith('/docs')) {

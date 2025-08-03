@@ -4,7 +4,7 @@ import {Visits} from '../imports/collections/Visits.js'
 import {StudioSignups} from '../imports/collections/StudioSignups.js'
 import {toSolidSignal} from '../utils.js'
 import '../routes.js' // track page visits
-import '../elements/BlazeComponent.js'
+import '../elements/login-ui.js'
 import {Meteor} from 'meteor/meteor'
 
 Meteor.subscribe('usersCount')

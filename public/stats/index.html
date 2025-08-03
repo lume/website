@@ -19,7 +19,7 @@
 				pointer-events: auto;
 			}
 
-			#loginButtons {
+			login-ui {
 				pointer-events: auto;
 				display: block;
 				position: absolute;
@@ -34,17 +34,15 @@
 			}
 		</style>
 
-		<blaze-component
-			id="loginButtons"
-			tmpl="loginButtons"
-			data='{"align": "right"}'
-			onclick="
-				if (!event.target?.classList.contains('login-link-text')) return
-				// close if open (make the drop down button toggle open/close).
-				const close = document.querySelector('.login-close-text')
-				if (close) close.click()
+		<login-ui
+			custom-style="
+				#loginButtons {
+					a.login-link-text {
+						color: light-dark(black, white);
+					}
+				}
 			"
-		></blaze-component>
+		></login-ui>
 
 		<script type="module" src="./stats.js"></script>
 	</body>
