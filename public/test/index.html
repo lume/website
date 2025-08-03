@@ -134,7 +134,7 @@
 			import {createClassDefinition} from './test.js'
                 export class MyEl {
                 }
-            `) 
+            `)
             ts.transpile(
 				createClassDefinition({
 					name: 'MyElement',
@@ -147,5 +147,12 @@
 		</script>
 
 		<h2>test</h2>
+
+		<script>
+			// Hide the loading cover
+			const loadingCover = document.getElementById('loadingCover')
+			loadingCover?.classList.add('invisible')
+			loadingCover?.addEventListener('transitionend', () => loadingCover.remove())
+		</script>
 	</body>
 </html>
