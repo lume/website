@@ -12,12 +12,6 @@
 		can re-use Meteor APIs, etc, and provide custom content for this page
 		while being authenticated with the backend. -->
 		<script src="./write-html.js" href="/"></script>
-
-		<script>
-			// Remove the loading cover inherited from /, this sample uses its own.
-			const loadingCover = document.getElementById('loadingCover')
-			loadingCover?.remove()
-		</script>
 	</head>
 
 	<body>
@@ -53,28 +47,6 @@
 				margin: 0;
 				background: black;
 				overflow: hidden;
-			}
-
-			#loading {
-				position: absolute;
-				background: black;
-				top: 0;
-				left: 0;
-				width: 100%;
-				height: 100%;
-				transition: all 1s;
-				z-index: 2;
-				pointer-events: none;
-
-				& loading-icon {
-					--loading-icon-color: 100, 149, 237;
-					--loading-icon-outer-radius: 70px;
-
-					position: absolute;
-					top: 50%;
-					left: 50%;
-					transform: translate(-50%, -50%);
-				}
 			}
 
 			.hidden {
@@ -276,10 +248,6 @@
 				}
 			}
 		</style>
-
-		<div id="loading">
-			<loading-icon></loading-icon>
-		</div>
 
 		<!-- Lights and shadows are powered by WebGL, but written with HTML: -->
 		<div id="skateboardSceneContainer">
@@ -570,10 +538,10 @@
 				scene.classList.remove('hidden')
 				ui.classList.remove('hidden')
 
-				const loading = document.getElementById('loading')
-				loading.children[0].remove() // remove icon immediately
-				loading.style.opacity = 0 // fade the scene in
-				setTimeout(() => loading.remove(), 1000) // remove after the animation
+				// Hide the loading cover
+				const loadingCover = document.getElementById('loadingCover')
+				loadingCover?.classList.add('invisible')
+				loadingCover?.addEventListener('transitionend', () => loadingCover.remove())
 			}
 
 			// Button click handlers
