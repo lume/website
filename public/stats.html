@@ -17,7 +17,6 @@
 			}
 
 			body {
-				color: black;
 				overflow: auto;
 				pointer-events: auto;
 			}
@@ -75,6 +74,11 @@
 					${() => studioSignups().map(s => html` <div>${s.email}</div> `)}
 				</div>
 			`)
+
+			// Hide the loading cover
+			const loadingCover = document.getElementById('loadingCover')
+			loadingCover?.classList.add('invisible')
+			loadingCover?.addEventListener('transitionend', () => loadingCover.remove())
 		</script>
 	</body>
 </html>

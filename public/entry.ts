@@ -21,7 +21,7 @@ if (renderHomePage) {
 	setTimeout(() => {
 		const loadingCover = document.getElementById('loadingCover')!
 		loadingCover.classList.add('invisible')
-		loadingCover.addEventListener('animationend', () => loadingCover.remove())
+		loadingCover.addEventListener('transitionend', () => loadingCover.remove())
 	}, 1000)
 }
 

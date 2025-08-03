@@ -78,6 +78,11 @@ export class LumeCreate extends Element {
 	connectedCallback() {
 		super.connectedCallback()
 		// Get the scene's node representation from somewhere here and set `sceneNodes`.
+
+		// Hide the loading cover
+		const loadingCover = document.getElementById('loadingCover')
+		loadingCover?.classList.add('invisible')
+		loadingCover?.addEventListener('transitionend', () => loadingCover.remove())
 	}
 
 	template = () => html`

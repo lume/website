@@ -16,7 +16,6 @@
 			}
 
 			body {
-				color: black;
 				overflow: auto;
 				pointer-events: auto;
 				box-sizing: border-box;
@@ -54,6 +53,11 @@
 		<script type="module">
 			import './routes.js' // track page visits
 			import './elements/BlazeComponent.js'
+
+			// Hide the loading cover
+			const loadingCover = document.getElementById('loadingCover')
+			loadingCover?.classList.add('invisible')
+			loadingCover?.addEventListener('transitionend', () => loadingCover.remove())
 		</script>
 	</body>
 </html>

@@ -1,12 +1,23 @@
 <html>
 	<head>
-		<!-- override -->
+		<!--
+		This is a sample standalone HTML page that shows a 3D scene using Lume,
+		and also connects to Meteor authentication via our iframe trick.
+		-->
+
+		<!-- Override the title from /. -->
 		<title>Sample standalone HTML page.</title>
 
 		<!-- This writes the main content from lume.io into the DOM, so that we
 		can re-use Meteor APIs, etc, and provide custom content for this page
 		while being authenticated with the backend. -->
 		<script src="./write-html.js" href="/"></script>
+
+		<script>
+			// Remove the loading cover inherited from /, this sample uses its own.
+			const loadingCover = document.getElementById('loadingCover')
+			loadingCover?.remove()
+		</script>
 	</head>
 
 	<body>

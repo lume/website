@@ -193,6 +193,9 @@ body.fadePageOut {
 	background: var(--appBackground);
 	transition: opacity 0.5s;
 
+	/* TODO Perhaps put the loading cover in the :modal layer so z-index is never needed.  */
+	z-index: 1000;
+
 	loading-icon {
 		--loading-icon-color: 76, 169, 195;
 		--loading-icon-outer-radius: 60px;

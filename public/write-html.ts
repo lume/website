@@ -34,7 +34,8 @@
 	// this script is running in the body (otherwise some elements that only
 	// work in the head won't work).
 	for (const el of Array.from(doc.head.childNodes))
-		if (el instanceof Element) document.head.insertAdjacentHTML('beforeend', el.outerHTML)
+		if (el instanceof HTMLScriptElement) handleScript(el)
+		else if (el instanceof Element) document.head.insertAdjacentHTML('beforeend', el.outerHTML)
 		else if (el instanceof Text) document.head.insertAdjacentText('beforeend', el.data)
 	doc.head.remove()
 
@@ -44,4 +45,11 @@
 	//
 	document.write(doc.body.outerHTML)
 	doc.body.remove()
+
+	function handleScript(script: HTMLScriptElement) {
+		const newScript = document.createElement('script')
+		newScript.src = script.src
+		newScript.textContent = script.textContent
+		document.head.appendChild(newScript)
+	}
 }
