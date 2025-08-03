@@ -355,13 +355,10 @@ declare global {
 	}
 }
 
-// Small hack. TODO make attributes optional, f.e. ElementAttributes<MyEl> without a second arg.
-type HTMLElementAttributes = ElementAttributes<{____?: undefined} & HTMLElement, '____'>
-
 declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
-			[ThemeSwitch.elementName]: HTMLElementAttributes
+			[ThemeSwitch.elementName]: ElementAttributes<ThemeSwitch>
 		}
 	}
 }

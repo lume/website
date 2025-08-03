@@ -14,7 +14,7 @@ import type {SceneElementNode} from './studio/SceneManager.js'
 const username = toSolidSignal(() => Meteor.user()?.username ?? Meteor.user()?.emails?.[0].address ?? '')
 const state = ((window as any).state = createMutable({route: 'dash' as 'dash' | 'element'}))
 
-export type LumeCreateAttributes = '_' // no attributes yet
+export type LumeCreateAttributes = keyof {} // no attributes yet
 
 // Having `nodes` as a property is just to be able to pass as JSON
 const exampleScene: {nodes: SceneElementNode[]} = {
@@ -72,8 +72,6 @@ const exampleScene: {nodes: SceneElementNode[]} = {
 @element
 export class LumeCreate extends Element {
 	static readonly elementName = 'lume-create'
-
-	_?: undefined // no attributes yet
 
 	@signal sceneNodes = ''
 

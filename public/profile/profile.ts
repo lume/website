@@ -5,7 +5,7 @@ import '../elements/login-ui.js'
 import '../elements/show-when.js'
 import {toSolidSignal} from '../utils.js'
 
-export type LumeUserProfileAttributes = '_' // no attributes yet
+export type LumeUserProfileAttributes = keyof {} // no attributes yet
 
 const elName = 'lume-user-profile'
 
@@ -14,8 +14,6 @@ const currentUser = toSolidSignal(() => Meteor.user())
 @element
 export class LumeUserProfile extends Element {
 	static readonly elementName = elName
-
-	_?: undefined // no attributes yet
 
 	@signal editing = false
 

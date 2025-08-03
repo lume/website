@@ -40,16 +40,9 @@ for (const [key, val] of Object.entries(styleVars)) {
 	styleVars[key] = typeof val === 'string' && val.endsWith('%') ? Number(val.replace('%', '')) / 100 : val
 }
 
-// "_____" used to denote empty (no attributes) for now.
-type HomePageAttributes = '_____'
-
 @element
 export class HomePage extends Element {
 	static readonly elementName = 'home-page'
-
-	// Used in HomePageAttributes to denote no attributes.
-	// TODO allow to specify no attributes with the ElementAttributes type helper.
-	_____?: undefined
 
 	@signal cube!: LandingCube
 	@signal cube2!: LandingCube
@@ -1062,7 +1055,7 @@ export class HomePage extends Element {
 declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
-			[HomePage.elementName]: ElementAttributes<HomePage, HomePageAttributes>
+			[HomePage.elementName]: ElementAttributes<HomePage>
 		}
 	}
 }
