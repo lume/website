@@ -17,4 +17,8 @@ if (Meteor.isServer) {
 			await Meteor.users.updateAsync({_id: this.userId}, {$set: {username}})
 		},
 	})
+
+	Meteor.publish('usersCount', function () {
+		Counts.publish(this, 'users', Meteor.users.find())
+	})
 }

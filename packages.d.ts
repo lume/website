@@ -25,3 +25,23 @@ declare module 'meteor/webapp' {
 		var rawHandlers: import('connect').Server
 	}
 }
+
+type CountName = 'users'
+
+// akyma:publish-counts
+const Counts: {
+	publish(
+		context: import('meteor/meteor').Subscription,
+		name: CountName,
+		cursor: import('meteor/mongo').Mongo.Cursor<any>,
+		options?: {
+			noReady?: boolean
+			nonReactive?: boolean
+			countFromField?: string
+			countFromFieldLength?: number
+			noWarnings?: boolean
+		},
+	): void
+
+	get(name: CountName): number
+}
