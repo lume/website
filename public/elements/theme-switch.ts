@@ -65,7 +65,7 @@ class ThemeSwitch extends HTMLElement {
 	connectedCallback() {
 		// Fire once initially so that outside listeners can get the initial
 		// state of the theme when it is ready.
-		this.dispatchEvent(this.createEvent(prevThemeValue, getUserThemeSelection()))
+		this.dispatchEvent(this.createEvent(getUserThemeSelection(), getUserThemeSelection()))
 	}
 
 	createEvent(oldTheme = getUserThemeSelection(), newTheme = oldTheme) {

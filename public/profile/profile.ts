@@ -121,7 +121,7 @@ export class UserProfile extends Element {
 
 		/* TODO :host-context support for non-shadow scoped styles? */
 		:host-context([data-theme='dark']) {
-			background: rgba(0, 0, 0, 0.5);
+			background: rgba(0, 0, 0, 0.3);
 		}
 
 		:host,

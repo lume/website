@@ -141,7 +141,7 @@ export class LumeCreate extends Element {
 		</main>
 	`
 
-	css = css`
+	css = css/*css*/ `
 		:host {
 			width: 400px;
 			height: 300px;
@@ -157,7 +157,7 @@ export class LumeCreate extends Element {
 
 		/* TODO :host-context support for non-shadow scoped styles? */
 		:host-context([data-theme='dark']) {
-			background: rgba(0, 0, 0, 0.5);
+			background: rgba(0, 0, 0, 0.3);
 		}
 
 		:host,
