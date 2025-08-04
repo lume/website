@@ -48,8 +48,8 @@
 
 	function handleScript(script: HTMLScriptElement) {
 		const newScript = document.createElement('script')
-		newScript.src = script.src
-		newScript.textContent = script.textContent
+		if (script.src) newScript.src = script.src
+		else newScript.textContent = script.textContent
 		document.head.appendChild(newScript)
 	}
 }

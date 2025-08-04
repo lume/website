@@ -1,7 +1,14 @@
 <!-- prettier-ignore -->
 <head>
 	<title>Lume. Web Graphics Made Easy</title>
-	<link rel="icon" href="/images/logo-icon.svg" />
+
+	<!-- The favion needs to align with the browser UI, which aligns with the
+	system theme, so this does not rely on the app's theme switch. TODO: use
+	watchMedia for the OS setting so we can change the value even in unfocused
+	tabs (the browser will otherwise avoid updating the favicon until a tab is
+	focused). -->
+	<link rel="icon" href="/images/logo-icon.svg" media="(prefers-color-scheme: light)" />
+	<link rel="icon" href="/images/logo.svg" media="(prefers-color-scheme: dark)" />
 
 	<meta charset="utf-8" />
 	<meta name="robots" content="all" />

@@ -41,12 +41,18 @@ class ThemeSwitch extends HTMLElement {
 				this.adaptToTheme()
 			}
 		})
+
+		let oldThemeValue = getUserThemeSelection()
 		// If a theme switch in another page toggled, update my state too
 		// See https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event
 		window.addEventListener('storage', event => {
+			// This will fire when the theme is changed via matchMedia
 			if (event.key === THEME_KEY) {
 				this.adaptToTheme()
-				updateTheme()
+				updateThemeAttribute()
+				const newThemeValue = getUserThemeSelection()
+				this.dispatchEvent(this.createEvent(oldThemeValue, newThemeValue))
+				oldThemeValue = newThemeValue
 			}
 		})
 		// Create some CSS to apply to the shadow DOM
@@ -56,28 +62,19 @@ class ThemeSwitch extends HTMLElement {
 		this.shadowRoot.append(style)
 	}
 
+	connectedCallback() {
+		// Fire once initially so that outside listeners can get the initial
+		// state of the theme when it is ready.
+		this.dispatchEvent(this.createEvent(prevThemeValue, getUserThemeSelection()))
+	}
+
+	createEvent(oldTheme = getUserThemeSelection(), newTheme = oldTheme) {
+		return createEvent(oldTheme, newTheme, this.identifier)
+	}
+
 	onClick() {
-		const oldTheme = getUserThemeSelection()
-		this.toggleTheme(oldTheme)
-		const newTheme = getUserThemeSelection()
-		const event = this.createEvent(oldTheme, newTheme)
-		this.dispatchEvent(event)
-	}
+		const currentTheme = getUserThemeSelection()
 
-	createEvent(oldTheme: THEME_VALUE, newTheme: THEME_VALUE) {
-		return new CustomEvent(CUSTOM_EVENT_NAME, {
-			detail: {
-				originId: this.identifier,
-				oldState: oldTheme,
-				newState: newTheme,
-			},
-			bubbles: true,
-			composed: true,
-			cancelable: false,
-		})
-	}
-
-	toggleTheme(currentTheme: THEME_VALUE) {
 		if (currentTheme === THEME_AUTO) {
 			localStorage.setItem(THEME_KEY, THEME_LIGHT)
 			this.animateThemeButtonIconToLight()
@@ -88,7 +85,11 @@ class ThemeSwitch extends HTMLElement {
 			localStorage.setItem(THEME_KEY, THEME_DARK)
 			this.animateThemeButtonIconToDark()
 		}
-		updateTheme()
+
+		updateThemeAttribute()
+		const newTheme = getUserThemeSelection()
+		const event = this.createEvent(currentTheme, newTheme)
+		this.dispatchEvent(event)
 	}
 
 	adaptToTheme() {
@@ -129,9 +130,9 @@ class ThemeSwitch extends HTMLElement {
 	}
 }
 
-updateTheme()
+updateThemeAttribute()
 window.customElements.define(ELEMENT_NAME, ThemeSwitch)
-window.matchMedia(COLOR_SCHEME_DARK).addEventListener('change', updateTheme)
+window.matchMedia(COLOR_SCHEME_DARK).addEventListener('change', () => updateThemeAttribute)
 
 function generateIcon(...args: number[]) {
 	const [circleRadius, raysOpacity, eclipseCenterX, letterOffset] = args as [number, number, number, number]
@@ -318,7 +319,7 @@ function generateStyle() {
 	`
 }
 
-function updateTheme() {
+function updateThemeAttribute() {
 	let theme: THEME_VALUE = getUserThemeSelection()
 	if (theme === THEME_AUTO) theme = getSystemTheme()
 	document.documentElement.setAttribute(THEME_ATTRIBUTE, theme)
@@ -343,6 +344,19 @@ function getInitialStateForIcon() {
 	} /* if (theme === THEME_LIGHT) */ else {
 		return ICON_INITIAL_STATE_FOR_LIGHT
 	}
+}
+
+function createEvent(oldTheme = getUserThemeSelection(), newTheme = oldTheme, identifier = -1) {
+	return new CustomEvent(CUSTOM_EVENT_NAME, {
+		detail: {
+			originId: identifier,
+			oldState: oldTheme,
+			newState: newTheme,
+		},
+		bubbles: true,
+		composed: true,
+		cancelable: false,
+	})
 }
 
 interface GlobalEventHandlersEventMap {
