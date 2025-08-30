@@ -9,7 +9,7 @@ import '../elements/show-when.js'
 import './studio/LumeStudio.js'
 import {toSolidSignal} from '../utils.js'
 import {signal} from 'lume'
-import type {SceneElementNode} from './studio/SceneManager.js'
+import type { SceneElementNode } from '../../imports/collections/scenes/UserScenes.js'
 
 const username = toSolidSignal(() => Meteor.user()?.username ?? Meteor.user()?.emails?.[0].address ?? '')
 const state = ((window as any).state = createMutable({route: 'dash' as 'dash' | 'element'}))

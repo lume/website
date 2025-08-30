@@ -1,5 +1,6 @@
 import {camelCaseToDash, Element, Scene} from 'lume'
 import {StudioElement} from './StudioElement.js'
+import type { SceneElementNode } from '../../../imports/collections/scenes/UserScenes.js'
 
 function mapStudioChildren(parent: StudioElement, elements: HTMLCollection, nodes: SceneElementNode[]) {
 	const warnInvalidLength = () => {
@@ -96,25 +97,6 @@ function mapStudioElements(scene: Scene, nodeHead: SceneElementNode, skipChildre
 	)
 
 	return studioElementHead
-}
-
-interface ElementNodeAttribute {
-	/**
-	 * The camelCased name of the attribute.
-	 */
-	name: string
-	val: any
-}
-
-/**
- * Node within the scene hierarchy.
- */
-export interface SceneElementNode {
-	tagName: string
-	attributes?: ElementNodeAttribute[]
-
-	parent?: SceneElementNode
-	children?: SceneElementNode[]
 }
 
 /**

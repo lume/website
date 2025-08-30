@@ -2,7 +2,7 @@ import {Element, element, eventAttribute, html, Sizeable, Transformable} from 'l
 import {StudioElementCreateEvent} from '../../StudioElement.js'
 
 import '../../../../elements/for-each.js'
-import type {SceneElementNode} from '../../SceneManager.js'
+import type { SceneElementNode } from '../../../../../imports/collections/scenes/UserScenes.js'
 
 const icons: {[name: string]: Node | Node[]} = {
 	box: html`<svg

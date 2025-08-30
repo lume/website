@@ -1,5 +1,5 @@
 import {camelCaseToDash, Element, Element3D} from 'lume'
-import type {SceneElementNode} from './SceneManager.js'
+import type { SceneElementNode } from '../../../imports/collections/scenes/UserScenes'
 
 export class StudioElementRemoveEvent extends Event {
 	element: StudioElement
