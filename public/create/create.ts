@@ -20,77 +20,82 @@ export type LumeCreateAttributes = keyof {} // no attributes yet
 const exampleScene: {nodes: SceneElementNode[]} = {
 	nodes: [
 		{
-			tagName: 'lume-camera-rig',
-			attributes: [
-				{name: 'alignPoint', val: '0.5 0.5 0.5'},
-				{name: 'mountPoint', val: '0.5 0.5 0.5'},
-				{name: 'distance', val: '50'},
-				{name: 'minDistance', val: '5'},
-				{name: 'dollySpeed', val: '5'},
-				{name: 'dynamicDolly', val: true},
-				{name: 'maxDistance', val: '5000'},
-			],
-		},
-		{
-			tagName: 'lume-point-light',
-			attributes: [
-				{name: 'intensity', val: '750'},
-				{name: 'alignPoint', val: '0.5 0.5 0.5'},
-				{name: 'mountPoint', val: '0.5 0.5 0.5'},
-				{name: 'position', val: '100 -75 120'},
-				{name: 'color', val: 'pink'},
-			],
-		},
-		{
-			tagName: 'lume-ambient-light',
-			attributes: [{name: 'intensity', val: '0.4'}],
-		},
-		{
-			tagName: 'lume-box',
-			attributes: [
-				{name: 'alignPoint', val: '0.5 0.5 0.5'},
-				{name: 'mountPoint', val: '0.5 0.5 0.5'},
-				{name: 'position', val: '0 0 0'},
-				{name: 'color', val: 'blue'},
-				{name: 'size', val: '5 5 5'},
-				{name: 'opacity', val: '0.5'},
-				{name: 'has', val: 'phong-material'},
-			],
+			tagName: 'lume-scene',
 			children: [
+				{
+					tagName: 'lume-camera-rig',
+					attributes: [
+						{name: 'alignPoint', val: '0.5 0.5 0.5'},
+						{name: 'mountPoint', val: '0.5 0.5 0.5'},
+						{name: 'distance', val: '50'},
+						{name: 'minDistance', val: '5'},
+						{name: 'dollySpeed', val: '5'},
+						{name: 'dynamicDolly', val: true},
+						{name: 'maxDistance', val: '5000'},
+					],
+				},
+				{
+					tagName: 'lume-point-light',
+					attributes: [
+						{name: 'intensity', val: '750'},
+						{name: 'alignPoint', val: '0.5 0.5 0.5'},
+						{name: 'mountPoint', val: '0.5 0.5 0.5'},
+						{name: 'position', val: '100 -75 120'},
+						{name: 'color', val: 'pink'},
+					],
+				},
+				{
+					tagName: 'lume-ambient-light',
+					attributes: [{name: 'intensity', val: '0.4'}],
+				},
 				{
 					tagName: 'lume-box',
 					attributes: [
 						{name: 'alignPoint', val: '0.5 0.5 0.5'},
 						{name: 'mountPoint', val: '0.5 0.5 0.5'},
 						{name: 'position', val: '0 0 0'},
-						{name: 'color', val: 'red'},
+						{name: 'color', val: 'blue'},
 						{name: 'size', val: '5 5 5'},
 						{name: 'opacity', val: '0.5'},
 						{name: 'has', val: 'phong-material'},
 					],
+					children: [
+						{
+							tagName: 'lume-box',
+							attributes: [
+								{name: 'alignPoint', val: '0.5 0.5 0.5'},
+								{name: 'mountPoint', val: '0.5 0.5 0.5'},
+								{name: 'position', val: '0 0 0'},
+								{name: 'color', val: 'red'},
+								{name: 'size', val: '5 5 5'},
+								{name: 'opacity', val: '0.5'},
+								{name: 'has', val: 'phong-material'},
+							],
+						},
+					],
 				},
-			],
-		},
-		{
-			tagName: 'lume-box',
-			attributes: [
-				{name: 'alignPoint', val: '0.5 0.5 0.5'},
-				{name: 'mountPoint', val: '0.5 0.5 0.5'},
-				{name: 'position', val: '20 0 0'},
-				{name: 'color', val: 'blue'},
-				{name: 'size', val: '5 5 5'},
-				{name: 'has', val: 'phong-material'},
-			],
-		},
-		{
-			tagName: 'lume-sphere',
-			attributes: [
-				{name: 'alignPoint', val: '0.5 0.5 0.5'},
-				{name: 'mountPoint', val: '0.5 0.5 0.5'},
-				{name: 'position', val: '-20 0 0'},
-				{name: 'color', val: 'green'},
-				{name: 'size', val: '5 5 5'},
-				{name: 'has', val: 'phong-material'},
+				{
+					tagName: 'lume-box',
+					attributes: [
+						{name: 'alignPoint', val: '0.5 0.5 0.5'},
+						{name: 'mountPoint', val: '0.5 0.5 0.5'},
+						{name: 'position', val: '20 0 0'},
+						{name: 'color', val: 'blue'},
+						{name: 'size', val: '5 5 5'},
+						{name: 'has', val: 'phong-material'},
+					],
+				},
+				{
+					tagName: 'lume-sphere',
+					attributes: [
+						{name: 'alignPoint', val: '0.5 0.5 0.5'},
+						{name: 'mountPoint', val: '0.5 0.5 0.5'},
+						{name: 'position', val: '-20 0 0'},
+						{name: 'color', val: 'green'},
+						{name: 'size', val: '5 5 5'},
+						{name: 'has', val: 'phong-material'},
+					],
+				},
 			],
 		},
 	],
