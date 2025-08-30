@@ -1,4 +1,4 @@
-import {camelCaseToDash, Element, Element3D, Scene} from 'lume'
+import {camelCaseToDash, Element, Element3D} from 'lume'
 import type {SceneElementNode} from './SceneManager.js'
 
 export class StudioElementRemoveEvent extends Event {
@@ -117,9 +117,6 @@ export class StudioElement extends EventTarget {
 	setSelected(selected: boolean) {
 		if (!this.lumeElement) return
 
-		if (this.selected) {
-		}
-
 		this.selected = selected
 
 		this.dispatchEvent(new StudioElementSelectEvent(this, selected))
@@ -136,7 +133,6 @@ export class StudioElement extends EventTarget {
 			if (this.defaultState.opacity) {
 				this.lumeElement.setAttribute('opacity', this.defaultState.opacity)
 			}
-			/* if (this.defaultState.color) this.lumeElement.setAttribute('color', this.defaultState.color) */
 		}
 
 		if (!this.hovered && hovered && this.lumeElement.tagName !== 'LUME-SCENE') {
