@@ -1,6 +1,7 @@
-import {attribute, Element, element, eventAttribute, html} from 'lume'
+import {attribute, css, Element, element, eventAttribute, html} from 'lume'
 import '../../../../elements/for-each.js'
 import '../AccordionButton.js'
+import '../DropdownMenu.js'
 import './CreateStudioElementList.js'
 import {StudioElement, StudioElementCreateEvent} from '../../StudioElement.js'
 
@@ -31,34 +32,37 @@ export class CreateStudioElement extends Element {
 		super.connectedCallback()
 	}
 
-	template = () =>
-		html`<div class="studio-panel">
-			<accordion-button
-				open=${() => this.open}
-				marker=${() =>
-					html`<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						stroke="white"
-						stroke-width="2"
-						viewBox="0 0 24 24"
-						width="24"
-						height="24"
-						aria-hidden="true"
-						focusable="false"
-					>
-						<path stroke-linecap="round" stroke-linejoin="round" d="M12 7v10M7 12h10" />
-					</svg>`}
-				button=${() => {
-					return html`<p style="margin-top: 0; margin-bottom: 0;">Create element</p>`
-				}}
-				panel=${() => {
-					return html`<create-studio-element-list
-						onstudio-element-create=${(ev: StudioElementCreateEvent) => {
-							this.dispatchEvent(new StudioElementCreateEvent(ev.node))
-						}}
-					></create-studio-element-list>`
-				}}
-			></accordion-button>
-		</div>`
+	template = () => html`
+		<dropdown-menu
+			class="studio-container"
+			open=${() => this.open}
+			marker=${() =>
+				html`<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					stroke="white"
+					stroke-width="2"
+					viewBox="0 0 24 24"
+					width="24"
+					height="24"
+					aria-hidden="true"
+					focusable="false"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M12 7v10M7 12h10" />
+				</svg>`}
+			button=${() => {
+				return html`<p style="margin-top: 0; margin-bottom: 0; padding-right: 5px;">Create element</p> `
+			}}
+			panel=${() => {
+				return html`<create-studio-element-list
+					class="studio-container"
+					onstudio-element-create=${(ev: StudioElementCreateEvent) => {
+						this.open = false
+
+						this.dispatchEvent(new StudioElementCreateEvent(ev.node))
+					}}
+				></create-studio-element-list>`
+			}}
+		></dropdown-menu>
+	`
 }

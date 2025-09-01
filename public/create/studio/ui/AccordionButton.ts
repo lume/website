@@ -20,8 +20,6 @@ export class AccordionButton extends Element {
 
 	@booleanAttribute hideMarker = false
 
-	/* @attribute marker? = () => [] as JSX.Element[] | undefined */
-
 	@attribute marker? = undefined as (() => JSX.Element[]) | undefined
 
 	connectedCallback() {
@@ -30,41 +28,47 @@ export class AccordionButton extends Element {
 
 	template = () =>
 		html`<details
-			open="${() => this.open}"
+			open=${() => this.open}
 			onToggle=${(ev: ToggleEvent) => {
 				this.open = ev.newState === 'open' ? true : false
 
 				this.onToggle?.()
 			}}
 		>
-			<summary class="studio-button" style="display: flex; align-items: center; padding-right: 5px;">
-				<span
-					style=${() => {
-						return `width: ${(this.indent ?? 0) * 2}ch;`
+			<summary class="studio-accordion-button">
+				<div class="studio-accordion-button-content">
+					<span
+						style=${() => {
+							return `width: ${(this.indent ?? 0) * 2}ch;`
+						}}
+					></span>
+					${() => {
+						this.marker
+
+						return (
+							this.marker ??
+							html`<svg
+								class=${() => {
+									// This avoids some weird issues with outlines around the
+									// button when marker is hidden.
+									return this.open && !this.hideMarker ? 'accordion-chevron open' : 'accordion-chevron'
+								}}
+								style=${() => {
+									return this.hideMarker ? 'opacity: 0;' : ''
+								}}
+								fill="none"
+								stroke="black"
+								stroke-width="2"
+								viewBox="0 0 24 24"
+							>
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+							</svg>`
+						)
 					}}
-				></span>
-				${() => {
-					return (
-						this.marker ??
-						html`<svg
-							class=${() => {
-								return this.open ? 'accordion-chevron open' : 'accordion-chevron'
-							}}
-							style=${() => {
-								return this.hideMarker ? 'opacity: 0;' : ''
-							}}
-							fill="none"
-							stroke="black"
-							stroke-width="2"
-							viewBox="0 0 24 24"
-						>
-							<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-						</svg>`
-					)
-				}}
-				${() => this.button}
+					${() => this.button}
+				</div>
 			</summary>
-			<div>${() => this.panel}</div>
+			<div class="studio-accordion-panel">${() => this.panel}</div>
 		</details>`
 
 	css = css`
@@ -76,20 +80,6 @@ export class AccordionButton extends Element {
 			background: rgba(0, 0, 0, 0.5);
 		}
 
-		.accordion-summary {
-			display: flex;
-			align-items: center;
-			cursor: pointer;
-			user-select: none;
-			padding: 0.5rem;
-			border-radius: 4px;
-			transition: background 0.2s ease;
-		}
-
-		.accordion-summary::-webkit-details-marker {
-			display: none; /* hide default arrow */
-		}
-
 		.accordion-chevron {
 			margin-right: 0.25rem;
 			width: 1rem;
@@ -99,6 +89,43 @@ export class AccordionButton extends Element {
 
 		.accordion-chevron.open {
 			transform: rotate(90deg);
+		}
+
+		/* Styling for the accordion button itself */
+		.studio-accordion-button {
+			display: flex;
+			cursor: pointer;
+			transition: background 0.2s ease;
+			padding: var(--studio-panel-padding-y) var(--studio-panel-padding-x);
+		}
+
+		/* Element containing accordion button content. */
+		.studio-accordion-button-content {
+			display: flex;
+			flex: 1; /* Grow to put trash icon at end */
+			align-items: center;
+			border-radius: 3px;
+			cursor: pointer;
+			user-select: none;
+			transition: background 0.2s ease;
+		}
+
+		/* The dropdown panel associated with the accordion. */
+		.studio-accordion-panel {
+			padding-left: var(--studio-panel-padding-x);
+			padding-right: var(--studio-panel-padding-x);
+			padding-bottom: var(--studio-panel-padding-y);
+			/* Top padding looks weird. */
+		}
+
+		/* Ideally the accordion button has padding, but we don't want it if its nested. */
+		.studio-accordion-panel .studio-accordion-button {
+			padding: 0;
+		}
+
+		/* Mainly for nested accordions, don't want excess padding.  */
+		.studio-accordion-panel .studio-accordion-panel {
+			padding: 0;
 		}
 	`
 }

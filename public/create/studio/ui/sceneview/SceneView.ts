@@ -33,7 +33,7 @@ export class SceneView extends Element {
 	}
 
 	template = () =>
-		html`<div class="studio-panel">
+		html`<div class="studio-container" style="height: 100%; overflow: auto;">
 			<scene-view-list-item
 				element=${() => this.sceneElement}
 				open="true"

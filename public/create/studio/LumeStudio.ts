@@ -105,8 +105,6 @@ export class LumeStudio extends Element {
 		})
 	}
 
-	/* background: rgba(10, 58, 221, 1); */
-
 	template = () => html`
 		<div style="width: 100%; height: 100%;">
 			<lume-scene
@@ -155,19 +153,49 @@ export class LumeStudio extends Element {
 		:host {
 			width: 100%;
 			--lume-primary: rgba(10, 58, 221, 1);
-			--lume-secondary: white;
+			--lume-text-color: white;
+			--lume-secondary: color-mix(in srgb, deeppink 80%, white 20%);
 			--lume-danger: red;
+			--studio-panel-padding-x: 5px;
+			--studio-panel-padding-y: 5px;
+			--studio-button-hover-color: rgba(114, 138, 214, 1);
+			--studio-button-content-hover-color: rgba(114, 138, 214, 1);
 		}
 
 		.studio-panel {
 			height: 100%;
 			overflow: auto;
 			background: var(--lume-primary);
-			color: var(--lume-secondary);
+			color: var(--lume-text-color);
 			border-radius: 5px;
 			border: 1px black solid;
-			padding: 5px 5px;
+			padding: var(--studio-panel-padding-y) var(--studio-panel-padding-x);
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 		}
+
+		.studio-container {
+			background: var(--lume-primary);
+			color: var(--lume-text-color);
+			border-radius: 5px;
+			border: 1px black solid;
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+		}
+
+		.studio-button {
+			display: flex;
+			align-items: center;
+			cursor: pointer;
+			border-radius: 3px;
+			transition: background 0.2s ease;
+		}
+
+		.studio-button:hover {
+			background: var(--studio-button-hover-color);
+		}
+		/* Disable inner hover when outer is hovered (doesn't work in Firefox) */
+		/* :has(.studio-button:hover):hover .studio-button {
+			background: initial;
+		} */
 
 		.studio-element-list-item {
 			display: flex;
@@ -176,14 +204,20 @@ export class LumeStudio extends Element {
 			cursor: pointer;
 		}
 
-		.studio-button {
-			cursor: pointer;
-			border-radius: 3px;
-			transition: background 0.2s ease;
+		.save-scene-button {
+			height: 100%;
+			overflow: auto;
+			background: var(--lume-primary);
+			color: var(--lume-text-color);
+			border-radius: 5px;
+			border: 1px black solid;
+			padding: var(--studio-panel-padding-y) var(--studio-panel-padding-x);
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 		}
 
-		.studio-button:hover {
-			background: #f0f0f08a;
+		.save-scene-button:hover {
+			/* background: #f0f0f08a; */
+			background: rgb(151, 160, 172);
 		}
 
 		/* TODO :host-context support for non-shadow scoped styles? */

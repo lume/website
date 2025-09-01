@@ -1,8 +1,8 @@
-import {Element, element, eventAttribute, html, Sizeable, Transformable} from 'lume'
+import {css, Element, element, eventAttribute, html, Sizeable, Transformable} from 'lume'
 import {StudioElementCreateEvent} from '../../StudioElement.js'
 
 import '../../../../elements/for-each.js'
-import type { SceneElementNode } from '../../../../../imports/collections/scenes/UserScenes.js'
+import type {SceneElementNode} from '../../../../../imports/collections/scenes/UserScenes.js'
 
 const icons: {[name: string]: Node | Node[]} = {
 	box: html`<svg
@@ -141,16 +141,17 @@ export class CreateStudioElementList extends Element {
 				return () => {
 					const el = createElementListEntries[elementTitles[this.#elementIndex++]]
 
-					return html`<div
-						class="studio-button"
-						style="display: flex; align-items: center; cursor: pointer;"
-						onclick=${() => {
-							this.dispatchEvent(new StudioElementCreateEvent(createNode(el.tagName)))
-						}}
-					>
-						<div style="padding: 3px;">${el.icon}</div>
-						<div>${el.title}</div>
-					</div>`
+					return html`
+						<div
+							class="studio-dropdown-item"
+							onclick=${() => {
+								this.dispatchEvent(new StudioElementCreateEvent(createNode(el.tagName)))
+							}}
+						>
+							<div style="padding: 3px;">${el.icon}</div>
+							<div style="padding-right: var(--studio-panel-padding-x);">${el.title}</div>
+						</div>
+					`
 				}
 			}}
 		></for-each>
