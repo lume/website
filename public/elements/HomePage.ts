@@ -21,6 +21,8 @@ const IS_FIREFOX = navigator.userAgent.includes('Firefox')
 export class HomePage extends Element {
 	static readonly elementName = 'home-page'
 
+	_____?: undefined
+
 	@signal cube!: LandingCube
 	@signal cube2!: LandingCube
 	@signal mobileMenu!: Element3D
@@ -1029,10 +1031,12 @@ export class HomePage extends Element {
 	`
 }
 
+type HomePageAttributes = '_____'
+
 declare module 'solid-js' {
 	namespace JSX {
 		interface IntrinsicElements {
-			[HomePage.elementName]: ElementAttributes<HomePage>
+			[HomePage.elementName]: ElementAttributes<HomePage, HomePageAttributes>
 		}
 	}
 }
