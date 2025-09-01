@@ -1,4 +1,4 @@
-import {attribute, CameraRig, element, Element3D} from 'lume'
+import {attribute, CameraRig, element, Element3D, signal} from 'lume'
 /* import {TransformControls} from 'three/examples/jsm/controls/TransformControls.js' */
 import {TransformControls} from './TransformControls.js'
 import type {StudioElement} from '../StudioElement.js'
@@ -28,6 +28,8 @@ export class StudioTransformControls extends Element3D {
 
 	@attribute studioElement?: StudioElement
 
+	@signal cam?: CameraRig
+
 	#threeTransformControls?: TransformControls
 
 	connectedCallback() {
@@ -35,6 +37,9 @@ export class StudioTransformControls extends Element3D {
 
 		this.createEffect(() => {
 			if (!this.scene || !this.scene.camera?.three) return
+
+			const cam = this.#getActiveCameraRig()
+			if (cam) this.cam = cam
 
 			if (!this.#threeTransformControls) {
 				this.#threeTransformControls = new TransformControls(this.scene.camera.three, this.scene)
@@ -58,6 +63,13 @@ export class StudioTransformControls extends Element3D {
 			}
 
 			this.scene.needsUpdate()
+		})
+
+		this.createEffect(() => {
+			// Update control size when dollying
+			if (this.cam?.threeCamera?.position.z === undefined) return
+
+			this.#threeTransformControls?.getHelper().updateMatrixWorld()
 		})
 	}
 
@@ -93,19 +105,15 @@ export class StudioTransformControls extends Element3D {
 	}
 
 	#disableCam() {
-		const cam = this.#getActiveCameraRig()
-		if (!cam) return
+		if (!this.cam) return
 
-		cam.flingRotation.stop()
-
-		cam.flingRotation.interactionContainer
+		this.cam.flingRotation.stop()
 	}
 
 	#enableCam() {
-		const cam = this.#getActiveCameraRig()
-		if (!cam) return
+		if (!this.cam) return
 
-		cam.flingRotation.start()
+		this.cam.flingRotation.start()
 	}
 
 	#getActiveCameraRig() {
