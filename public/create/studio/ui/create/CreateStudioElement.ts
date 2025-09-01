@@ -1,4 +1,4 @@
-import {attribute, css, Element, element, eventAttribute, html} from 'lume'
+import {attribute, Element, element, eventAttribute, html} from 'lume'
 import '../../../../elements/for-each.js'
 import '../AccordionButton.js'
 import '../DropdownMenu.js'

@@ -1,4 +1,4 @@
-import {css, Element, element, eventAttribute, html, Sizeable, Transformable} from 'lume'
+import {Element, element, eventAttribute, html, Sizeable, Transformable} from 'lume'
 import {StudioElementCreateEvent} from '../../StudioElement.js'
 
 import '../../../../elements/for-each.js'
