@@ -53,8 +53,12 @@ export class LumeStudio extends Element {
 
 			this.selectedElement.setSelected(true)
 
-			if (ev.element.lumeElement && ev.element.lumeElement.tagName !== 'LUME-SCENE') {
-				this.#outlineEffect.enable(ev.element.lumeElement as Element3D)
+			if (ev.element.lumeElement) {
+				if (ev.element.lumeElement.tagName !== 'LUME-SCENE') {
+					this.#outlineEffect.enable(ev.element.lumeElement as Element3D)
+				} else {
+					this.#outlineEffect.disable()
+				}
 			}
 		} else {
 			this.#outlineEffect.disable()
