@@ -148,6 +148,7 @@ export class SceneManager {
 		parent.children.push(studioElement)
 
 		studioElement.lumeElement = parent.lumeElement.children[parent.lumeElement.children.length - 1] as Element
+		studioElement.node = node
 
 		this.elements.push(studioElement)
 
