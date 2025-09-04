@@ -1,6 +1,7 @@
-import {attribute, booleanAttribute, css, element, Element} from '@lume/element'
+import {attribute, booleanAttribute, css, element, Element, eventAttribute} from '@lume/element'
 import {html} from 'lume'
 import type {JSX} from 'solid-js'
+import {AccordionToggleEvent} from './AccordionButton.js'
 
 @element
 export class DropdownMenu extends Element {
@@ -12,7 +13,7 @@ export class DropdownMenu extends Element {
 
 	@attribute panel? = () => []
 
-	@attribute onToggle?: () => void
+	@eventAttribute onaccordionToggle = (_ev: AccordionToggleEvent) => {}
 
 	@attribute open?: boolean
 
@@ -30,10 +31,10 @@ export class DropdownMenu extends Element {
 		html`<accordion-button
 			class="studio-dropdown"
 			open=${() => this.open}
-			onToggle=${(ev: ToggleEvent) => {
-				this.open = ev.newState === 'open' ? true : false
+			onaccordion-toggle=${(ev: AccordionToggleEvent) => {
+				this.open = ev.toggled
 
-				this.onToggle?.()
+                this.dispatchEvent(new AccordionToggleEvent(this.open))
 			}}
 			marker=${() => this.marker}
 			button=${() => this.button}
