@@ -93,7 +93,7 @@ export class SceneViewListItem extends Element {
 										style=${() => {
 											const baseStyle = 'margin-top: 0; margin-bottom: 0; transition: color 0.1s;'
 
-											if (this.selected) return baseStyle + 'color: var(--lume-secondary); font-weight: bold;'
+											if (this.selected) return baseStyle + 'color: var(--lumeSecondary); font-weight: bold;'
 
 											return baseStyle
 										}}
@@ -146,7 +146,7 @@ export class SceneViewListItem extends Element {
 							}
 
 							.summary-trash-icon:hover {
-								color: var(--lume-danger);
+								color: var(--lumeDanger);
 							}
 						</style>`
 				}}
