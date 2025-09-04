@@ -1,5 +1,5 @@
 import {camelCaseToDash, Element, Element3D} from 'lume'
-import type { SceneElementNode } from '../../../imports/collections/scenes/UserScenes'
+import type {SceneElementNode} from '../../../imports/collections/scenes/UserScenes'
 
 export class StudioElementRemoveEvent extends Event {
 	element: StudioElement
@@ -111,7 +111,9 @@ export class StudioElement extends EventTarget {
 		const att = this.node.attributes.find(val => {
 			return val.name == name
 		})
+		
 		if (att) att.val = value
+		else this.node.attributes.push({name, val: value})
 	}
 
 	setSelected(selected: boolean) {
