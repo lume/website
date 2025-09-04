@@ -1,6 +1,6 @@
 import {camelCaseToDash, Element, Scene} from 'lume'
 import {StudioElement} from './StudioElement.js'
-import type { SceneElementNode } from '../../../imports/collections/scenes/UserScenes.js'
+import type {SceneElementNode} from '../../../imports/collections/scenes/UserScenes.js'
 
 function mapStudioChildren(parent: StudioElement, elements: HTMLCollection, nodes: SceneElementNode[]) {
 	const warnInvalidLength = () => {
@@ -125,7 +125,7 @@ export class SceneManager {
 			tagName: 'lume-scene',
 			children: nodes,
 		} as SceneElementNode
-		if (nodes.length == 1 && nodes[0].tagName == 'lume-scene') {
+		if (nodes.length == 1 && nodes[0].tagName === 'lume-scene') {
 			// TODO Set properties of scene
 			headNode = nodes[0]
 		}
