@@ -10,6 +10,14 @@ const styleVars = {
 	pageTopBottomPadding: 25,
 	pageLeftRightPadding: 60,
 
+	// Some colors (TBD).
+	lumePrimaryRgb: '10, 58, 221',
+	lumePrimary: 'rgba(var(--lumePrimaryRgb), 1)',
+	lumeSecondaryRgb: '255, 67, 169',
+	lumeSecondary: 'rgba(var(--lumeSecondaryRgb), 1)',
+	lumeDanger: 'red',
+	lumeTextColor: 'white',
+
 	// TODO improve type defs for this without requiring error-prone manual type casting.
 }
 
