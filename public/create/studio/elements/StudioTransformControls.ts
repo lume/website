@@ -69,6 +69,8 @@ export class StudioTransformControls extends Element3D {
 			// Update control size when dollying
 			if (this.cam?.threeCamera?.position.z === undefined) return
 
+			if (!(this.#threeTransformControls as any)?.object?.parent) return
+
 			this.#threeTransformControls?.getHelper().updateMatrixWorld()
 		})
 	}
