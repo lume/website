@@ -148,7 +148,7 @@ export class CreateStudioElementList extends Element {
 								this.dispatchEvent(new StudioElementCreateEvent(createNode(el.tagName)))
 							}}
 						>
-							<div style="padding: 3px;">${el.icon}</div>
+							<div style="padding-right: 3px;">${el.icon}</div>
 							<div style="padding-right: var(--studio-panel-padding-x);">${el.title}</div>
 						</div>
 					`
