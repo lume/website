@@ -1,7 +1,10 @@
-import {css, html, Element, element, signal, Scene, jsonAttribute, Element3D} from 'lume'
+import {css, html, Element, element, signal, Scene, Element3D, eventAttribute, attribute} from 'lume'
 
 import './ui/sceneview/SceneView.js'
 import './ui/create/CreateStudioElement.js'
+import './ui/StudioButton.js'
+import './ui/file/StudioFileMenu.js'
+
 import './elements/StudioGridHelper.js'
 import './elements/StudioTransformControls.js'
 
@@ -14,6 +17,86 @@ import {
 	StudioElementSelectEvent,
 } from './StudioElement.js'
 import {OutlineEffect} from './effects/OutlineEffect.js'
+import type {SceneElementNode, UserSceneDocument} from '../../../imports/collections/scenes/UserScenes.js'
+
+import type {CreateSceneEvent, SaveSceneAsEvent} from './ui/file/SceneSelectMenu.js'
+import {Meteor} from 'meteor/meteor'
+import {toSolidSignal} from '../../utils.js'
+
+class StudioSceneChangeEvent extends Event {
+	sceneNode: SceneElementNode
+
+	constructor(sceneNode: SceneElementNode) {
+		super('studio-scene-change')
+
+		this.sceneNode = sceneNode
+	}
+}
+
+class StudioSaveSceneEvent extends Event {
+	sceneNode: SceneElementNode
+
+	constructor(sceneNode: SceneElementNode) {
+		super('studio-save-scene')
+
+		this.sceneNode = sceneNode
+	}
+}
+
+function saveScene(scene: UserSceneDocument, callback?: () => void) {
+	if (!scene._id) {
+		console.error('Attempted to save scene with unknown id.')
+
+		return
+	}
+
+	Meteor.call('updateUserScene', scene, (err: any, _data: any) => {
+		callback?.()
+
+		if (err) {
+			console.log(JSON.stringify(err, undefined, 4))
+
+			return
+		}
+	})
+}
+
+function saveSceneAs(targetSceneId: string, sourceScene: UserSceneDocument, callback?: () => void) {
+	// Saving scene as another scene should keep the original `_id`, `dateCreated`, and `name`.
+	// If the user wants to change the name while saving as, they should "save as" first (transfer
+	// one scene's nodes to another), THEN rename the scene, and clicking "save".
+
+	// TODO: Maybe decide whether `dateCreated` be transferred or not.
+
+	const mergedScene = {...sourceScene, _id: targetSceneId}
+
+	delete mergedScene.name
+	delete mergedScene.dateCreated
+
+	Meteor.call('updateUserScene', mergedScene, (err: any, _data: any) => {
+		callback?.()
+
+		if (err) {
+			console.log(JSON.stringify(err, undefined, 4))
+
+			return
+		}
+	})
+}
+
+function createScene(scene: UserSceneDocument, callback?: () => void) {
+	Meteor.call('createUserScene', scene, (err: any, _data: any) => {
+		callback?.()
+
+		if (err) {
+			console.log(JSON.stringify(err, undefined, 4))
+
+			return
+		}
+	})
+}
+
+const user = toSolidSignal(() => Meteor.user())
 
 @element
 export class LumeStudio extends Element {
@@ -21,7 +104,16 @@ export class LumeStudio extends Element {
 
 	hasShadow = false
 
-	@jsonAttribute sceneNodes?: object
+	@attribute scene?: UserSceneDocument
+
+	@eventAttribute onstudioSceneChange = (_ev: StudioSceneChangeEvent) => {}
+
+	@eventAttribute onstudioSaveScene = (_ev: StudioSaveSceneEvent) => {}
+
+	/**
+	 * Currently only used for when saving the scene.
+	 */
+	@signal isLoading = false
 
 	@signal lumeScene?: Scene
 
@@ -44,9 +136,9 @@ export class LumeStudio extends Element {
 	#handleSelect = (ev: StudioElementSelectEvent) => {
 		ev.element.setSelected(ev.selected)
 
-		if (!this.#outlineEffect) return
-
 		if (this.selectedElement) this.selectedElement.setSelected(false)
+
+		if (!this.#outlineEffect) return
 
 		if (ev.selected) {
 			this.selectedElement = ev.element
@@ -87,11 +179,11 @@ export class LumeStudio extends Element {
 		super.connectedCallback()
 
 		this.createEffect(() => {
-			if (!this.sceneNodes || !this.lumeScene) return
+			if (!this.scene || !this.lumeScene) return
 
 			this.sceneManager = new SceneManager()
 			this.sceneManager.scene = this.lumeScene
-			this.sceneManager.updateScene((this.sceneNodes as any).nodes)
+			this.sceneManager.updateScene(this.scene.nodes ?? [])
 
 			if (this.sceneManager.elements.length > 0) {
 				this.sceneHead = this.sceneManager.elements[0]
@@ -105,7 +197,7 @@ export class LumeStudio extends Element {
 			// soon as the scene/camera three is available, it looks very low res.
 			setTimeout(() => {
 				this.#outlineEffect = new OutlineEffect(this.lumeScene!)
-			}, 20)
+			}, 30)
 		})
 	}
 
@@ -130,6 +222,39 @@ export class LumeStudio extends Element {
 				></studio-transform-controls>
 			</lume-scene>
 			<div style="position: absolute;">
+				<studio-file-menu
+					is-own-scene=${() => {
+						return this.scene?.userId && this.scene.userId === user()?._id
+					}}
+					onsave-scene=${() => {
+						if (!this.scene) return
+
+						// Depending on load speeds, it may flicker so for now this is disabled.
+						/* this.isLoading = true */
+
+						saveScene(this.scene, () => {
+							this.isLoading = false
+						})
+					}}
+					onsave-scene-as=${(ev: SaveSceneAsEvent) => {
+						if (!ev.scene._id || !this.scene) return
+
+						/* this.isLoading = true */
+
+						saveSceneAs(ev.scene._id, this.scene, () => {
+							this.isLoading = false
+						})
+					}}
+					oncreate-scene=${(ev: CreateSceneEvent) => {
+						if (!this.scene) return
+
+						/* this.isLoading = true */
+
+						createScene({name: ev.params.name, nodes: this.scene.nodes}, () => {
+							this.isLoading = false
+						})
+					}}
+				></studio-file-menu>
 				<create-studio-element
 					style="display: flex; margin-bottom: 0.15rem;"
 					onstudio-element-create=${(ev: StudioElementCreateEvent) => {
@@ -151,35 +276,28 @@ export class LumeStudio extends Element {
 				></scene-view>
 			</div>
 		</div>
+		<show-when
+			condition=${() => this.isLoading}
+			content=${() => () =>
+				html`<div id="loadingCover">
+					<loading-icon></loading-icon>
+				</div>`}
+		></show-when>
 	`
 
 	css = css`
 		:host {
 			width: 100%;
-			--lume-primary: rgba(10, 58, 221, 1);
-			--lume-text-color: white;
-			--lume-secondary: color-mix(in srgb, deeppink 80%, white 20%);
-			--lume-danger: red;
 			--studio-panel-padding-x: 5px;
 			--studio-panel-padding-y: 5px;
-			--studio-button-hover-color: rgba(114, 138, 214, 1);
+			/* --studio-button-hover-color: rgba(114, 138, 214, 1); */
+			--studio-button-hover-color: color-mix(in srgb, var(--lumePrimary) 70%, white 30%);
 			--studio-button-content-hover-color: rgba(114, 138, 214, 1);
 		}
 
-		.studio-panel {
-			height: 100%;
-			overflow: auto;
-			background: var(--lume-primary);
-			color: var(--lume-text-color);
-			border-radius: 5px;
-			border: 1px black solid;
-			padding: var(--studio-panel-padding-y) var(--studio-panel-padding-x);
-			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-		}
-
 		.studio-container {
-			background: var(--lume-primary);
-			color: var(--lume-text-color);
+			background: var(--lumePrimary);
+			color: var(--lumeTextColor);
 			border-radius: 5px;
 			border: 1px black solid;
 			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
@@ -206,22 +324,6 @@ export class LumeStudio extends Element {
 			align-items: center;
 			margin-bottom: 0.25rem;
 			cursor: pointer;
-		}
-
-		.save-scene-button {
-			height: 100%;
-			overflow: auto;
-			background: var(--lume-primary);
-			color: var(--lume-text-color);
-			border-radius: 5px;
-			border: 1px black solid;
-			padding: var(--studio-panel-padding-y) var(--studio-panel-padding-x);
-			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-		}
-
-		.save-scene-button:hover {
-			/* background: #f0f0f08a; */
-			background: rgb(151, 160, 172);
 		}
 
 		/* TODO :host-context support for non-shadow scoped styles? */
