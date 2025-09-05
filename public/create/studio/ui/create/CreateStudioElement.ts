@@ -1,6 +1,4 @@
 import {attribute, Element, element, eventAttribute, html} from 'lume'
-import '../../../../elements/for-each.js'
-import '../AccordionButton.js'
 import '../DropdownMenu.js'
 import './CreateStudioElementList.js'
 import {StudioElement, StudioElementCreateEvent} from '../../StudioElement.js'
@@ -36,20 +34,22 @@ export class CreateStudioElement extends Element {
 		<dropdown-menu
 			class="studio-container"
 			open=${() => this.open}
-			marker=${() =>
-				html`<svg
+			marker=${() => {
+				return html`<svg
+					style="margin-right: 0.25rem;"
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"
 					stroke="white"
 					stroke-width="2"
-					viewBox="0 0 24 24"
-					width="24"
-					height="24"
+					viewBox="0 0 16 16"
+					width="16"
+					height="16"
 					aria-hidden="true"
 					focusable="false"
 				>
-					<path stroke-linecap="round" stroke-linejoin="round" d="M12 7v10M7 12h10" />
-				</svg>`}
+					<path stroke-linecap="round" stroke-linejoin="round" d="M8 3v10M3 8h10" />
+				</svg>`
+			}}
 			button=${() => {
 				return html`<p style="margin-top: 0; margin-bottom: 0; padding-right: 5px;">Create element</p> `
 			}}
