@@ -4,113 +4,101 @@ import {createMutable} from 'solid-js/store'
 import {Meteor} from 'meteor/meteor'
 import '../routes.js' // track page visits
 import '../elements/login-ui.js'
-import '../elements/for-each.js'
 import '../elements/show-when.js'
 import './studio/LumeStudio.js'
+import './SceneList.js'
 import {toSolidSignal} from '../utils.js'
 import {signal} from 'lume'
-import type { SceneElementNode } from '../../imports/collections/scenes/UserScenes.js'
+import {
+	type SceneElementNode,
+	type UserSceneDocument,
+	exampleScenes,
+} from '../../imports/collections/scenes/UserScenes.js'
+import {effect} from '../meteor-signals.js'
+import type {Tracker} from 'meteor/tracker'
+import {url} from '../routes.js'
 
 const username = toSolidSignal(() => Meteor.user()?.username ?? Meteor.user()?.emails?.[0].address ?? '')
 const state = ((window as any).state = createMutable({route: 'dash' as 'dash' | 'element'}))
 
 export type LumeCreateAttributes = keyof {} // no attributes yet
 
-// Having `nodes` as a property is just to be able to pass as JSON
-const exampleScene: {nodes: SceneElementNode[]} = {
-	nodes: [
-		{
-			tagName: 'lume-scene',
-			children: [
-				{
-					tagName: 'lume-camera-rig',
-					attributes: [
-						{name: 'alignPoint', val: '0.5 0.5 0.5'},
-						{name: 'mountPoint', val: '0.5 0.5 0.5'},
-						{name: 'distance', val: '50'},
-						{name: 'minDistance', val: '5'},
-						{name: 'dollySpeed', val: '5'},
-						{name: 'dynamicDolly', val: true},
-						{name: 'maxDistance', val: '5000'},
-					],
-				},
-				{
-					tagName: 'lume-point-light',
-					attributes: [
-						{name: 'intensity', val: '750'},
-						{name: 'alignPoint', val: '0.5 0.5 0.5'},
-						{name: 'mountPoint', val: '0.5 0.5 0.5'},
-						{name: 'position', val: '100 -75 120'},
-						{name: 'color', val: 'pink'},
-					],
-				},
-				{
-					tagName: 'lume-ambient-light',
-					attributes: [{name: 'intensity', val: '0.4'}],
-				},
-				{
-					tagName: 'lume-box',
-					attributes: [
-						{name: 'alignPoint', val: '0.5 0.5 0.5'},
-						{name: 'mountPoint', val: '0.5 0.5 0.5'},
-						{name: 'position', val: '0 0 0'},
-						{name: 'color', val: 'blue'},
-						{name: 'size', val: '5 5 5'},
-						{name: 'opacity', val: '0.5'},
-						{name: 'has', val: 'phong-material'},
-					],
-					children: [
-						{
-							tagName: 'lume-box',
-							attributes: [
-								{name: 'alignPoint', val: '0.5 0.5 0.5'},
-								{name: 'mountPoint', val: '0.5 0.5 0.5'},
-								{name: 'position', val: '0 0 0'},
-								{name: 'color', val: 'red'},
-								{name: 'size', val: '5 5 5'},
-								{name: 'opacity', val: '0.5'},
-								{name: 'has', val: 'phong-material'},
-							],
-						},
-					],
-				},
-				{
-					tagName: 'lume-box',
-					attributes: [
-						{name: 'alignPoint', val: '0.5 0.5 0.5'},
-						{name: 'mountPoint', val: '0.5 0.5 0.5'},
-						{name: 'position', val: '20 0 0'},
-						{name: 'color', val: 'blue'},
-						{name: 'size', val: '5 5 5'},
-						{name: 'has', val: 'phong-material'},
-					],
-				},
-				{
-					tagName: 'lume-sphere',
-					attributes: [
-						{name: 'alignPoint', val: '0.5 0.5 0.5'},
-						{name: 'mountPoint', val: '0.5 0.5 0.5'},
-						{name: 'position', val: '-20 0 0'},
-						{name: 'color', val: 'green'},
-						{name: 'size', val: '5 5 5'},
-						{name: 'has', val: 'phong-material'},
-					],
-				},
-			],
-		},
-	],
+function getSceneIdFromUrl(pathname: string) {
+	const arr = pathname.split('/')
+	if (arr.length < 3) return ''
+
+	return arr[2]
+}
+
+function getExampleScenes() {
+	const exampleSceneArr: UserSceneDocument[] = []
+	for (const key in exampleScenes) {
+		exampleSceneArr.push(exampleScenes[key])
+	}
+	return exampleSceneArr
 }
 
 @element
 export class LumeCreate extends Element {
 	static readonly elementName = 'lume-create'
 
-	@signal sceneNodes = ''
+	@signal sceneNodes: SceneElementNode[] = []
+
+	@signal url?: URL
+
+	/**
+	 * If a valid scene ID is in the URL, this will be set to its document and the studio will be
+	 * rendered.
+	 */
+	@signal studioScene?: UserSceneDocument
+
+	@signal userScenes: string[] = []
+
+	#urlEffect?: Tracker.Computation
 
 	connectedCallback() {
 		super.connectedCallback()
-		// Get the scene's node representation from somewhere here and set `sceneNodes`.
 
+		this.#urlEffect = effect(() => {
+			const currentUrl = url()
+
+			const sceneId = getSceneIdFromUrl(currentUrl.pathname)
+
+			if (sceneId === '') {
+				Meteor.call('getUserScenes', (err: any, data: any) => {
+					if (err) {
+						console.log(JSON.stringify(err, undefined, 4))
+					} else {
+						this.userScenes = data
+
+						this.#stopLoading()
+					}
+				})
+			} else {
+				Meteor.call('getUserSceneById', sceneId, (err: any, data: any) => {
+					if (err) {
+						console.log(JSON.stringify(err, undefined, 4))
+						return
+					}
+
+					if (!data) return
+
+					state.route = 'element'
+
+					this.studioScene = data
+
+					this.#stopLoading()
+				})
+			}
+		})
+	}
+
+	// Unsure if this is needed but I don't think Meteor trackers are cleaned up within Lume.
+	disconnectedCallback() {
+		this.#urlEffect?.stop()
+	}
+
+	#stopLoading() {
 		// Hide the loading cover
 		const loadingCover = document.getElementById('loadingCover')
 		loadingCover?.classList.add('invisible')
@@ -150,22 +138,29 @@ export class LumeCreate extends Element {
 				content=${() => () => html`
 					<show-when
 						condition=${() => state.route === 'dash'}
-						content=${() => html`
-							<for-each
-								items=${() => ['box', 'sphere', 'gallery']}
-								content=${() => (n: number) => html`
-									<div class="card" onclick=${() => (state.route = 'element')}>
-										<img src="/images/LUME5.png" />
-										<p>${n}</p>
-									</div>
-								`}
-							></for-each>
-						`}
-					></show-when>
+						content=${() => () => html`
+							<div style="display: flex; flex-direction: column;">
+								<h2>Your scenes</h2>
+								<show-when
+									condition=${() => this.userScenes.length}
+									content=${() => () => html`<scene-list scenes=${() => this.userScenes}></scene-list>`}
+									fallback=${() => () =>
+										html`<p>No scenes yet. Open an example scene in the editor to get started.</p>`}
+								></show-when>
 
-					<show-when
-						condition=${() => state.route === 'element'}
-						content=${() => () => html`<lume-studio scene-nodes="${exampleScene}"></lume-studio>`}
+								<h2>Example scenes</h2>
+								<scene-list scenes=${getExampleScenes()}></scene-list>
+							</div>
+						`}
+						fallback=${() => () =>
+							html`<show-when
+								condition=${() => this.studioScene}
+								content=${() => () =>
+									html`<lume-studio
+										scene=${() => this.studioScene}
+										scene-nodes=${() => this.studioScene?.nodes}
+									></lume-studio>`}
+							></show-when>`}
 					></show-when>
 				`}
 				fallback=${() => () => html` <p>Login <span style="rotate: 70deg; display: inline-block;">👆</span></p> `}
@@ -220,27 +215,6 @@ export class LumeCreate extends Element {
 
 			overflow: auto;
 			display: flex;
-			gap: 20px;
-
-			.card {
-				width: 200px;
-				height: 200px;
-				position: relative;
-				cursor: pointer;
-
-				img {
-					width: 100%;
-					height: 100%;
-					object-fit: cover;
-				}
-
-				p {
-					position: absolute;
-					--pad: 5px;
-					bottom: var(--pad);
-					left: var(--pad);
-				}
-			}
 
 			h1 a {
 				cursor: pointer;
