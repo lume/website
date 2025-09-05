@@ -39,6 +39,10 @@ function mapStudioChildren(parent: StudioElement, elements: HTMLCollection, node
 		studioElement.lumeElement = element as Element
 		studioElement.node = node
 
+		// Important that we're not setting `studioElement`'s `node.parent`, to avoid creating
+		// circular JSON for when inserted into Mongo.
+		// Access `parent.node` instead.
+
 		mapStudioChildren(studioElement, element.children, node.children)
 
 		parent.children.push(studioElement)

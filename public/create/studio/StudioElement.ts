@@ -78,18 +78,18 @@ export class StudioElement extends EventTarget {
 	}
 
 	remove() {
-		if (this.node?.parent && this.node.parent.children) {
-			this.node.parent.children = this.node.parent.children.filter(node => {
-				node != this.node
-			})
+		if (this.parent) {
+			if (this.parent.node && this.parent.node.children) {
+				this.parent.node.children = this.parent.node.children.filter(node => {
+					return node != this.node
+				})
+			}
+
+			this.parent.children = this.parent.children.filter(el => el != this)
 		}
 
 		if (this.lumeElement) {
 			this.lumeElement.remove()
-		}
-
-		if (this.parent) {
-			this.parent.children = this.parent.children.filter(el => el != this)
 		}
 	}
 
@@ -111,7 +111,7 @@ export class StudioElement extends EventTarget {
 		const att = this.node.attributes.find(val => {
 			return val.name == name
 		})
-		
+
 		if (att) att.val = value
 		else this.node.attributes.push({name, val: value})
 	}
